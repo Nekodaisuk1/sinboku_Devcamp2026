@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>シンボク — 学びの地図 / Wireframe</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="studio.css">
+  <link rel="stylesheet" href="routes.css">
+  <link rel="stylesheet" href="journey.css">
+  <link rel="stylesheet" href="room.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+  <div class="prototype-bar"><span>BUILD 18</span> 試作版 · 好きから広がる、わたしの選択肢 <span class="prototype-private">共有機能なし</span> <span class="session-note">記録はこの画面を開いている間だけ</span></div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#personal"><span class="brand-mark" aria-hidden="true">⋈</span> シンボク<span class="brand-caption">好きから、学びのその先へ。</span></a>
+      <nav aria-label="メインメニュー">
+        <button class="nav-item" data-page="personal"><span aria-hidden="true">♧</span> 自分のマップ</button>
+        <button class="nav-item" data-page="home"><span aria-hidden="true">⌂</span> 探す</button>
+        <button class="nav-item" data-page="routes"><span aria-hidden="true">↟</span> <span class="nav-label-full">進み方を見る</span><span class="nav-label-short">進み方</span></button>
+        <button class="nav-item active" data-page="explore" aria-current="page"><span aria-hidden="true">⌘</span> 学びの地図</button>
+
+        <button class="nav-item" data-page="saved"><span aria-hidden="true">◇</span> 気になる <span id="saved-count" class="count">0</span></button>
+      </nav>
+      <div class="side-section"><p class="eyebrow">EXPLORE FROM</p><h2>どこから見てみる？</h2><div id="interests"></div></div>
+      <p id="storage-status" class="storage-status" role="status"></p><div class="sidebar-bottom"><span class="mini-mark">↗</span><p>決めなくても、大丈夫。<br>気になるところから<br>少しずつ見てみよう。</p></div>
+    </aside>
+    <main id="main-content" tabindex="-1">
+      <header class="page-header"><div><p class="breadcrumb" id="breadcrumb">学びの地図 / 海・生き物</p><h1 id="page-title">「海が好き」の、その先。</h1><p class="intro" id="intro">同じ「好き」から、違う気になることや学び方が広がっています。</p></div><button class="secondary capture-open" id="capture-open">＋ 外の情報を取り込む</button><button class="storage-indicator" id="storage-shortcut" data-page="saved" data-saved-tab="settings">端末保存：オフ</button></header>
+      <section id="home-page"></section>
+      <section id="explore-page">
+        <div class="view-bar"><div class="segmented" aria-label="表示内容"><button id="learn-tab" aria-pressed="true">学びのつながり</button><button id="places-tab" aria-pressed="false">学べる・試せる場所</button></div><span class="subtle" id="view-caption">まずは、気になる気になることを選ぶ</span></div>
+        <div class="workspace">
+          <section class="map-area" aria-label="学びのつながり">
+            <div id="map-content"></div>
+            <div class="map-footer"><span><span class="line-key" aria-hidden="true"></span> 線は関心のつながり。必須の進路ではありません。</span><button id="reset-view" class="text-button">全体を見る ↺</button></div>
+          </section>
+          <aside class="detail-panel" id="detail-panel" aria-label="選んだ学びの詳細" aria-live="polite"></aside>
+        </div>
+      </section>
+      <section id="routes-page" hidden></section>
+      <section id="personal-page" hidden></section>
+      <section id="saved-page" hidden></section>
+      <footer class="page-footer">自分の興味を知る → 選択肢を見渡す → 必要な情報を確かめる</footer>
+    </main>
+  </div>
+  <dialog id="capture-dialog" aria-labelledby="capture-title"><div class="dialog-header"><h2 id="capture-title">見つけた情報を、枝につなぐ</h2><button class="icon-button" data-close="capture-dialog" aria-label="閉じる">×</button></div><p>URLと名前を取り込みます。ページの本文は自動で読み取りません。</p><form id="capture-form"><label>情報の名前<input name="title" required maxlength="80" placeholder="気になった記事や活動"></label><label>URL<input name="url" type="url" required maxlength="2048" placeholder="https://"></label><label>どの枝につなぐ？<select name="parent" id="capture-parent"></select></label><label>気になったところ（任意）<textarea name="note" maxlength="1500" placeholder="あとで思い出せるよう、一言だけ"></textarea></label><p id="capture-error" role="alert"></p><button class="primary">確認した情報をマップに追加</button></form><details class="capture-help"><summary>調べものの途中で取り込むには（PC）</summary><p>次のリンクをブラウザのブックマークバーにドラッグしてください。外のページで押すと、名前とURLを入れたこの確認画面が開きます。</p><a id="capture-bookmark">✦ シンボクに取り込む</a><p>同じマップへ追加するには、事前に「このブラウザに記録を残す」をオンにしてください。ブラウザやページの制限によって使えない場合は、URLをコピーして上のフォームへ貼り付けられます。</p></details></dialog>
+  <dialog id="guide-dialog" aria-labelledby="guide-title"><div class="dialog-header"><span>シンボクの使い方</span><button class="icon-button" data-close="guide-dialog" aria-label="ガイドを閉じる">×</button></div><div id="guide-content"></div></dialog>
+  <dialog id="inquiry-dialog" aria-labelledby="inquiry-title"><div class="dialog-header"><h2 id="inquiry-title">気になるものを並べて見る</h2><button class="icon-button" data-close="inquiry-dialog" aria-label="閉じる">×</button></div><div id="inquiry-content"></div></dialog>
+  <dialog id="integration-dialog" aria-labelledby="integration-title"><div class="dialog-header"><h2 id="integration-title">自分のマップに取り込む</h2><button class="icon-button" data-close="integration-dialog" aria-label="取り込みを閉じる">×</button></div><div id="integration-content"></div></dialog>
+  <dialog id="detail-dialog" aria-label="選んだ情報の詳細"><div class="mobile-detail-header"><span>選んだ情報</span><button class="secondary" data-close="detail-dialog">地図に戻る ↓</button></div><div id="mobile-detail-content"></div></dialog>
+  <dialog id="compare-dialog" aria-labelledby="compare-title"><div class="dialog-header"><div><p class="eyebrow">SIDE BY SIDE</p><h2 id="compare-title">違いから、気になる理由を探す</h2></div><button class="icon-button" data-close="compare-dialog" aria-label="閉じる">×</button></div><div id="compare-content"></div></dialog>
+  <dialog id="share-dialog" aria-labelledby="share-title"><div class="dialog-header"><div><p class="eyebrow">A SMALL CONVERSATION</p><h2 id="share-title">今、伝えたいことだけ。</h2></div><button class="icon-button" data-close="share-dialog" aria-label="相談カードを閉じる">×</button></div><div id="share-content"></div></dialog>
+  <dialog id="delete-dialog" aria-labelledby="delete-title"><div class="dialog-header"><h2 id="delete-title">保存した記録について</h2><button class="icon-button" data-close="delete-dialog" aria-label="削除をキャンセル">×</button></div><p id="delete-message"></p><div class="place-actions" style="margin-top:24px"><button class="secondary" data-close="delete-dialog">キャンセル</button><button class="primary" id="confirm-delete">保存した記録を削除</button></div></dialog>
+  <dialog id="revoke-family-dialog" aria-labelledby="revoke-family-title"><h2 id="revoke-family-title">保護者との接続を解除しますか？</h2><p id="revoke-family-message">相手の閲覧・投稿と招待リンクを無効にし、共有気になるものを非公開にします。受信済みのおすすめは残ります。</p><div class="place-actions"><button class="secondary" data-close="revoke-family-dialog">キャンセル</button><button class="primary" id="confirm-revoke-family">接続と共有を解除</button></div></dialog>
+  <dialog id="family-dialog" aria-labelledby="family-title"><div class="dialog-header"><div><p class="eyebrow">FAMILY PREVIEW</p><h2 id="family-title">本人の興味に、情報を添える。</h2></div><button class="icon-button" data-close="family-dialog" aria-label="保護者側プレビューを閉じる">×</button></div><div id="family-content"></div></dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

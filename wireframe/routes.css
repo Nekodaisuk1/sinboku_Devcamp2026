@@ -1,0 +1,92 @@
+#routes-page{display:grid;gap:26px;padding-bottom:40px}
+
+.route-intro{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:26px 28px}
+.route-intro h2{font-size:24px;line-height:1.5;letter-spacing:.01em;margin:6px 0 10px}
+.route-intro>p{color:var(--muted);max-width:62ch}
+.route-ceiling{margin-top:18px;padding:15px 17px;background:var(--soft);border-radius:10px;display:grid;gap:4px}
+.route-ceiling span{font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.route-ceiling strong{font-size:15px}
+.route-ceiling small{color:var(--muted);line-height:1.7}
+
+.route-table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.route-table{border-collapse:collapse;width:100%;min-width:640px;font-size:12px}
+.route-table th,.route-table td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:11px 13px;text-align:left;vertical-align:top}
+.route-table tr:last-child th,.route-table tr:last-child td{border-bottom:0}
+.route-table th:last-child,.route-table td:last-child{border-right:0}
+.route-table thead th{background:var(--soft);font-size:11px;letter-spacing:.03em}
+.route-table thead a{text-decoration:none;border-bottom:1px solid var(--line)}
+.route-table tbody th{width:150px;color:var(--muted);font-weight:600;background:#fafbf8}
+
+.route-list{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.route-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;scroll-margin-top:20px}
+.route-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:4px}
+.route-kind{font-size:10px;letter-spacing:.14em;color:var(--muted)}
+.route-head h3{font-size:17px;margin:5px 0 4px}
+.route-kind-summary{font-size:12px;color:var(--muted)}
+.route-why{margin-top:10px;font-size:12px;line-height:1.8}
+.route-math{margin-top:14px;padding:11px 13px;background:var(--soft);border-radius:9px;display:grid;gap:3px}
+.route-math span{font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.route-math strong{font-size:13px}
+.route-math small{font-size:11px;color:var(--muted);line-height:1.7}
+
+.route-steps{list-style:none;margin:0;padding:0;position:relative}
+.route-steps::before{content:"";position:absolute;left:5px;top:26px;bottom:26px;width:1px;background:var(--line)}
+.route-step{position:relative;padding:18px 0 18px 26px}
+.route-step-mark{position:absolute;left:0;top:24px;width:11px;height:11px;border-radius:50%;background:var(--paper);border:1px solid #9aa394}
+.route-step-now .route-step-mark{background:var(--dark);border-color:var(--dark)}
+.route-stage{font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.route-step h4{font-size:14px;margin:4px 0 6px;font-weight:600}
+.route-step-detail{font-size:12px;line-height:1.8;color:#42463f}
+.route-step-note{font-size:11px;color:var(--muted);margin-top:6px}
+.route-step-now{background:var(--soft);border-radius:10px;padding:16px 16px 16px 26px;margin-top:6px}
+.route-step-now .route-step-mark{left:8px}
+
+.route-defer{margin-top:10px;display:inline-flex;align-items:baseline;gap:8px;padding:6px 11px;border:1px dashed #b7bfae;border-radius:999px;background:#fbfcf9}
+.route-defer span{font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.route-defer strong{font-size:12px}
+.route-defer-detail{margin-top:7px}
+.route-defer-detail summary{font-size:11px;color:var(--muted);cursor:pointer}
+.route-defer-detail p{font-size:11px;color:var(--muted);line-height:1.8;margin-top:6px}
+.route-source{display:block;margin-top:11px;font-size:12px}
+.route-step small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+
+.route-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:auto;padding-top:16px;border-top:1px solid var(--line)}
+.route-math-detail{margin-top:12px;padding:12px 14px;background:#fbfcf9;border:1px solid var(--line);border-radius:9px;font-size:11px;line-height:1.8;color:var(--muted)}
+
+.deferral-board{background:var(--dark);color:#eef0e9;border-radius:14px;padding:26px 28px}
+.deferral-board h2{font-size:19px;margin-bottom:8px}
+.deferral-lead{font-size:12px;color:#c3c9bd;max-width:60ch}
+.deferral-list{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:1px;background:rgba(255,255,255,.14);border-radius:10px;overflow:hidden}
+.deferral-list li{background:var(--dark);padding:15px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+.deferral-list li:last-child{background:#3d4839}
+.deferral-name{font-size:14px;font-weight:600}
+.deferral-detail{font-size:11px;color:#b9c0b1;margin-top:4px;max-width:56ch}
+.deferral-defer{font-size:13px;font-weight:600;white-space:nowrap}
+.deferral-note{font-size:11px;color:#a9b1a2;margin-top:16px;line-height:1.8}
+
+.route-disclaimer{font-size:11px;color:var(--muted);line-height:1.9;padding:0 4px}
+.route-empty{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:30px}
+.route-empty h2{font-size:17px;margin-bottom:8px}
+.route-empty p{color:var(--muted);font-size:12px}
+
+.route-picker{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.route-picker button{padding:7px 13px;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-size:12px}
+.route-picker button[aria-pressed=true]{background:var(--dark);color:#fff;border-color:var(--dark)}
+.route-entry{margin-top:14px}
+
+@media (max-width:850px){
+  .route-intro,.deferral-board{padding:22px 18px}
+  .route-intro h2{font-size:20px}
+  .route-list{grid-template-columns:1fr}
+}
+
+.held-routes{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:22px}
+.held-routes h2{font-size:16px;display:flex;align-items:center;gap:9px}
+.held-routes .count{background:var(--soft);padding:0 7px;border-radius:4px;font-size:11px}
+.held-routes>.subtle{margin-top:5px}
+.held-route-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:16px}
+.held-route{border:1px solid var(--line);border-radius:11px;padding:15px 16px;background:#fbfcf9}
+.held-route>span{font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.held-route h3{font-size:14px;margin:5px 0 8px}
+.held-route p{font-size:11px;color:var(--muted);line-height:1.8}
+.held-route .place-actions{margin-top:12px}

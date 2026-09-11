@@ -1,0 +1,1044 @@
+{
+  "version": 1,
+  "concepts": [
+    {
+      "id": "biology",
+      "label": "生き物の世界",
+      "kind": "field",
+      "summary": "海だけでなく、森・川・身近な場所の生き物にも目を向ける。",
+      "domains": [
+        "ecology"
+      ],
+      "broader": [],
+      "related": [
+        "fieldwork",
+        "marine-life",
+        "forest-life",
+        "freshwater-life"
+      ]
+    },
+    {
+      "id": "fieldwork",
+      "label": "外に出て観察する",
+      "kind": "activity",
+      "summary": "生き物や環境を現地で観察し、写真や記録から違いを探す。",
+      "domains": [
+        "ecology",
+        "environment"
+      ],
+      "broader": [],
+      "related": [
+        "marine-life",
+        "forest-life",
+        "freshwater-life"
+      ]
+    },
+    {
+      "id": "marine-life",
+      "label": "海の生き物",
+      "kind": "subject",
+      "summary": "海辺や海の中の生き物と、すんでいる環境を知る。",
+      "domains": [
+        "ecology",
+        "environment"
+      ],
+      "broader": [
+        "biology"
+      ],
+      "related": [
+        "fieldwork",
+        "freshwater-life"
+      ]
+    },
+    {
+      "id": "forest-life",
+      "label": "森・里山の生き物",
+      "kind": "subject",
+      "summary": "植物・昆虫・鳥など、陸の生き物のつながりに目を向ける。",
+      "domains": [
+        "ecology",
+        "environment"
+      ],
+      "broader": [
+        "biology"
+      ],
+      "related": [
+        "fieldwork",
+        "freshwater-life"
+      ]
+    },
+    {
+      "id": "freshwater-life",
+      "label": "川・池の生き物",
+      "kind": "subject",
+      "summary": "身近な水辺で、生き物と水の環境の関係を知る。",
+      "domains": [
+        "ecology",
+        "environment"
+      ],
+      "broader": [
+        "biology"
+      ],
+      "related": [
+        "fieldwork",
+        "marine-life"
+      ]
+    }
+  ],
+  "topics": {
+    "games": {
+      "label": "ゲーム",
+      "root": "ゲームが好き",
+      "ids": [
+        "information",
+        "media",
+        "design"
+      ],
+      "title": "「ゲームが好き」の、その先。",
+      "keywords": [
+        "ゲーム",
+        "げーむ",
+        "マイクラ",
+        "マインクラフト",
+        "scratch",
+        "スクラッチ",
+        "プログラミング"
+      ],
+      "questions": {
+        "information": "自分で動く仕組みを作る",
+        "media": "物語や世界観を作る",
+        "design": "遊びやすさを考える"
+      }
+    },
+    "cooking": {
+      "label": "料理・食べもの",
+      "root": "料理が好き",
+      "ids": [
+        "food",
+        "ecology",
+        "design"
+      ],
+      "title": "「おいしい」の、その先。",
+      "keywords": [
+        "料理",
+        "りょうり",
+        "食べ物",
+        "食べもの",
+        "お菓子",
+        "パン",
+        "発酵",
+        "食品",
+        "食材"
+      ],
+      "questions": {
+        "food": "食材が変わる理由を知る",
+        "ecology": "微生物の働きを知る",
+        "design": "食べる体験を考える"
+      }
+    },
+    "music": {
+      "label": "ギター・音楽",
+      "root": "音楽が好き",
+      "ids": [
+        "sound",
+        "information",
+        "design"
+      ],
+      "title": "「好きな音」の、その先。",
+      "keywords": [
+        "ギター",
+        "ぎたー",
+        "音楽",
+        "おんがく",
+        "バンド",
+        "作曲",
+        "楽器",
+        "音響"
+      ],
+      "questions": {
+        "sound": "音色や響きを知る",
+        "information": "音をデータで扱う",
+        "design": "楽器の形を考える"
+      }
+    }
+  },
+  "directions": {
+    "music": [
+      {
+        "id": "together",
+        "icon": "♫",
+        "title": "一緒に演奏する",
+        "description": "人と音を合わせる楽しさ。人数や発表の仕方でも変わる。",
+        "domains": [
+          "sound",
+          "media"
+        ],
+        "activities": [
+          {
+            "id": "music-together-0",
+            "title": "友達と一曲",
+            "description": "二人でコードとメロディーを分担する。",
+            "label": "身近な人と"
+          },
+          {
+            "id": "music-together-1",
+            "title": "バンドを組む",
+            "description": "好きな曲を持ち寄り、役割や練習方法を相談する。",
+            "label": "チームで"
+          },
+          {
+            "id": "music-together-2",
+            "title": "映像で共演する",
+            "description": "別々に録った音や映像を重ねて、一つの作品にする。",
+            "label": "離れた場所から"
+          }
+        ]
+      },
+      {
+        "id": "grow",
+        "icon": "↗",
+        "title": "上達する",
+        "description": "速く弾くことだけが上達ではない。自分の「こう弾きたい」を探そう。",
+        "domains": [
+          "sound"
+        ],
+        "activities": [
+          {
+            "id": "music-grow-0",
+            "title": "一曲を弾き切る",
+            "description": "好きな曲の短い部分を選び、昨日の録音と聴き比べる。",
+            "label": "自分のペースで"
+          },
+          {
+            "id": "music-grow-1",
+            "title": "耳で音を探す",
+            "description": "短いメロディーを聴き、楽器で同じ音を探す。",
+            "label": "聴く力から"
+          },
+          {
+            "id": "music-grow-2",
+            "title": "人に聴いてもらう",
+            "description": "弾いた録音を信頼できる人に聴いてもらい、伝わり方を聞く。",
+            "label": "対話しながら"
+          }
+        ]
+      },
+      {
+        "id": "cross",
+        "icon": "✦",
+        "title": "音楽と異分野",
+        "description": "弾く人から、音を作る人・届ける人へ。",
+        "domains": [
+          "sound",
+          "information",
+          "design",
+          "media"
+        ],
+        "activities": [
+          {
+            "id": "music-cross-0",
+            "title": "音楽 × ゲーム",
+            "description": "同じ場面に違う音を合わせ、印象の変化を比べる。",
+            "label": "表現をつくる"
+          },
+          {
+            "id": "music-cross-1",
+            "title": "音楽 × ものづくり",
+            "description": "弦や箱の形と音の違いを調べ、楽器の仕組みを図にする。",
+            "label": "仕組みを知る"
+          },
+          {
+            "id": "music-cross-2",
+            "title": "音楽 × 場づくり",
+            "description": "小さな演奏会を想像し、曲順・照明・客席を考える。",
+            "label": "体験を届ける"
+          }
+        ]
+      }
+    ],
+    "games": [
+      {
+        "id": "together",
+        "icon": "◉",
+        "title": "誰かと楽しむ",
+        "description": "遊び方や場づくりにも、自分らしさがある。",
+        "domains": [
+          "media",
+          "design"
+        ],
+        "activities": [
+          {
+            "id": "games-together-0",
+            "title": "友達と遊ぶ会",
+            "description": "みんなが参加しやすいルールを考える。",
+            "label": "身近な人と"
+          },
+          {
+            "id": "games-together-1",
+            "title": "遊び方を伝える",
+            "description": "初心者向けに短い攻略や説明を作る。",
+            "label": "人に伝える"
+          },
+          {
+            "id": "games-together-2",
+            "title": "大会を企画する",
+            "description": "参加条件や時間割を考え、小さな企画にする。",
+            "label": "場をつくる"
+          }
+        ]
+      },
+      {
+        "id": "make",
+        "icon": "✎",
+        "title": "自分でつくる",
+        "description": "仕組み・物語・見た目。作りたい部分から入れる。",
+        "domains": [
+          "information",
+          "media",
+          "design"
+        ],
+        "activities": [
+          {
+            "id": "games-make-0",
+            "title": "動きを作る",
+            "description": "ボタンを押すと動く、小さな仕掛けを作る。",
+            "label": "仕組みから"
+          },
+          {
+            "id": "games-make-1",
+            "title": "世界観を描く",
+            "description": "主人公と舞台を一枚にまとめる。",
+            "label": "物語から"
+          },
+          {
+            "id": "games-make-2",
+            "title": "遊んでもらう",
+            "description": "作ったものを人に試してもらい、一つ直す。",
+            "label": "人の反応から"
+          }
+        ]
+      },
+      {
+        "id": "cross",
+        "icon": "✦",
+        "title": "ゲームと異分野",
+        "description": "遊ぶ経験が、別の問いにつながる。",
+        "domains": [
+          "information",
+          "sound",
+          "design"
+        ],
+        "activities": [
+          {
+            "id": "games-cross-0",
+            "title": "ゲーム × 音楽",
+            "description": "効果音を変えて、操作の印象を比べる。",
+            "label": "音から"
+          },
+          {
+            "id": "games-cross-1",
+            "title": "ゲーム × 学び",
+            "description": "覚えたいことを遊びのルールに変える。",
+            "label": "学びから"
+          },
+          {
+            "id": "games-cross-2",
+            "title": "ゲーム × デザイン",
+            "description": "文字や色の違いで遊びやすさが変わるか考える。",
+            "label": "使いやすさから"
+          }
+        ]
+      }
+    ],
+    "cooking": [
+      {
+        "id": "share",
+        "icon": "♡",
+        "title": "誰かに作る",
+        "description": "食べる相手や場面から料理を考える。",
+        "domains": [
+          "food",
+          "design"
+        ],
+        "activities": [
+          {
+            "id": "cooking-share-0",
+            "title": "家族の一皿",
+            "description": "好きな味を聞いて、献立を考える。",
+            "label": "身近な人に"
+          },
+          {
+            "id": "cooking-share-1",
+            "title": "持ち寄りを企画",
+            "description": "分担や予算を決める。アレルギーも先に確認する。",
+            "label": "みんなで"
+          },
+          {
+            "id": "cooking-share-2",
+            "title": "レシピを伝える",
+            "description": "作り方を写真や図でわかりやすくまとめる。",
+            "label": "知らない人にも"
+          }
+        ]
+      },
+      {
+        "id": "grow",
+        "icon": "↗",
+        "title": "味を探究する",
+        "description": "手順・材料・感覚の違いに目を向ける。",
+        "domains": [
+          "food"
+        ],
+        "activities": [
+          {
+            "id": "cooking-grow-0",
+            "title": "味を言葉にする",
+            "description": "同じ食品の味や香りを比べて記録する。",
+            "label": "感じる"
+          },
+          {
+            "id": "cooking-grow-1",
+            "title": "レシピを比べる",
+            "description": "同じ料理の材料や手順の違いを探す。",
+            "label": "調べる"
+          },
+          {
+            "id": "cooking-grow-2",
+            "title": "自分の一皿を考える",
+            "description": "比較で気づいたことを、次の献立に生かす。",
+            "label": "工夫する"
+          }
+        ]
+      },
+      {
+        "id": "cross",
+        "icon": "✦",
+        "title": "食と異分野",
+        "description": "一皿から、生き物や地域にもつながる。",
+        "domains": [
+          "food",
+          "ecology",
+          "environment"
+        ],
+        "activities": [
+          {
+            "id": "cooking-cross-0",
+            "title": "食 × 生物",
+            "description": "発酵食品を調べ、微生物の役割を知る。",
+            "label": "科学から"
+          },
+          {
+            "id": "cooking-cross-1",
+            "title": "食 × 地域",
+            "description": "郷土料理と土地のつながりを調べる。",
+            "label": "文化から"
+          },
+          {
+            "id": "cooking-cross-2",
+            "title": "食 × 環境",
+            "description": "冷蔵庫の食材を使い切る献立を考える。",
+            "label": "暮らしから"
+          }
+        ]
+      }
+    ],
+    "sea": [
+      {
+        "id": "observe",
+        "icon": "◎",
+        "title": "生き物を知る",
+        "description": "見つける・比べる・伝える楽しさ。",
+        "domains": [
+          "ecology"
+        ],
+        "activities": [
+          {
+            "id": "sea-observe-0",
+            "title": "写真から観察",
+            "description": "生き物の写真を見て、形の違いを探す。",
+            "label": "家から"
+          },
+          {
+            "id": "sea-observe-1",
+            "title": "水族館で比べる",
+            "description": "同じ水槽の生き物の動きを見比べる。",
+            "label": "現地で"
+          },
+          {
+            "id": "sea-observe-2",
+            "title": "観察をまとめる",
+            "description": "気づいた違いを、自分の図鑑にする。",
+            "label": "伝える"
+          }
+        ]
+      },
+      {
+        "id": "protect",
+        "icon": "♡",
+        "title": "海と暮らしを考える",
+        "description": "遠い環境問題を、身近な問いに変える。",
+        "domains": [
+          "environment",
+          "ecology"
+        ],
+        "activities": [
+          {
+            "id": "sea-protect-0",
+            "title": "ごみの行方",
+            "description": "身近なごみが水辺に届く経路を調べる。",
+            "label": "暮らしから"
+          },
+          {
+            "id": "sea-protect-1",
+            "title": "地域の活動を知る",
+            "description": "海岸清掃などの活動内容と参加条件を調べる。",
+            "label": "地域から"
+          },
+          {
+            "id": "sea-protect-2",
+            "title": "伝え方を考える",
+            "description": "調べたことを一枚のポスターにする。",
+            "label": "表現から"
+          }
+        ]
+      },
+      {
+        "id": "cross",
+        "icon": "✦",
+        "title": "海と異分野",
+        "description": "食・機械・データからも海に近づける。",
+        "domains": [
+          "engineering",
+          "food",
+          "information"
+        ],
+        "activities": [
+          {
+            "id": "sea-cross-0",
+            "title": "海 × 食",
+            "description": "食卓の魚の産地と流通を調べる。",
+            "label": "食から"
+          },
+          {
+            "id": "sea-cross-1",
+            "title": "海 × 技術",
+            "description": "水中ロボットは何を調べるのか探す。",
+            "label": "ものづくりから"
+          },
+          {
+            "id": "sea-cross-2",
+            "title": "海 × データ",
+            "description": "海の温度や生物の記録を、図にして眺める。",
+            "label": "情報から"
+          }
+        ]
+      }
+    ]
+  },
+  "resources": [
+    {
+      "domain": "ecology",
+      "domains": [
+        "ecology",
+        "environment",
+        "engineering"
+      ],
+      "group": "try",
+      "kind": "自宅・教材",
+      "type": "resource",
+      "name": "海の不思議を、ひとつ読む",
+      "summary": "写真やワークシートから、海の生き物と地球環境の関係に触れる。",
+      "url": "https://www.jamstec.go.jp/steam/",
+      "source": "JAMSTEC",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": true,
+      "free": true,
+      "conditions": [
+        [
+          "対象",
+          "小中学生向けの教材など。巻ごとに対象が異なります。"
+        ],
+        [
+          "費用",
+          "教材のダウンロードは無料"
+        ],
+        [
+          "場所",
+          "オンライン・家庭学習でも利用可"
+        ]
+      ],
+      "reason": "海の写真・観測・環境の問いを扱う教材。生き物と環境のつながりを、観察する視点で考えられます。",
+      "step": "教材の見出しから、気になる問いを1つ選ぶ。",
+      "id": "ocean-steam",
+      "conceptIds": [
+        "marine-life"
+      ],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "information",
+      "domains": [
+        "information",
+        "media",
+        "design"
+      ],
+      "group": "try",
+      "kind": "自宅・制作",
+      "type": "resource",
+      "name": "Scratchで小さな作品を作る",
+      "summary": "ブロックを組み合わせて、キャラクター・音・動きを作る。",
+      "url": "https://scratch.mit.edu/ideas",
+      "source": "Scratch Foundation",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": true,
+      "free": true,
+      "conditions": [
+        [
+          "費用",
+          "Scratchの利用は無料"
+        ],
+        [
+          "機器",
+          "制作にはPC・タブレット推奨"
+        ],
+        [
+          "公開",
+          "作品の公開・アカウント設定は外部サイトで確認"
+        ]
+      ],
+      "keywords": [
+        "ゲーム",
+        "スクラッチ",
+        "プログラミング"
+      ],
+      "reason": "プログラムの順番と、絵・音による表現を同時に試せます。遊びを作る入口にもなります。",
+      "step": "気になるチュートリアルを1つ開き、動きか音を1つ変えてみる。",
+      "id": "scratch-create",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "information",
+      "domains": [
+        "information",
+        "media"
+      ],
+      "group": "continue",
+      "kind": "学外・継続活動",
+      "type": "community",
+      "name": "近くのCoderDojoを探す",
+      "summary": "学校の外で、プログラミングや電子工作を主体的に学ぶ活動。",
+      "url": "https://coderdojo.jp/",
+      "source": "CoderDojo Japan",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "場所",
+          "全国の各道場。オンライン開催の有無も個別確認"
+        ],
+        [
+          "参加",
+          "対象年齢・持ち物・申込方法は各道場で確認"
+        ],
+        [
+          "費用",
+          "参加先の案内で確認。交通費・機器も考慮"
+        ]
+      ],
+      "keywords": [
+        "マイクラ",
+        "マインクラフト",
+        "ゲーム"
+      ],
+      "reason": "ScratchやWeb制作など、興味に合わせて取り組む地域の活動です。扱う内容は道場ごとに違います。",
+      "step": "近くの道場を1つ選び、開催案内を確認する。",
+      "id": "coderdojo",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "sound",
+      "domains": [
+        "sound",
+        "design"
+      ],
+      "group": "try",
+      "kind": "自宅・読みもの",
+      "type": "resource",
+      "name": "ギターの音色は、どこで変わる？",
+      "summary": "ピックアップやエフェクター、木材と楽器の仕組みを図から知る。",
+      "url": "https://www.yamaha.com/ja/musical_instrument_guide/electric_guitar/",
+      "source": "ヤマハ 楽器解体全書",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": true,
+      "free": true,
+      "conditions": [
+        [
+          "形式",
+          "Web記事。読むだけでも利用できます"
+        ],
+        [
+          "費用",
+          "記事の閲覧は無料"
+        ],
+        [
+          "内容",
+          "仕組み・奏法・製作など。学問への接続は本アプリの編集です"
+        ]
+      ],
+      "reason": "音の仕組みと、楽器の形・材料を同じ対象から見られます。音響とデザインをつなぐ読みものです。",
+      "step": "「しくみ」から気になる見出しを選ぶ。楽器の購入は不要。",
+      "id": "guitar-anatomy",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "food",
+      "domains": [
+        "food",
+        "ecology"
+      ],
+      "group": "try",
+      "kind": "自宅・読みもの",
+      "type": "resource",
+      "name": "身近な調味料と「発酵」の不思議",
+      "summary": "味噌や醤油など、発酵食品を支える微生物の働きを知る。",
+      "url": "https://www.maff.go.jp/j/pr/aff/2211/spe1_01.html",
+      "source": "農林水産省",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": true,
+      "free": true,
+      "conditions": [
+        [
+          "形式",
+          "Web記事・2022年11月号"
+        ],
+        [
+          "費用",
+          "記事の閲覧は無料"
+        ],
+        [
+          "活動",
+          "読む・比べる提案です。発酵実験の手順ではありません"
+        ]
+      ],
+      "reason": "料理に使う食品を、微生物と成分の変化から見る入口です。好きな料理から科学の問いを見つけられます。",
+      "step": "家で使う調味料を1つ思い浮かべて、記事に登場するか探す。",
+      "id": "fermentation",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "ecology",
+      "domains": [
+        "ecology"
+      ],
+      "group": "study",
+      "kind": "高校・進学",
+      "type": "school",
+      "name": "大島海洋国際高校",
+      "summary": "海と関わる学校生活や、潜水部などの活動から高校を知る。",
+      "url": "https://www.metro.ed.jp/oosimakaiyokokusai-h/index.html",
+      "source": "東京都立大島海洋国際高等学校",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "地域",
+          "東京都・伊豆大島"
+        ],
+        [
+          "生活",
+          "寄宿舎・通学条件を学校案内で確認"
+        ],
+        [
+          "入学",
+          "応募資格・学費・選抜方法は最新の入試案内へ"
+        ]
+      ],
+      "child": "oshima-diving",
+      "reason": "海への興味を、授業だけでなく学校生活や部活動から考える入口。生態学を専門的に学べると保証するものではありません。",
+      "id": "oshima-school",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "ecology",
+      "domains": [
+        "ecology"
+      ],
+      "group": "continue",
+      "kind": "校内・部活動",
+      "type": "club",
+      "name": "大島海洋国際高校の潜水部",
+      "summary": "器材の扱いや浮力コントロールなど、活動報告から海との関わりを知る。",
+      "url": "https://www.metro.ed.jp/oosimakaiyokokusai-h/activities/2026/08/29_3.html",
+      "source": "東京都立大島海洋国際高等学校",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "所属",
+          "同校の部活動。在校生の活動報告"
+        ],
+        [
+          "内容",
+          "2026年8月の大会報告"
+        ],
+        [
+          "参加",
+          "活動日・入部条件・費用は学校へ確認"
+        ]
+      ],
+      "host": "oshima-school",
+      "reason": "海への関心を実技の面から広げる活動例です。生物調査そのものを行うという意味ではありません。",
+      "id": "oshima-diving",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "ecology",
+      "domains": [
+        "ecology"
+      ],
+      "group": "try",
+      "kind": "イベント",
+      "type": "event",
+      "name": "学校説明会・部活動体験（大島）",
+      "summary": "学校説明会と体験入部。午前・午後の片方のみの参加も案内されています。",
+      "url": "https://www.metro.ed.jp/oosimakaiyokokusai-h/news/2026/08/6_7_27_1_1_1_1_1.html",
+      "source": "東京都立大島海洋国際高等学校",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "日程",
+          "2026年10月24日（土）"
+        ],
+        [
+          "場所",
+          "東京都・伊豆大島"
+        ],
+        [
+          "参加",
+          "対象・定員・締切は実施要項と申込ページで確認"
+        ],
+        [
+          "手続",
+          "同意書への同意が必要。交通・宿泊費なども確認"
+        ]
+      ],
+      "host": "oshima-school",
+      "date": "2026-10-24",
+      "reason": "実際の学校や活動を見て、続けたいか確かめる入口。体験参加と入学資格は別です。",
+      "id": "oshima-visit",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "food",
+      "domains": [
+        "food",
+        "ecology"
+      ],
+      "group": "study",
+      "kind": "大学・進学",
+      "type": "university",
+      "name": "東京海洋大学 海洋生命科学部",
+      "summary": "海洋生物資源・食品生産・海洋政策文化という複数の切り口を知る。",
+      "url": "https://www.kaiyodai.ac.jp/faculty/s/",
+      "source": "東京海洋大学",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "地域",
+          "東京都・品川キャンパス"
+        ],
+        [
+          "内容",
+          "学部・学科紹介。進学先の一例"
+        ],
+        [
+          "入学",
+          "科目・費用・出願条件は最新の入試案内へ"
+        ]
+      ],
+      "reason": "海洋生物と食品を同じ学部の中で扱います。料理が好きという入口から、食品を研究する進路にもつながります。",
+      "id": "kaiyo-life",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "engineering",
+      "domains": [
+        "engineering"
+      ],
+      "group": "study",
+      "kind": "大学・進学",
+      "type": "university",
+      "name": "東京海洋大学 海洋工学部",
+      "summary": "船舶・電子機械・流通情報など、海の技術を扱う学科を知る。",
+      "url": "https://www.kaiyodai.ac.jp/faculty/e/",
+      "source": "東京海洋大学",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "地域",
+          "東京都・越中島キャンパス"
+        ],
+        [
+          "内容",
+          "学部・学科紹介"
+        ],
+        [
+          "入学",
+          "科目・費用・出願条件は最新の入試案内へ"
+        ]
+      ],
+      "reason": "海で使う機械だけでなく、情報や物流という仕組みにも目を向ける進路です。",
+      "id": "kaiyo-engineering",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "environment",
+      "domains": [
+        "environment"
+      ],
+      "group": "study",
+      "kind": "大学・進学",
+      "type": "university",
+      "name": "東京海洋大学 海洋資源環境学部",
+      "summary": "海洋環境と資源・エネルギーの観点から学びを知る。",
+      "url": "https://www.kaiyodai.ac.jp/faculty/r/",
+      "source": "東京海洋大学",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "地域",
+          "東京都・品川キャンパス"
+        ],
+        [
+          "内容",
+          "学部・学科紹介"
+        ],
+        [
+          "入学",
+          "科目・費用・出願条件は最新の入試案内へ"
+        ]
+      ],
+      "reason": "環境を理解する学びと、資源をどう扱うかという問いを比較できます。",
+      "id": "kaiyo-environment",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "media",
+      "domains": [
+        "media",
+        "information",
+        "design"
+      ],
+      "group": "study",
+      "kind": "大学・進学",
+      "type": "university",
+      "name": "立命館大学 映像学部",
+      "summary": "映画・ゲーム・技術・マネジメントなど、映像をめぐる学びを知る。",
+      "url": "https://admission.ritsumei.ac.jp/faculty/cias.html",
+      "source": "立命館大学",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "地域",
+          "大阪府・大阪いばらきキャンパス"
+        ],
+        [
+          "内容",
+          "学部の5つの学びのゾーンを紹介"
+        ],
+        [
+          "入学",
+          "科目・費用・出願条件は最新の入試案内へ"
+        ]
+      ],
+      "reason": "ゲームはプログラミングだけではありません。作品表現や社会との関わりも含む学びを比較できます。",
+      "id": "ritsumeikan-media",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    },
+    {
+      "domain": "sound",
+      "domains": [
+        "sound",
+        "design"
+      ],
+      "group": "study",
+      "kind": "大学・進学",
+      "type": "university",
+      "name": "九州大学 芸術工学部 音響設計コース",
+      "summary": "音文化・音響環境・音響情報を横断して学ぶコース。",
+      "url": "https://www.design.kyushu-u.ac.jp/schools/ad/",
+      "source": "九州大学",
+      "checkedOn": "2026-09-11",
+      "example": false,
+      "online": false,
+      "free": false,
+      "conditions": [
+        [
+          "地域",
+          "福岡県"
+        ],
+        [
+          "内容",
+          "コースのカリキュラムと学ぶ分野"
+        ],
+        [
+          "入学",
+          "科目・費用・出願条件は最新の入試案内へ"
+        ]
+      ],
+      "reason": "音楽への興味を、文化だけでなく物理や聴覚、情報の視点からも深められます。",
+      "id": "kyushu-sound",
+      "conceptIds": [],
+      "reviewStatus": "published",
+      "reviewAfter": null
+    }
+  ]
+}
