@@ -1,5 +1,6 @@
 import {validateStances, validateGrade} from './timeline.mjs';
 import {validateLog} from './log.mjs';
+import {validatePlacements} from './field.mjs';
 
 export const STORAGE_KEY = 'shimboku.hub.v2';
 // Build 18 までの保存形式。読み替えずに残す。黙って捨てたり上書きしたりしない。
@@ -7,7 +8,7 @@ export const LEGACY_KEY = 'shimboku.workspace.v1';
 export const MARK_LIMIT = 200;
 
 export function emptyState() {
-  return {grade: null, stances: {}, log: [], marks: [], heldRoutes: [], verb: null, expanded: false};
+  return {grade: null, stances: {}, log: [], placements: [], marks: [], heldRoutes: [], verb: null, expanded: false};
 }
 
 export function encodeState(state) {
@@ -16,6 +17,7 @@ export function encodeState(state) {
     grade: state.grade ?? null,
     stances: state.stances,
     log: state.log,
+    placements: state.placements,
     marks: [...state.marks],
     heldRoutes: [...state.heldRoutes],
     verb: state.verb ?? null,
@@ -38,10 +40,12 @@ export function decodeState(raw, catalog) {
   if (!heldRoutes.every(id => typeof id === 'string' && catalog.routes.has(id))) throw new Error('Unknown route');
   const verb = data.verb ?? null;
   if (verb !== null && !catalog.verbs.has(verb)) throw new Error('Unknown verb');
+  const placements = validatePlacements(data.placements, catalog);
   return {
     grade: validateGrade(data.grade),
     stances: validateStances(data.stances),
-    log: validateLog(data.log, {verbIds: catalog.verbs, activityIds: catalog.activities}),
+    placements,
+    log: validateLog(data.log, {verbIds: catalog.verbs, activityIds: catalog.activities, placementIds: new Set(placements.map(item => item.id))}),
     marks: [...new Set(marks)],
     heldRoutes: [...new Set(heldRoutes)],
     verb,

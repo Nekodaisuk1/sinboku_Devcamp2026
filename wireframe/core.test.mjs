@@ -302,3 +302,127 @@ test('a collapsed ladder still shows the next decision, whatever the grade', () 
     assert.ok(visible.includes(nextDecision(timeline)), `${grade} hides the nearest rung`);
   }
 });
+
+/* --- Build 20: 時間の野原 --- */
+
+import {LANES, LANE_IDS, layout, laneAt, revealWorld, convergences, reachOf, routePath, validatePlacements, packLane, freeX, PLACEMENT_LIMIT} from './field.mjs';
+
+const put = (id, ref, x, lane = 'now', kind = 'topic') => ({id, lane, x, label: id, kind, ref, verb: null, note: ''});
+
+test('the field places time on the vertical axis only, from the future down to today', () => {
+  const view = layout({placements: [put('a', 'games', 0.3)], width: 360});
+  assert.deepEqual(view.lanes.map(lane => lane.id), LANE_IDS);
+  assert.deepEqual(LANE_IDS.at(-1), 'now', 'today is the bottom of the field');
+  // 段は上から下へ積まれ、重ならない。
+  for (let index = 1; index < view.lanes.length; index += 1) {
+    assert.equal(view.lanes[index].top, view.lanes[index - 1].top + view.lanes[index - 1].height);
+  }
+  assert.equal(view.height, view.lanes.at(-1).top + view.lanes.at(-1).height);
+});
+
+test('the horizontal position is the user\'s own and is never rewritten by layout', () => {
+  const placements = [put('a', 'games', 0.1), put('b', 'sea', 0.9)];
+  const view = layout({placements, width: 400});
+  const a = view.byId.get('a');
+  const b = view.byId.get('b');
+  assert.ok(a.left < b.left, 'the order the user chose is kept');
+  assert.equal(a.row, 0);
+  assert.equal(b.row, 0, 'two nodes far apart share one row');
+  // 位置は保存された x のまま。並べ直しはしない。
+  assert.deepEqual(placements.map(placement => placement.x), [0.1, 0.9]);
+});
+
+test('overlapping nodes fall to a new row instead of being moved sideways', () => {
+  const nodes = Array.from({length: 4}, (_, index) => ({id: `n${index}`, label: 'おなじくらいの長さのラベル', x: 0.5}));
+  const packed = packLane(nodes, 360);
+  assert.equal(packed.rows, 4, 'four nodes at the same spot need four rows');
+  assert.deepEqual([...new Set(packed.nodes.map(node => node.left))].length, 1, 'their horizontal position is unchanged');
+});
+
+test('an empty field reveals nothing; the world appears only from what the user places', () => {
+  const empty = revealWorld([]);
+  assert.deepEqual(empty.domains, []);
+  assert.deepEqual(empty.links, []);
+  const one = revealWorld([put('a', 'games', 0.5)]);
+  assert.ok(one.domains.length >= 2, 'placing one interest reveals the fields it reaches');
+  assert.ok(one.domains.every(domain => !domain.converged), 'one interest alone is never a convergence');
+  assert.equal(one.links.length, one.domains.length);
+});
+
+test('two different interests reaching one field is a convergence, and it sits between them', () => {
+  const placements = [put('a', 'sea', 0.2), put('b', 'cooking', 0.8)];
+  const found = convergences(placements);
+  assert.ok(found.length >= 1, 'the sea and cooking share at least one field');
+  const shared = revealWorld(placements).domains.find(domain => domain.converged);
+  assert.equal(shared.x, 0.5, 'the shared field is drawn halfway between the two');
+  assert.deepEqual(found[0].labels.length, 2);
+});
+
+test('placing the same interest twice is not a convergence', () => {
+  const twice = revealWorld([put('a', 'games', 0.2), put('b', 'games', 0.8)]);
+  assert.ok(twice.domains.length >= 2);
+  assert.ok(twice.domains.every(domain => !domain.converged), 'one interest placed twice must not look like agreement');
+});
+
+test('a written entry connects only once the user says how they are involved', () => {
+  const written = {...put('a', null, 0.5, 'now', 'custom'), ref: null};
+  assert.deepEqual(reachOf(written), [], 'nothing is inferred from free text');
+  assert.ok(reachOf({...written, verb: verbs[0].id}).length >= 2, 'choosing a verb is what draws the line');
+});
+
+test('a route is drawn one at a time, through the middle lanes, down from its field', () => {
+  const path = routePath('media', 'kosen', 0.4);
+  assert.deepEqual(path.nodes.map(node => node.lane), ['faculty', 'course', 'highschool']);
+  assert.ok(path.nodes.every(node => node.x === 0.4), 'the drawn route hangs below its field');
+  assert.equal(path.links[0].to, 'domain-media', 'the route starts at the field it leads to');
+  assert.deepEqual(routePath('media', 'nosuchkind', 0.5).nodes, []);
+  assert.deepEqual(routePath('nosuchdomain', 'kosen', 0.5).nodes, []);
+});
+
+test('dropping a node reads its lane from the vertical position, and never leaves the field', () => {
+  const view = layout({placements: [put('a', 'games', 0.5)], width: 360});
+  assert.equal(laneAt(view.lanes[0].top + 1, view.lanes), 'lab');
+  assert.equal(laneAt(view.lanes.at(-1).top + 1, view.lanes), 'now');
+  assert.equal(laneAt(-500, view.lanes), 'lab', 'above the field is the furthest future');
+  assert.equal(laneAt(99999, view.lanes), 'now', 'below the field is today');
+});
+
+test('placements survive saving and reject unknown lanes, references and positions', () => {
+  const activity = allActivities()[0];
+  const resource = [...catalog.resources][0];
+  const placements = [
+    put('a', 'games', 0.25),
+    {id: 'b', lane: 'highschool', x: 1, label: activity.title, kind: 'activity', ref: activity.id, verb: null, note: ''},
+    {id: 'c', lane: 'lab', x: 0, label: resources[resource].name, kind: 'resource', ref: resource, verb: verbs[0].id, note: 'メモ'}
+  ];
+  const state = {...emptyState(), placements};
+  assert.deepEqual(decodeState(encodeState(state), catalog).placements, placements);
+  const broken = change => () => validatePlacements([{...placements[0], ...change}], catalog);
+  assert.throws(broken({lane: 'someday'}), /Unknown lane/);
+  assert.throws(broken({x: 1.5}), /position/);
+  assert.throws(broken({ref: 'nosuchtopic'}), /Unknown interest/);
+  assert.throws(broken({kind: 'custom'}), /no catalog reference/);
+  assert.throws(broken({label: ''}), /label/);
+  assert.throws(() => validatePlacements([placements[0], placements[0]], catalog), /placement id/);
+  assert.throws(() => validatePlacements(new Array(PLACEMENT_LIMIT + 1).fill(placements[0]), catalog), /Invalid placements/);
+});
+
+test('a record keeps pointing at its placement, and survives the placement being removed', () => {
+  const placements = [put('a', 'games', 0.5)];
+  const log = addEntry([], {text: '30分さわった', placement: 'a', id: 'r1'});
+  const restored = decodeState(encodeState({...emptyState(), placements, log}), catalog);
+  assert.equal(restored.log[0].placement, 'a');
+  // 置きものを外したら紐づけだけ切れる。記録そのものは消えない。
+  const orphan = restored.log.map(entry => ({...entry, placement: null}));
+  const after = decodeState(encodeState({...emptyState(), placements: [], log: orphan}), catalog);
+  assert.equal(after.log.length, 1);
+  assert.equal(after.log[0].placement, null);
+  assert.throws(() => decodeState(encodeState({...emptyState(), placements: [], log}), catalog), /Unknown placement/);
+});
+
+test('a new placement lands where the lane is least crowded', () => {
+  assert.equal(freeX([], 'now'), 0.5, 'the first one goes to the middle');
+  const busy = [put('a', 'games', 0.5)];
+  assert.notEqual(freeX(busy, 'now'), 0.5);
+  assert.equal(freeX(busy, 'lab'), 0.5, 'another lane is still empty');
+});

@@ -9,7 +9,7 @@ export function today(date = new Date()) {
   return new Intl.DateTimeFormat('sv-SE', {timeZone: 'Asia/Tokyo'}).format(date);
 }
 
-export function validateEntry(entry, {verbIds, activityIds}) {
+export function validateEntry(entry, {verbIds, activityIds, placementIds = null}) {
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new Error('Invalid record');
   if (typeof entry.id !== 'string' || !/^[a-z0-9-]{1,40}$/.test(entry.id)) throw new Error('Invalid record id');
   if (!DATE.test(entry.date) || new Date(entry.date).toISOString().slice(0, 10) !== entry.date) throw new Error('Invalid record date');
@@ -19,7 +19,10 @@ export function validateEntry(entry, {verbIds, activityIds}) {
   // 活動アイデアから作った記録は出どころを残す。あとで本人が書き換えても、元がどれかは消さない。
   const activity = entry.activity ?? null;
   if (activity !== null && !activityIds.has(activity)) throw new Error('Unknown activity on record');
-  return {id: entry.id, date: entry.date, text: entry.text.trim(), verb, activity};
+  // 野原の置きものに紐づく記録。置きものを外しても記録は消さず、紐づけだけ切る。
+  const placement = entry.placement ?? null;
+  if (placement !== null && placementIds && !placementIds.has(placement)) throw new Error('Unknown placement on record');
+  return {id: entry.id, date: entry.date, text: entry.text.trim(), verb, activity, placement};
 }
 
 export function validateLog(value, context) {
@@ -35,9 +38,9 @@ export function sortLog(entries) {
   return [...entries].sort((a, b) => a.date === b.date ? 0 : a.date < b.date ? 1 : -1);
 }
 
-export function addEntry(entries, {text, verb = null, activity = null, date = today(), id = newId()}) {
+export function addEntry(entries, {text, verb = null, activity = null, placement = null, date = today(), id = newId()}) {
   if (entries.length >= LOG_LIMIT) throw new Error(`記録は${LOG_LIMIT}件までです。古いものを消してから足してください。`);
-  return sortLog([{id, date, text: String(text).trim().slice(0, LOG_TEXT_LIMIT), verb, activity}, ...entries]);
+  return sortLog([{id, date, text: String(text).trim().slice(0, LOG_TEXT_LIMIT), verb, activity, placement}, ...entries]);
 }
 
 export function removeEntry(entries, id) {
