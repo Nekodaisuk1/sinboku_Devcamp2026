@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test core.test.mjs family-api.test.mjs",
-    "check": "node scripts/knowledge.mjs --check && node --check knowledge-ui.mjs && node --check scripts/build.mjs && node --check app.js && node --check capture.mjs && node --check directions.mjs && node --check journey.mjs && node --check guide.mjs && node --check inquiry.mjs && node --check inquiry-ui.mjs && node --check studio.mjs && node --check routes.mjs && node --check routes-ui.mjs && node --check personal-map.mjs && node --check catalog.mjs && node --check geometry.mjs && node --check workspace.mjs && node --check server.mjs && node --check family-api.mjs && node --check family.js",
+    "test": "node --test core.test.mjs",
+    "check": "node scripts/knowledge.mjs --check && node --check app.js && node --check timeline.mjs && node --check verbs.mjs && node --check log.mjs && node --check store.mjs && node --check catalog.mjs && node --check routes.mjs && node --check routes-ui.mjs && node --check server.mjs && node --check scripts/build.mjs",
     "knowledge:check": "node scripts/knowledge.mjs --check",
     "knowledge:build": "node scripts/knowledge.mjs",
     "build": "node scripts/build.mjs"

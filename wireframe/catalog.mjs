@@ -1,30 +1,66 @@
 import knowledge from './knowledge-data.mjs';
+import {allActivities} from './verbs.mjs';
+
 export const CHECKED_ON = '2026-09-11';
-export const extraDomains = {
-  food: {name:'食品科学',question:'おいしさの仕組みを知りたい',summary:'食材が変わる仕組みや、食品を作り届ける方法を調べる。',example:'同じ牛乳から、チーズとヨーグルトができるのはなぜ？',method:'比べる · 実験する',tags:['食品','微生物','化学'],learning:'成分や微生物の働き、加工・保存の技術を学ぶ。料理の技術だけでなく、食品の仕組みを扱う。',related:'ecology',relation:'小さな生き物の働きを知る',reason:'発酵は微生物の働きを使います。食品科学は食品の変化に、生態学は生物と環境の関係に目を向けます。',opportunity:'食の仕組みを知る'},
-  sound: {name:'音響・音楽',question:'好きな音を探したい',summary:'音の生まれ方、聞こえ方、音楽としての表現を考える。',example:'同じフレーズでも、ギターの音色で印象が変わるのはなぜ？',method:'聴き比べる · 記録する',tags:['音楽','振動','聴覚'],learning:'音の物理的な性質と、人の感じ方、文化や表現を行き来する。演奏だけに限らない学び方がある。',related:'information',relation:'音をデータとして扱う',reason:'録音や音の加工には信号処理を使います。情報科学の方法を、音の記録や聞こえ方の分析に応用できます。',opportunity:'音の仕組みに触れる'},
-  media: {shortName:'映像・表現',name:'映像・ゲーム表現',question:'遊びや物語を作りたい',summary:'映像・ゲーム・物語で、どんな体験を届けるか考える。',example:'ゲームの説明を読まなくても、操作がわかるのはなぜ？',method:'作る · 遊んで確かめる',tags:['ゲーム','映像','物語'],learning:'映像や音、ルールの組み合わせが体験にどう影響するか、作品を作りながら考える。',related:'design',relation:'体験を設計する',reason:'ゲーム表現とデザインは、使う人・遊ぶ人の視点を重視する点で重なります。表現する内容と使いやすさは別の問いにもなります。',opportunity:'小さな作品を作る'}
-};
-export const extraTopics = knowledge.topics;
-export const extraNeighbors = {
-  food:[['ecology','発酵を支える微生物'],['environment','食と資源の使い方']],
-  sound:[['information','音を記録・加工する'],['design','音のある体験を作る']],
-  media:[['design','遊ぶ人の視点を重ねる'],['sound','音で世界観を伝える']]
-};
-export const liveOpportunities = knowledge.resources;
 
 export function normalizeQuery(value) {
-  return value.normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, char=>String.fromCharCode(char.charCodeAt(0)-0x60)).trim();
+  return value.normalize('NFKC').toLowerCase()
+    .replace(/[ァ-ヶ]/g, char => String.fromCharCode(char.charCodeAt(0) - 0x60))
+    .trim();
 }
 
-export function searchCatalog(query, topics, domains, resources, filter='all') {
-  const terms=normalizeQuery(query).split(/\s+/).filter(Boolean);
-  const entries=[...Object.entries(topics).map(([id,value])=>({id,type:'topic',name:value.label,summary:value.root,text:[value.label,...(value.keywords||[])]})),...Object.entries(domains).map(([id,value])=>({id,type:'domain',name:value.name,summary:value.summary,text:[value.name,value.summary,...value.tags]})),...Object.entries(resources).filter(([,value])=>!value.example).map(([id,value])=>({id,type:'resource',name:value.name,summary:value.summary,text:[value.name,value.summary,value.reason,value.kind,...(value.keywords||[]),...value.domains.map(id=>domains[id].name)],resource:value}))];
-  return entries.filter(entry=>{
-    if(filter==='home' && !(entry.resource?.online && entry.resource?.free)) return false;
-    if(filter==='study' && entry.resource?.group!=='study') return false;
-    if(filter==='activity' && !['continue','try'].includes(entry.resource?.group)) return false;
-    const text=normalizeQuery(entry.text.join(' '));
-    return terms.every(term=>text.includes(term));
-  }).map(entry=>({...entry,score:terms.reduce((score,term)=>score+(normalizeQuery(entry.name).includes(term)?2:1),0)})).sort((a,b)=>b.score-a.score);
+function entries() {
+  const {domains, topics, resources, verbs} = knowledge;
+  return [
+    ...verbs.map(verb => ({
+      id: verb.id, type: 'verb', name: verb.label, summary: verb.summary,
+      text: [verb.label, verb.summary, verb.detail]
+    })),
+    ...Object.entries(topics).map(([id, topic]) => ({
+      id, type: 'topic', name: topic.label, summary: topic.root,
+      text: [topic.label, topic.root, ...(topic.keywords || [])]
+    })),
+    ...allActivities().map(activity => ({
+      id: activity.id, type: 'activity', name: activity.title, summary: activity.description,
+      activity, text: [activity.title, activity.description, activity.label, topics[activity.topic]?.label || '']
+    })),
+    ...Object.entries(domains).map(([id, domain]) => ({
+      id, type: 'domain', name: domain.name, summary: domain.summary,
+      text: [domain.name, domain.summary, domain.question, ...domain.tags]
+    })),
+    ...Object.entries(resources).map(([id, resource]) => ({
+      id, type: 'resource', name: resource.name, summary: resource.summary, resource,
+      text: [resource.name, resource.summary, resource.reason, resource.kind,
+             ...(resource.keywords || []),
+             ...resource.domains.map(key => domains[key].name)]
+    }))
+  ];
+}
+
+/**
+ * 掲載範囲のなかだけを検索する。該当がなければ0件と表示し、近い候補を捏造しない。
+ * filter: all | home（家で無料でできる）| activity（やってみる）| study（学校・大学）
+ */
+export function searchCatalog(query, filter = 'all') {
+  const terms = normalizeQuery(query).split(/\s+/).filter(Boolean);
+  return entries().filter(entry => {
+    if (filter === 'home' && !(entry.activity?.athome || (entry.resource?.online && entry.resource?.free))) return false;
+    if (filter === 'activity' && !(entry.activity || ['try', 'continue'].includes(entry.resource?.group))) return false;
+    if (filter === 'study' && entry.resource?.group !== 'study') return false;
+    if (!terms.length) return true;
+    const text = normalizeQuery(entry.text.join(' '));
+    return terms.every(term => text.includes(term));
+  }).map(entry => ({
+    ...entry,
+    score: terms.reduce((score, term) => score + (normalizeQuery(entry.name).includes(term) ? 2 : 1), 0)
+  })).sort((a, b) => b.score - a.score);
+}
+
+export function catalogIds() {
+  return {
+    resources: new Set(Object.keys(knowledge.resources)),
+    verbs: new Set(knowledge.verbs.map(verb => verb.id)),
+    activities: new Set(allActivities().map(activity => activity.id)),
+    domains: new Set(Object.keys(knowledge.domains))
+  };
 }

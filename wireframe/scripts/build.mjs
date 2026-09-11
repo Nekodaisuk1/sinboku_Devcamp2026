@@ -16,7 +16,7 @@ async function include(name) {
 const html=await readFile(resolve(root,'index.html'),'utf8');
 await include('index.html');
 for(const match of html.matchAll(/(?:href|src)="([^"#]+\.(?:css|js|mjs))"/g)) await include(match[1]);
-await writeFile(resolve(out,'404.html'),'<!doctype html><html lang="ja"><meta charset="utf-8"><title>ページが見つかりません</title><p>ページが見つかりません。</p><a href="/#personal">地図へ戻る</a></html>');
+await writeFile(resolve(out,'404.html'),'<!doctype html><html lang="ja"><meta charset="utf-8"><title>ページが見つかりません</title><p>ページが見つかりません。</p><a href="/#now">地図へ戻る</a></html>');
 await writeFile(resolve(out,'_headers'),`/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
