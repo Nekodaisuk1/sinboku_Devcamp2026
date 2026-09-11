@@ -218,3 +218,47 @@ Implemented `inquiry.mjs` and `inquiry-ui.mjs`: candidates beneath a selected qu
 - Extracted the 13 existing resources, topic definitions and 36 editorial activities into data/knowledge.json with executable validation and generation. Added five editorial concept connections for biology, marine life, forests, freshwater and fieldwork. No new real-world providers were researched in this change; unpopulated concepts explicitly show no published information.
 - Added the Claude Code research prompt, data contract, evidence migration record, UI vocabulary and system/deployment documents. Selected Cloudflare Pages static hosting with explicit local persistence; generated dist without server code, .data, raw data or test files. No cloud account or production deployment was created.
 - Verified source and public builds in the browser. Music → activity → short note saves; biology → forest opens in place; history → resource keeps #personal. On 390×844, body height remained 844 and scrollY remained 0 through selection. Public .mjs served as JavaScript, server.mjs returned 404. No browser errors observed. Data validation, syntax checks, 40 tests and the public build passed. Cloudflare-specific response headers and actual account deployment still require checking after upload.
+
+## Build 19 — 7年の拠点（2026-09-12）
+
+`docs/redesign-proposal.md` の提案1〜3と「捨てる提案」を実装した。5画面を2タブに畳み、Build 14 の経路をホームに昇格させた。
+
+### 実装したもの
+
+1. **7年の地図をホームに（`#now`）**：4つの分岐点と保留可能期限を、学問を選ばなくても起動直後に表示する。初期表示は下2段で、「もっと先まで見る」で7年全体。「今日決めなければならないのは、いちばん下の1つだけ」が第一画面に入る。
+2. **分岐点ごとの「いまの考え」**：1行・60字まで・任意。空欄には「まだ決める段階ではありません」と表示し、埋めるよう促さない。
+3. **任意の学年**：1タップで選ぶと「あと3か月（2026年12月ごろ）」を表示する。日本の学校年度（4月始まり）で計算。未設定でも地図は全部見られ、残り月数だけ出ない。位置情報・学校名は尋ねない。
+4. **やったことの記録**：日付＋1行。締切・連続記録・達成率は持たない。月ごとの件数だけを見返せる。上限500件。
+5. **動詞を逆算の起点に（`#find`）**：つくる／くらべる／観察する／調べる／伝える の5つ。同じ動詞がゲーム・料理・音楽・海をまたいで並び、そこから学問、さらに `#routes` の4経路へつながる。活動には所要時間の目安と「家でできるか」が付き、「やった」で記録に入る。
+6. **経路（`#routes/<学問>`）**：Build 14 の `routes.mjs` / `routes-ui.mjs` をそのまま再利用。8領域×4経路、保留期限、数学レベル、出典を維持。
+
+### データ（`knowledge.json` を version 2 へ）
+
+- `verbs`（5件）と `domains`（8件）を追加。これまで `app.js` と `catalog.mjs` に直接書かれていた領域定義をデータへ移し、画面のコードから領域名を消した。
+- 既存36件の活動アイデアに `verb` / `minutes` / `athome` を付けた。活動の文言は変えていない。
+- 掲載情報42件に `verbs` を付けた。学校・大学（`group: "study"`）は空を許し、それ以外は1つ以上を必須にした。
+- 検証を追加：動詞は3〜8個／動詞ごとに活動3件以上／活動は全件に動詞・所要時間・場所／`study` 以外の掲載情報は動詞1つ以上。
+
+**掲載件数の訂正**：Build 18 までのUIは「8領域・13件の公式情報を掲載」と表示していたが、実データは42件だった。Build 19 の表示はデータから件数を出す。
+
+### 退避したもの（`wireframe/archive/`）
+
+`studio` `inquiry` `inquiry-ui` `personal-map` `directions` `guide` `journey` `capture` `knowledge-ui` `workspace` `geometry` `room.css` `family-api` `family.html` `family.js` `family-api.test.mjs`。
+
+`FAMILY_SHARING_ENABLED` フラグを削除し、`server.mjs` の配信許可リストからも `/family` を外した。フラグを戻せば共有が復活する構造を解消した（`self-evaluation.md` の「次の改善5」への回答）。削除ではなく退避にしたのは、実装が間違っていたのではなく目的の再定義に合わなくなったためで、判断の記録として残す。
+
+### 検証
+
+- テスト25件・データ検証・構文チェック・公開ビルド通過。経路の要件（4本／保留期限／数学の幅／出典がHTTPS）は Build 14 のテストをそのまま維持し、「動詞から到達できる学問には必ず経路がある」を追加した。
+- ブラウザ（390×844）：学年設定→あと3か月の表示→いまの考えの保存→やったことの記録→`#find/make` で3つの興味をまたぐ11件→「やった」が `#now` の記録に入る→端末保存オン→再読み込みで復元→保存オフで消去、を確認。
+- 320 / 390 / 1366px でページの横はみ出しなし。コンソールエラーなし。
+- `dist` に `server.mjs`・`archive/`・`.data` が含まれないことを確認（公開12ファイル）。
+- 検証中に作った記録は、端末保存をオフにして再読み込みし、消えていることを確認した。
+
+### 残る制約
+
+- **対象者本人による利用観察は未実施。** ここに書いた検証はすべて開発者による操作確認である。
+- 経路は「型」であり、地域ごとの実在校リストではない。高校の段は都立の入試案内へ送るところで止まっている。
+- 動詞は5つ。提案では7つ（直す・つづけるを含む）としていたが、既存の編集資料でそれぞれ1件しか裏づけられなかったため、検証（動詞ごとに活動3件以上）に従って5つにした。「直す」は「つくる」に、「つづける」は記録そのものに畳んである。
+- 活動アイデアは編集であり、募集中のイベント一覧ではない。
+- 保留可能期限は一般的な目安で、自治体の実日程は取り込んでいない。
