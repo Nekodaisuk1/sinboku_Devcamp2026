@@ -36,6 +36,17 @@ export function activitiesByTopic(verbId, options = {}) {
 
 export const activityById = id => allActivities().find(activity => activity.id === id) || null;
 
+// 活動は動詞だけでなく、属している活動グループの文脈で学問につながる。
+// たとえば音楽の「観察する」を、観察という語だけで生態学へ広げない。
+export function domainsForActivity(activityId) {
+  for (const groups of Object.values(knowledge.directions)) {
+    for (const group of groups) {
+      if (group.activities.some(activity => activity.id === activityId)) return [...group.domains];
+    }
+  }
+  return [];
+}
+
 // この動詞を扱う学問。ここから routes.mjs の逆引きにつながる。
 export function domainsForVerb(verbId) {
   const verb = verbById(verbId);

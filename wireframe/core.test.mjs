@@ -305,7 +305,10 @@ test('a collapsed ladder still shows the next decision, whatever the grade', () 
 
 /* --- Build 20: 時間の野原 --- */
 
-import {LANES, LANE_IDS, layout, laneAt, revealWorld, convergences, reachOf, routePath, validatePlacements, packLane, freeX, PLACEMENT_LIMIT} from './field.mjs';
+import {
+  LANES, LANE_IDS, layout, laneAt, revealWorld, convergences, reachOf, routePath, validatePlacements, packLane, freeX, PLACEMENT_LIMIT,
+  MAX_ROWS, RECENT_COUNT, FIELD_VIEWS, LIST_SORTS, linkedSet, visibleFor, listGroups, previewBox, convergenceSentence, CONVERGENCE_NAMES
+} from './field.mjs';
 
 const put = (id, ref, x, lane = 'now', kind = 'topic') => ({id, lane, x, label: id, kind, ref, verb: null, note: ''});
 
@@ -332,11 +335,13 @@ test('the horizontal position is the user\'s own and is never rewritten by layou
   assert.deepEqual(placements.map(placement => placement.x), [0.1, 0.9]);
 });
 
-test('overlapping nodes fall to a new row instead of being moved sideways', () => {
+test('overlapping nodes fall to a new row up to the row limit, and the rest are sent away without ever moving sideways', () => {
   const nodes = Array.from({length: 4}, (_, index) => ({id: `n${index}`, label: 'おなじくらいの長さのラベル', x: 0.5}));
   const packed = packLane(nodes, 360);
-  assert.equal(packed.rows, 4, 'four nodes at the same spot need four rows');
+  assert.equal(packed.rows, MAX_ROWS, 'stacking stops at the row limit, not at the number of nodes');
+  assert.equal(packed.overflow.length, nodes.length - MAX_ROWS, 'anything past the limit is sent to overflow instead of being placed');
   assert.deepEqual([...new Set(packed.nodes.map(node => node.left))].length, 1, 'their horizontal position is unchanged');
+  assert.ok(packed.overflow.every(node => node.x === 0.5), 'the sent-away nodes still carry their own untouched x');
 });
 
 test('an empty field reveals nothing; the world appears only from what the user places', () => {
@@ -368,6 +373,12 @@ test('a written entry connects only once the user says how they are involved', (
   const written = {...put('a', null, 0.5, 'now', 'custom'), ref: null};
   assert.deepEqual(reachOf(written), [], 'nothing is inferred from free text');
   assert.ok(reachOf({...written, verb: verbs[0].id}).length >= 2, 'choosing a verb is what draws the line');
+});
+
+test('an activity reaches only the fields supported by its activity group', () => {
+  const musicPractice = put('a', 'music-grow-0', 0.5, 'now', 'activity');
+  assert.deepEqual(reachOf(musicPractice), ['sound']);
+  assert.ok(!reachOf(musicPractice).includes('ecology'), 'the verb alone must not create an unrelated field');
 });
 
 test('a route is drawn one at a time, through the middle lanes, down from its field', () => {
@@ -425,4 +436,151 @@ test('a new placement lands where the lane is least crowded', () => {
   const busy = [put('a', 'games', 0.5)];
   assert.notEqual(freeX(busy, 'now'), 0.5);
   assert.equal(freeX(busy, 'lab'), 0.5, 'another lane is still empty');
+});
+
+/* --- Build 22: 20件でも読める野原 --- */
+
+test('placing twenty items in one lane still fits in the row limit plus one summary row, all drawn inside the field width', () => {
+  const placements = Array.from({length: 20}, (_, index) => put(`p${index}`, null, 0.5, 'now', 'custom'));
+  const width = 360;
+  const view = layout({placements, width});
+  const nowLane = view.lanes.find(lane => lane.id === 'now');
+  assert.equal(nowLane.count, 20, 'the lane remembers how many were actually placed here');
+  assert.equal(nowLane.overflow, 20 - MAX_ROWS, 'everything past the row limit is sent to the cluster');
+  assert.equal(nowLane.rows, MAX_ROWS + 1, 'the row cap plus one row for the "ほか◯件" chip');
+  const drawn = view.nodes.filter(node => node.lane === 'now');
+  assert.equal(drawn.length, MAX_ROWS + 1, 'only the row cap worth of placements plus the cluster chip are drawn');
+  for (const node of drawn) assert.ok(node.left >= 0 && node.left + node.w <= width, `${node.id} is drawn outside the field`);
+});
+
+test('clustering never rewrites the x a placement was saved with', () => {
+  const placements = Array.from({length: 20}, (_, index) => put(`p${index}`, null, index / 19, 'now', 'custom'));
+  const before = placements.map(placement => placement.x);
+  layout({placements, width: 360});
+  assert.deepEqual(placements.map(placement => placement.x), before, 'layout must never mutate the saved positions');
+});
+
+test('links into a clustered node are rerouted to the cluster instead of disappearing', () => {
+  const placements = Array.from({length: 6}, (_, index) => put(`p${index}`, 'games', 0.5, 'now', 'topic'));
+  const view = layout({placements, width: 360});
+  assert.ok(view.links.length > 0, 'links survive the clustering');
+  assert.ok(view.aliases.size > 0, 'the overflowed placements are recorded as aliases to their cluster');
+  const aliasTargets = new Set(view.aliases.values());
+  const rerouted = view.links.some(link => aliasTargets.has(link.from) || aliasTargets.has(link.to));
+  assert.ok(rerouted, 'at least one line now ends at the cluster chip that replaced its endpoint');
+});
+
+test('expanding a lane lays out one node per row so no two labels can overlap', () => {
+  const placements = Array.from({length: 6}, (_, index) => put(`p${index}`, null, 0.5, 'now', 'custom'));
+  const width = 360;
+  const view = layout({placements, width, expandedLanes: ['now']});
+  const nowLane = view.lanes.find(lane => lane.id === 'now');
+  assert.equal(nowLane.expanded, true);
+  assert.equal(nowLane.overflow, 0, 'expanding never sends anything to a cluster');
+  const drawn = view.nodes.filter(node => node.lane === 'now');
+  assert.equal(drawn.length, placements.length, 'every placement gets its own row when expanded');
+  assert.equal(new Set(drawn.map(node => node.row)).size, drawn.length, 'one node, one row: none share a row');
+  for (const node of drawn) assert.ok(node.left >= 0 && node.left + node.w <= width);
+});
+
+test('previewBox agrees with the row-0 box that layout draws for the same x and lane', () => {
+  const placements = [put('a', 'games', 0.42, 'now')];
+  const view = layout({placements, width: 360});
+  const node = view.byId.get('a');
+  assert.deepEqual(previewBox({label: node.label, x: node.x, lane: node.lane}, view), {left: node.left, w: node.w, y: node.y, h: node.h});
+  assert.equal(previewBox({label: 'x', x: 0.5, lane: 'nosuch'}, view), null, 'an unknown lane has nowhere to preview');
+});
+
+test('a selection reaches exactly one link: a placement reaches its fields, a field reaches what arrives at it', () => {
+  const placements = [put('a', 'sea', 0.2), put('b', 'cooking', 0.8)];
+  const shared = revealWorld(placements).domains.find(domain => domain.converged);
+  const linked = linkedSet(placements, 'a');
+  assert.ok(linked.has('a'));
+  assert.ok(linked.has(`domain-${shared.id}`), 'the field the placement reaches is included');
+  // 合流相手は含めない。含めると「選んだものだけ」が絞り込みにならず、
+  // まとめから外す対象に使ったときは選んだ瞬間に段が伸びる。合流は学問を選べば見える。
+  assert.ok(!linked.has('b'), 'the other placement converging on the same field is one link too far');
+  assert.deepEqual(linkedSet(placements, `domain-${shared.id}`), new Set([`domain-${shared.id}`, 'a', 'b']),
+    'selecting the field is the second step, and that is where the convergence shows');
+  assert.deepEqual(linkedSet(placements, null), new Set(), 'nothing is selected, so nothing is in reach');
+  assert.deepEqual(linkedSet(placements, 'nosuch'), new Set(), 'an id that matches nothing reaches nothing');
+});
+
+test('visibleFor hides nothing before a selection is made, and the recent view keeps the last RECENT_COUNT in order', () => {
+  const placements = Array.from({length: 8}, (_, index) => put(`p${index}`, null, 0.1 + index * 0.05, 'now', 'custom'));
+  const untouched = visibleFor(placements, {view: 'selected', selected: null});
+  assert.equal(untouched.hidden, 0, 'nothing is hidden before anything is selected');
+  assert.deepEqual(untouched.placements, placements);
+
+  const recent = visibleFor(placements, {view: 'recent'});
+  assert.deepEqual(recent.placements.map(placement => placement.id), placements.slice(-RECENT_COUNT).map(placement => placement.id));
+  assert.equal(recent.hidden, placements.length - RECENT_COUNT);
+});
+
+test('the selected view really narrows: one placement stays, and the field it reaches is the way back to the rest', () => {
+  const placements = [put('a', 'sea', 0.2), put('b', 'cooking', 0.8), put('c', null, 0.5, 'now', 'custom')];
+  const picked = visibleFor(placements, {view: 'selected', selected: 'a'});
+  assert.deepEqual(picked.placements.map(placement => placement.id), ['a'], 'selecting one thing shows that one thing');
+  assert.equal(picked.hidden, 2);
+  assert.ok(picked.note.includes('学問'), 'the screen says where the rest went');
+  // 合流相手は、学問のほうを選べば出る。ここが2ホップ目にあたる。
+  const shared = revealWorld(placements).domains.find(domain => domain.converged);
+  const viaDomain = visibleFor(placements, {view: 'selected', selected: `domain-${shared.id}`});
+  assert.deepEqual(viaDomain.placements.map(placement => placement.id).sort(), ['a', 'b']);
+  assert.ok(!viaDomain.placements.some(placement => placement.id === 'c'), 'nothing unrelated is swept in');
+});
+
+test('listGroups never drops a placement across the three sorts, and domain sort files the unconnected ones under "loose"', () => {
+  assert.deepEqual(listGroups([], 'lane'), [], 'nothing placed means nothing to list');
+  const placements = [
+    put('a', 'sea', 0.2, 'now'),
+    put('b', 'cooking', 0.8, 'lab'),
+    put('c', null, 0.5, 'faculty', 'custom')
+  ];
+  const allIds = placements.map(placement => placement.id).sort();
+  for (const {id: sort} of LIST_SORTS) {
+    const groups = listGroups(placements, sort);
+    const seen = new Set(groups.flatMap(group => group.items.filter(item => item.kind === 'placement').map(item => item.id)));
+    assert.deepEqual([...seen].sort(), allIds, `sort=${sort} must not drop any placement`);
+  }
+  const domainGroups = listGroups(placements, 'domain');
+  const loose = domainGroups.find(group => group.id === 'loose');
+  assert.ok(loose, 'the unconnected written entry needs somewhere to appear');
+  assert.deepEqual(loose.items.map(item => item.id), ['c']);
+  assert.ok(domainGroups.some(group => group.note === '合流'), 'a converged field says so in its note');
+});
+
+test('selecting a placement keeps its fields out of the cluster, so the line can be followed to the end', () => {
+  // 同じ場所に積んで、まとめが必ず出る状態をつくる。
+  const placements = [
+    ...Array.from({length: 12}, (_, index) => put(`n${index}`, index % 2 ? 'games' : 'cooking', 0.5)),
+    put('sea', 'sea', 0.5)
+  ];
+  const plain = layout({placements, width: 360});
+  assert.ok(plain.aliases.size > 0, 'without a selection the crowded lane is summarised');
+  const keep = linkedSet(placements, 'sea');
+  const focused = layout({placements, width: 360, keep});
+  for (const id of keep) {
+    assert.ok(!focused.aliases.has(id), `${id} is on the path from the selection and must stay visible`);
+    assert.ok(focused.byId.has(id), `${id} is drawn in its own right`);
+  }
+  // 残りはまとめられたままで、段がすべて開くわけではない。
+  assert.ok(focused.aliases.size > 0, 'only what the selection reaches is spared, not the whole lane');
+  // まとめから学問へ伸びる線は残るので、合流は隠れない。
+  const toDomains = focused.links.filter(link => link.from.startsWith('cluster-') && link.to.startsWith('domain-'));
+  assert.ok(toDomains.length > 0, 'what stayed in the cluster still shows that it reaches a field');
+  // 合流相手まで広げないので、選んだ瞬間に段が一気に伸びることはない。
+  assert.ok(focused.height - plain.height < 200, 'selecting opens the path, not the whole neighbourhood');
+  // 横位置は動いていない。
+  assert.deepEqual(placements.map(placement => placement.x), new Array(13).fill(0.5));
+});
+
+test('a convergence sentence names a few and counts the rest, and only says "どちらも" when there are two', () => {
+  const two = convergenceSentence({domain: 'd', name: 'デザイン', labels: ['ゲーム', '料理']});
+  assert.equal(two.all, 'どちらも');
+  assert.equal(two.rest, 0);
+  const many = convergenceSentence({domain: 'd', name: 'デザイン', labels: Array.from({length: 8}, (_, i) => `label${i}`)});
+  assert.equal(many.all, 'どれも', 'eight things are not "both"');
+  assert.equal(many.shown.length, CONVERGENCE_NAMES);
+  assert.equal(many.rest, 8 - CONVERGENCE_NAMES, 'the ones left out are counted, never dropped in silence');
 });

@@ -38,5 +38,5 @@ const server = createServer(async (request, response) => {
     response.end('Unable to read the requested file');
   }
 });
-server.listen(4317, '127.0.0.1', () => console.log('シンボク Build 19: http://127.0.0.1:4317'));
+server.listen(4317, '127.0.0.1', () => console.log('シンボク Build 22: http://127.0.0.1:4317'));
 server.on('error', error => {console.error(error); process.exitCode = 1;});

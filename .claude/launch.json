@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "shimboku",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "wireframe"],
+      "port": 4317
+    }
+  ]
+}

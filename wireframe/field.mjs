@@ -1,7 +1,7 @@
 import {decisionPoints} from './routes.mjs';
 import {routesForDomain, hasRoutes} from './routes.mjs';
 import knowledge from './knowledge-data.mjs';
-import {verbById, activityById} from './verbs.mjs';
+import {verbById, domainsForActivity} from './verbs.mjs';
 
 /**
  * 時間の野原。縦軸は時間だけが決め、横軸は本人が自由に置く。
@@ -24,6 +24,20 @@ export const LANE_IDS = LANES.map(lane => lane.id);
 export const PLACEMENT_LIMIT = 60;
 export const LABEL_LIMIT = 40;
 
+// 20件も置くと野原が読めなくなるので、表示側の絞り込みと並べ替えの選択肢をここで定義する。
+// 保存データには一切影響しない「見せ方」だけの語彙。
+export const FIELD_VIEWS = [
+  {id: 'all', label: '全体を見る', hint: '置いたものを全部'},
+  {id: 'selected', label: '選んだものだけ', hint: '選んだものと、つながっている先だけ'},
+  {id: 'recent', label: '最近置いたもの', hint: 'あとから置いた5件'}
+];
+
+export const LIST_SORTS = [
+  {id: 'lane', label: '時間の段'},
+  {id: 'added', label: '追加順'},
+  {id: 'domain', label: 'つながる学問'}
+];
+
 export const laneById = id => LANES.find(lane => lane.id === id) || null;
 export const laneIndex = id => LANE_IDS.indexOf(id);
 
@@ -31,16 +45,14 @@ export const laneIndex = id => LANE_IDS.indexOf(id);
 
 /**
  * 置いたもの1つから伸びる先の学問。
- * 好きなこと → その入口が扱う領域。活動・自由入力 → その動詞を続けている領域。
+ * 好きなこと → その入口が扱う領域。活動 → その活動グループが扱う領域。
+ * 自由入力 → 本人が選んだ動詞を続けている領域。
  * 掲載情報 → その情報が属する領域。つながりが分からないものは、線を作らない。
  */
 export function reachOf(placement) {
   if (placement.kind === 'topic') return knowledge.topics[placement.ref]?.ids ?? [];
   if (placement.kind === 'resource') return knowledge.resources[placement.ref]?.domains ?? [];
-  if (placement.kind === 'activity') {
-    const activity = activityById(placement.ref);
-    return activity ? verbById(activity.verb)?.domains ?? [] : [];
-  }
+  if (placement.kind === 'activity') return domainsForActivity(placement.ref);
   // 自由入力は、本人が動詞を選んだときだけつながる。推測でつながない。
   if (placement.kind === 'custom') return placement.verb ? verbById(placement.verb)?.domains ?? [] : [];
   return [];
@@ -84,6 +96,64 @@ export function convergences(placements) {
   }));
 }
 
+// 合流の文に並べる名前の上限。20件置くと1つの学問に8件届くことがあり、
+// 全部並べると1文が画面を埋めてしまう。
+export const CONVERGENCE_NAMES = 3;
+
+/**
+ * 合流を1文にするための部品。名前は上限までにして、残りは件数で言う。
+ * 「どちらも」は2件のときだけ正しいので、3件以上は「どれも」にする。
+ */
+export function convergenceSentence({labels, name, domain}) {
+  const shown = labels.slice(0, CONVERGENCE_NAMES);
+  return {domain, name, shown, rest: labels.length - shown.length, all: labels.length === 2 ? 'どちらも' : 'どれも'};
+}
+
+/**
+ * 選んだ1つに、線1本でつながっている相手。置きものを選べばその学問、
+ * 学問を選べばそこへ届いている置きもの。
+ *
+ * 合流相手（学問をまたいだ2ホップ先）までは含めない。含めると
+ * 「選んだものだけ」が20件中16件になって絞り込みにならず、
+ * まとめから外す対象に使ったときは選んだ瞬間に段が一気に伸びる。
+ * 合流を見たいときは、学問のほうを選ぶ。それが2ホップ目にあたる。
+ */
+export function linkedSet(placements, selected) {
+  if (!selected) return new Set();
+  const {domains} = revealWorld(placements);
+  if (selected.startsWith('domain-')) {
+    const domain = domains.find(item => `domain-${item.id}` === selected);
+    return domain ? new Set([selected, ...domain.from]) : new Set();
+  }
+  if (!placements.some(placement => placement.id === selected)) return new Set();
+  return new Set([selected, ...domains.filter(domain => domain.from.includes(selected)).map(domain => `domain-${domain.id}`)]);
+}
+
+/**
+ * 描く置きものを絞る。絞るのは表示だけで、保存データにも合流計算にも触らない。
+ * 何も隠さないときも、何を隠したかも、黙らずに note で言葉にして返す。
+ */
+export function visibleFor(placements, {view = 'all', selected = null} = {}) {
+  if (view === 'recent') {
+    const shown = placements.slice(-RECENT_COUNT);
+    return {placements: shown, hidden: placements.length - shown.length, note: '最近置いた5件だけを出しています。'};
+  }
+  if (view === 'selected') {
+    const focus = linkedSet(placements, selected);
+    // 選んでいない・つながる相手がいないときは絞れないので、隠さず全部見せる。
+    if (!selected || focus.size === 0) {
+      return {placements, hidden: 0, note: '先に1つ選ぶと、そこにつながるものだけになります。'};
+    }
+    const shown = placements.filter(placement => focus.has(placement.id));
+    // 学問を選んだときと置きものを選んだときでは、残るものが違う。同じ文で済ませない。
+    const note = selected.startsWith('domain-')
+      ? 'この学問に届いているものだけです。'
+      : '選んだものと、その線が届く学問だけです。同じ学問に届いている他のものは、学問のほうを選ぶと出ます。';
+    return {placements: shown, hidden: placements.length - shown.length, note};
+  }
+  return {placements, hidden: 0, note: null};
+}
+
 /**
  * 学問を選んだときだけ、そこへの経路が中間の段に現れる。
  * 4本ぶんを一度に出すと読めないので、選んだ1本だけを通す。
@@ -115,31 +185,80 @@ const SIDE = 14;
 const LANE_PAD = 18;
 const LANE_HEAD = 26;
 
+// 1つの段に何行まで許すか。それを超えたら個別には描かず「まとめ」に送る。
+// 4行（約180px）までは、スマートフォンの画面でも段ごと見渡せる。
+// ここを小さくすると、まとめが例外ではなく既定になり、本人が置いたものが画面から消える。
+export const MAX_ROWS = 4;
+// 「最近置いたもの」表示で見せる件数。
+export const RECENT_COUNT = 5;
+
 export function nodeWidth(label, width) {
   return Math.min(Math.max(64, [...String(label)].length * 13 + 26), Math.max(90, width - SIDE * 2));
 }
 
-/** 同じ段の中で重なったものを、下の行へ送る。横位置は本人が置いたまま動かさない。 */
-export function packLane(nodes, width) {
+// packLane と previewBox の両方が使う、横位置から実際の箱を出す式。
+// ここを1か所にしておかないと、ドラッグ中のプレビューと確定後の位置がずれる。
+function boxFor(x, label, width) {
+  const w = nodeWidth(label, width);
+  const left = Math.min(Math.max(x * width - w / 2, SIDE), Math.max(SIDE, width - SIDE - w));
+  return {left, w};
+}
+
+/**
+ * 同じ段の中で重なったものを、下の行へ送る。横位置は本人が置いたまま動かさない。
+ * - expanded: 密集をほぐす表示。1ノード1行にして、ラベルの重なりをなくす（一時表示・保存しない）。
+ * - maxRows: これを超えて入らないノードは配置せず overflow に送る（まとめ側で描く）。
+ */
+export function packLane(nodes, width, {maxRows = MAX_ROWS, expanded = false, keep = new Set()} = {}) {
+  const sorted = [...nodes].sort((a, b) => a.x - b.x);
+  if (expanded) {
+    const placed = sorted.map((node, row) => ({...node, ...boxFor(node.x, node.label, width), row}));
+    return {nodes: placed, rows: placed.length, overflow: []};
+  }
   const rows = [];
   const placed = [];
-  for (const node of [...nodes].sort((a, b) => a.x - b.x)) {
-    const w = nodeWidth(node.label, width);
-    const left = Math.min(Math.max(node.x * width - w / 2, SIDE), Math.max(SIDE, width - SIDE - w));
+  const overflow = [];
+  const put = (node, limit) => {
+    const {left, w} = boxFor(node.x, node.label, width);
     let row = rows.findIndex(items => items.every(item => left > item.left + item.w + ROW_GAP || left + w + ROW_GAP < item.left));
-    if (row === -1) {row = rows.length; rows.push([]);}
+    if (row === -1) {
+      // 空いている行が無い。上限に達していれば個別には描かず、まとめへ送る。
+      if (rows.length >= limit) return false;
+      row = rows.length;
+      rows.push([]);
+    }
     const entry = {...node, left, w, row};
     rows[row].push(entry);
     placed.push(entry);
-  }
-  return {nodes: placed, rows: rows.length};
+    return true;
+  };
+  // 選んだものと、そこへ線が伸びている先は、まとめに隠さない。
+  // 隠してしまうと「1つ選べば学問までの線を追える」が成り立たなくなる。
+  for (const node of sorted.filter(node => keep.has(node.id))) put(node, Infinity);
+  const limit = Math.max(maxRows, rows.length);
+  for (const node of sorted.filter(node => !keep.has(node.id))) if (!put(node, limit)) overflow.push(node);
+  return {nodes: placed, rows: rows.length, overflow};
+}
+
+/**
+ * ドラッグ中に、保存せずに位置だけ見せるための箱。layout と同じ式（boxFor）を使うので、
+ * 指を離した後にレイアウトが確定しても、プレビューとずれない。
+ * 段の中の行までは分からない（ドラッグ中はまだどの行に落ち着くか未定なので）ので、
+ * その段の先頭行（row 0）の位置を仮の高さとして返す。
+ */
+export function previewBox({label, x, lane}, view) {
+  const laneInfo = view.lanes.find(item => item.id === lane);
+  if (!laneInfo) return null;
+  const {left, w} = boxFor(x, label, view.width);
+  const y = laneInfo.top + LANE_HEAD + LANE_PAD;
+  return {left, w, y, h: NODE_HEIGHT};
 }
 
 /**
  * 野原ぜんぶの配置を出す。幅は実際の表示幅をそのまま使い、文字を縮小しない。
  * 段の高さは中身で決まるので、置くほど野原が広がる。
  */
-export function layout({placements = [], extraNodes = [], width = 360} = {}) {
+export function layout({placements = [], extraNodes = [], width = 360, expandedLanes = [], keep = new Set()} = {}) {
   const {domains, links} = revealWorld(placements);
   const all = [
     ...placements.map(placement => ({...placement, node: 'placement'})),
@@ -149,9 +268,14 @@ export function layout({placements = [], extraNodes = [], width = 360} = {}) {
   let top = 0;
   const lanes = [];
   const positioned = new Map();
+  // まとめられた個々のノード id → まとめノード id。線の付け替えと、描くものを減らすために使う。
+  const aliases = new Map();
   for (const lane of LANES) {
-    const packed = packLane(all.filter(node => node.lane === lane.id), width);
-    const rows = Math.max(packed.rows, lane.minRows);
+    const laneNodes = all.filter(node => node.lane === lane.id);
+    const expanded = expandedLanes.includes(lane.id);
+    const packed = packLane(laneNodes, width, {expanded, keep});
+    // まとめが出るときは、その分の1行を余分に確保する（一番下の行に置くため）。
+    const rows = Math.max(packed.rows + (packed.overflow.length > 0 ? 1 : 0), lane.minRows);
     // 何も置かれていない段は薄くする。時間の隔たりは見出しの日付が示す。
     const height = rows === 0
       ? LANE_HEAD + 34
@@ -163,16 +287,59 @@ export function layout({placements = [], extraNodes = [], width = 360} = {}) {
         h: NODE_HEIGHT
       });
     }
-    lanes.push({...lane, top, height, rows, empty: packed.nodes.length === 0});
+    if (packed.overflow.length > 0) {
+      // まとめノードの x は、まとめた中身の平均。中身そのものの x は一切触らない。
+      const clusterId = `cluster-${lane.id}`;
+      const avgX = packed.overflow.reduce((total, node) => total + node.x, 0) / packed.overflow.length;
+      const label = `ほか${packed.overflow.length}件`;
+      const row = packed.rows;
+      positioned.set(clusterId, {
+        id: clusterId,
+        node: 'cluster',
+        lane: lane.id,
+        label,
+        members: packed.overflow.map(node => node.id),
+        x: avgX,
+        ...boxFor(avgX, label, width),
+        row,
+        y: top + LANE_HEAD + LANE_PAD + row * (NODE_HEIGHT + ROW_GAP),
+        h: NODE_HEIGHT
+      });
+      for (const node of packed.overflow) aliases.set(node.id, clusterId);
+    }
+    lanes.push({
+      ...lane,
+      top,
+      height,
+      rows,
+      empty: packed.nodes.length === 0 && packed.overflow.length === 0,
+      count: laneNodes.length,
+      overflow: packed.overflow.length,
+      expanded
+    });
     top += height;
+  }
+  // まとめへ送られたノードへの線は、まとめノードへ付け替える。行き先が同じになった線は1本に。
+  const seen = new Set();
+  const rerouted = [];
+  for (const link of [...links, ...extraNodes.flatMap(node => node.links ?? [])]) {
+    const from = aliases.get(link.from) ?? link.from;
+    const to = aliases.get(link.to) ?? link.to;
+    if (from === to) continue; // まとめの中どうしをつなぐ線は、もう意味を持たない
+    if (!positioned.has(from) || !positioned.has(to)) continue;
+    const key = `${from}>${to}>${link.kind}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    rerouted.push({...link, from, to});
   }
   return {
     width,
     height: top,
     lanes,
     nodes: [...positioned.values()],
-    links: [...links, ...extraNodes.flatMap(node => node.links ?? [])].filter(link => positioned.has(link.from) && positioned.has(link.to)),
-    byId: positioned
+    links: rerouted,
+    byId: positioned,
+    aliases
   };
 }
 
@@ -180,6 +347,68 @@ export function layout({placements = [], extraNodes = [], width = 360} = {}) {
 export function laneAt(y, lanes) {
   for (const lane of lanes) if (y >= lane.top && y < lane.top + lane.height) return lane.id;
   return y < 0 ? LANE_IDS[0] : LANE_IDS[LANE_IDS.length - 1];
+}
+
+/**
+ * 一覧表示の中身。野原の絵を諦めるかわりに、20件でも取りこぼさず読めるようにする。
+ * 並べ替えを変えても中身の置きものは消えない――ただ「どうグループ分けするか」が変わるだけ。
+ */
+export function listGroups(placements, sort = 'lane') {
+  if (!placements.length) return [];
+
+  if (sort === 'added') {
+    return [{
+      id: 'added',
+      title: '追加順',
+      note: '先に置いたものが上',
+      items: placements.map(placement => ({id: placement.id, label: placement.label, kind: 'placement', sub: '', converged: false}))
+    }];
+  }
+
+  const {domains} = revealWorld(placements);
+
+  if (sort === 'domain') {
+    const byId = new Map(placements.map(placement => [placement.id, placement]));
+    const linked = new Set();
+    const groups = domains.map(domain => {
+      for (const id of domain.from) linked.add(id);
+      return {
+        id: `domain-${domain.id}`,
+        title: domain.name,
+        note: domain.converged ? '合流' : '',
+        items: domain.from.map(id => ({
+          id,
+          label: byId.get(id)?.label ?? id,
+          kind: 'placement',
+          sub: domain.name,
+          converged: domain.converged
+        }))
+      };
+    });
+    // どこにもつながっていない置きものは、ここで初めて姿が見える。無ければ出さない。
+    const loose = placements.filter(placement => !linked.has(placement.id));
+    if (loose.length) {
+      groups.push({
+        id: 'loose',
+        title: 'まだつながっていない',
+        note: '',
+        items: loose.map(placement => ({id: placement.id, label: placement.label, kind: 'placement', sub: '', converged: false}))
+      });
+    }
+    return groups;
+  }
+
+  // lane（既定）: 段ごと。学問は layout と同じく lab の段に入れる。
+  const byLane = new Map(LANES.map(lane => [lane.id, []]));
+  for (const placement of placements) byLane.get(placement.lane).push({
+    id: placement.id, label: placement.label, kind: 'placement', sub: '', converged: false
+  });
+  for (const domain of domains) byLane.get('lab').push({
+    id: `domain-${domain.id}`, label: domain.name, kind: 'domain', sub: '', converged: domain.converged
+  });
+  return LANES
+    .filter(lane => byLane.get(lane.id).length > 0)
+    .map(lane => ({id: lane.id, title: lane.title, note: lane.horizon, items: byLane.get(lane.id)}));
 }
 
 /* ---------- 保存するかたち ---------- */

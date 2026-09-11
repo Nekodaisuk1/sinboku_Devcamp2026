@@ -1,7 +1,10 @@
+import {convergenceSentence} from './field.mjs';
+
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 
 // 置いたものが上へ伸びる線。時間が上に流れるので、縦向きの曲線にする。
-function curve(from, to) {
+// app.js がドラッグ中に同じ式で線を引き直せるよう export する。
+export function curve(from, to) {
   const x1 = from.left + from.w / 2;
   const y1 = from.y;
   const x2 = to.left + to.w / 2;
@@ -10,23 +13,58 @@ function curve(from, to) {
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${x1.toFixed(1)} ${mid.toFixed(1)}, ${x2.toFixed(1)} ${mid.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
+// 段の地の部分（.lane グループ）。クリックで段を選べる部分だけをここに入れる。
 function laneMarkup(lane, width, next) {
-  return `<g class="lane lane-${lane.id}${lane.id === next ? ' lane-next' : ''}" aria-hidden="true">
+  return `<g class="lane lane-${lane.id}${lane.id === next ? ' lane-next' : ''}" role="button" tabindex="0" aria-label="${escape(lane.title)}、${escape(lane.horizon)}。内容を開く">
     <rect x="0" y="${lane.top}" width="${width}" height="${lane.height}" class="lane-bg"></rect>
     <line x1="0" y1="${lane.top}" x2="${width}" y2="${lane.top}" class="lane-rule"></line>
-    <text x="14" y="${lane.top + 17}" class="lane-title">${escape(lane.title)}</text>
-    <text x="${width - 14}" y="${lane.top + 17}" class="lane-horizon" text-anchor="end">${escape(lane.horizon)}</text>
   </g>`;
 }
 
-function nodeMarkup(node, {selected, dimmed, dragging}) {
+// 段の見出しは線より後に描く。20件置くと線が何本も見出しの上を通り、読めなくなるため。
+// 当たり判定は地の .lane が持っているので、ここは pointer-events を切る。
+function laneLabelMarkup(lane, next) {
+  return `<text x="14" y="${lane.top + 17}" class="lane-label lane-${lane.id}${lane.id === next ? ' lane-next' : ''}" aria-hidden="true">
+    <tspan class="lane-title">${escape(lane.title)}</tspan><tspan class="lane-horizon" dx="8">${escape(lane.horizon)}</tspan>
+  </text>`;
+}
+
+// 段の「広げる／まとめる」ピル。.lane の外に出すことで、段の選択クリックに巻き込まれないようにする。
+function laneToggleMarkup(lane, width) {
+  if ((lane.count ?? 0) < 2) return '';
+  const label = lane.expanded ? 'まとめる' : '広げる';
+  const w = Math.max(56, [...label].length * 13 + 24);
+  const bodyH = 22;
+  const hitH = 32; // 見た目は20px超でよいが、指で押す当たり判定は32px確保する
+  const bodyY = lane.top + 4;
+  const hitY = bodyY - (hitH - bodyH) / 2;
+  const x = width - 14 - w;
+  return `<g class="lane-toggle" data-expand-lane="${escape(lane.id)}" role="button" tabindex="0" aria-label="${escape(lane.title)}の段を${label}">
+    <rect x="${x.toFixed(1)}" y="${hitY.toFixed(1)}" width="${w}" height="${hitH}" class="lane-toggle-hit"></rect>
+    <rect x="${x.toFixed(1)}" y="${bodyY.toFixed(1)}" width="${w}" height="${bodyH}" rx="${(bodyH / 2).toFixed(1)}" class="lane-toggle-body"></rect>
+    <text x="${(x + w / 2).toFixed(1)}" y="${(bodyY + bodyH / 2 + 4).toFixed(1)}" text-anchor="middle" class="lane-toggle-label">${escape(label)}</text>
+  </g>`;
+}
+
+// まとめノード。破線＋「ほか◯件」の文言で、置きものにも学問にも見えないようにする（色だけに意味を載せない）。
+function clusterMarkup(node, {dimmed, laneTitle}) {
+  const n = node.members.length;
+  return `<g class="node node-cluster${dimmed ? ' is-dim' : ''}" data-node="${escape(node.id)}" data-expand-lane="${escape(node.lane)}" role="button" tabindex="0" aria-label="「${escape(laneTitle)}」の段に、まとめてある${n}件を広げる" transform="translate(${node.left.toFixed(1)} ${node.y.toFixed(1)})">
+    <rect width="${node.w.toFixed(1)}" height="${node.h}" rx="${(node.h / 2).toFixed(1)}" class="node-body"></rect>
+    <text x="${(node.w / 2).toFixed(1)}" y="${node.h / 2 + 5}" text-anchor="middle" class="node-label">${escape(node.label)}</text>
+  </g>`;
+}
+
+function nodeMarkup(node, ctx) {
+  if (node.node === 'cluster') return clusterMarkup(node, ctx);
+  const {selected, dimmed, dragging} = ctx;
   const classes = ['node', `node-${node.node}`];
   if (node.node === 'domain' && node.domain.converged) classes.push('node-converged');
   if (node.id === selected) classes.push('is-selected');
   if (dimmed) classes.push('is-dim');
   if (node.id === dragging) classes.push('is-dragging');
   const movable = node.node === 'placement';
-  return `<g class="${classes.join(' ')}" data-node="${escape(node.id)}"${movable ? ' data-movable="1"' : ''} transform="translate(${node.left.toFixed(1)} ${node.y.toFixed(1)})">
+  return `<g class="${classes.join(' ')}" data-node="${escape(node.id)}"${movable ? ' data-movable="1"' : ''} role="button" tabindex="0" aria-label="${escape(node.label)}を開く" transform="translate(${node.left.toFixed(1)} ${node.y.toFixed(1)})">
     <rect width="${node.w.toFixed(1)}" height="${node.h}" rx="${(node.h / 2).toFixed(1)}" class="node-body"></rect>
     ${node.node === 'domain' && node.domain.converged ? `<circle cx="${(node.w - 11).toFixed(1)}" cy="11" r="4" class="node-spark"></circle>` : ''}
     <text x="${(node.w / 2).toFixed(1)}" y="${node.h / 2 + 5}" text-anchor="middle" class="node-label">${escape(node.label)}</text>
@@ -39,36 +77,67 @@ function nodeMarkup(node, {selected, dimmed, dragging}) {
  */
 export function renderField(view, {selected = null, dragging = null, highlight = new Set(), next = null} = {}) {
   const dim = highlight.size > 0;
-  return `<svg class="field" viewBox="0 0 ${view.width} ${view.height}" width="${view.width}" height="${view.height}"
-      role="img" aria-label="時間の野原。縦は今から7年先まで、置いたものから線が伸びます。同じ内容は下の一覧でも読めます。">
-    <g class="lanes">${view.lanes.map(lane => laneMarkup(lane, view.width, next)).join('')}</g>
-    <g class="links" aria-hidden="true">${view.links.map(link => {
+  const laneById = new Map(view.lanes.map(lane => [lane.id, lane]));
+
+  // 関係する線・ノードを前面へ。SVGのz-indexはDOM順でしか解決できないので、
+  // 「薄い(0) → 素(1) → 明るい・選択中(2)」の順に並べ替えてから描く。
+  const linkOrder = view.links
+    .map(link => {
       const from = view.byId.get(link.from);
       const to = view.byId.get(link.to);
       const lit = highlight.has(link.from) && highlight.has(link.to);
-      return `<path d="${curve(from, to)}" class="link link-${link.kind}${lit ? ' is-lit' : dim ? ' is-dim' : ''}"></path>`;
-    }).join('')}</g>
-    <g class="nodes">${view.nodes.map(node => nodeMarkup(node, {
+      const tier = lit ? 2 : dim ? 0 : 1;
+      return {link, from, to, lit, tier};
+    })
+    .sort((a, b) => a.tier - b.tier);
+
+  const nodeOrder = view.nodes
+    .map(node => {
+      const dimmed = dim && !highlight.has(node.id);
+      const tier = dimmed ? 0 : node.id === selected ? 2 : 1;
+      return {node, dimmed, tier};
+    })
+    .sort((a, b) => a.tier - b.tier);
+
+  return `<svg class="field" viewBox="0 0 ${view.width} ${view.height}" width="${view.width}" height="${view.height}"
+      role="group" aria-label="時間の野原。縦は今から7年先まで、置いたものから線が伸びます。">
+    <g class="lanes">${view.lanes.map(lane => laneMarkup(lane, view.width, next)).join('')}</g>
+    <g class="links" aria-hidden="true">${linkOrder.map(({link, from, to, lit}) =>
+      `<path d="${curve(from, to)}" data-from="${escape(link.from)}" data-to="${escape(link.to)}" class="link link-${link.kind}${lit ? ' is-lit' : dim ? ' is-dim' : ''}"></path>`
+    ).join('')}</g>
+    <g class="lane-labels">${view.lanes.map(lane => laneLabelMarkup(lane, next)).join('')}</g>
+    <g class="lane-toggles">${view.lanes.map(lane => laneToggleMarkup(lane, view.width)).join('')}</g>
+    <g class="nodes">${nodeOrder.map(({node, dimmed}) => nodeMarkup(node, {
       selected,
-      dimmed: dim && !highlight.has(node.id),
-      dragging
+      dimmed,
+      dragging,
+      laneTitle: laneById.get(node.lane)?.title ?? ''
     })).join('')}</g>
   </svg>`;
 }
 
-/** 野原と同じ内容の一覧。図を読まなくても、置いたものと合流先が分かるようにする。 */
-export function renderFieldList(view, convergenceList) {
-  const lanes = view.lanes.map(lane => {
-    const nodes = view.nodes.filter(node => node.lane === lane.id);
-    return `<section class="field-list-lane">
-      <h4>${escape(lane.title)}<span>${escape(lane.horizon)}</span></h4>
-      ${nodes.length
-        ? `<ul>${nodes.map(node => `<li><button data-node-open="${escape(node.id)}">${escape(node.label)}</button>${node.node === 'domain' && node.domain.converged ? '<em>合流</em>' : ''}</li>`).join('')}</ul>`
+/**
+ * 野原と同じ内容の一覧。図を読まなくても、置いたものと合流先が分かるようにする。
+ * field.mjs の listGroups() が返した groups をそのまま描く（並べ替えのボタンは app.js が描く）。
+ */
+// 合流の一文。名前を並べきらないのは、20件置いたときに1文が画面を埋めてしまうから。
+function convergenceLine(item) {
+  const {shown, rest, all, name} = convergenceSentence(item);
+  const names = shown.map(label => `「${escape(label)}」`).join('と') + (rest ? `ほか${rest}件` : '');
+  return `${names}は、${all}<b>${escape(name)}</b>につながっています。`;
+}
+
+const LEAD_LIMIT = 3;
+
+export function renderFieldList(groups, convergenceList) {
+  const sections = groups.map(group => `<section class="field-list-lane">
+      <h4>${escape(group.title)}<span>${escape(group.note ?? '')}</span></h4>
+      ${group.items.length
+        ? `<ul>${group.items.map(item => `<li><button data-node-open="${escape(item.id)}">${escape(item.label)}</button>${item.sub ? `<span class="field-list-sub">${escape(item.sub)}</span>` : ''}${item.converged ? '<em>合流</em>' : ''}</li>`).join('')}</ul>`
         : '<p class="field-list-empty">まだ何も置いていません。</p>'}
-    </section>`;
-  }).join('');
+    </section>`).join('');
   return `<div class="field-list">
-    ${convergenceList.length ? `<p class="field-list-lead">${convergenceList.map(item => `「${escape(item.labels.join('」と「'))}」は、どちらも<b>${escape(item.name)}</b>につながっています。`).join('')}</p>` : ''}
-    ${lanes}
+    ${convergenceList.length ? `<p class="field-list-lead">${convergenceList.slice(0, LEAD_LIMIT).map(convergenceLine).join('')}${convergenceList.length > LEAD_LIMIT ? `<span class="field-list-more">合流はほかに${convergenceList.length - LEAD_LIMIT}か所あります。並べ方を「つながる学問」にすると全部読めます。</span>` : ''}</p>` : ''}
+    ${sections}
   </div>`;
 }

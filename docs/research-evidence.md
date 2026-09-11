@@ -1,19 +1,86 @@
 # 情報拡充の根拠メモ
 
-以下は既存13件のデータ移行記録です。今回のUI変更ではリンク先を再調査していません。Claude Codeによる追加・再確認時に、裏付けた内容と不明点を追記してください。
+各resourceについて、実際に開いた公式ページ、確認日、そのページで裏付けられた内容、確認できなかった点を記録する。確認日は実際にページを開いた日。
+
+## 2026-09-12 追加分（29件）
+
+すべて `reviewStatus: published`。調査は生物・自然系を中心に、対象（海／森・里山／川・池／街の中の自然／植物・虫・鳥・菌）と活動形式（家から／現地で一度／続ける／学校で学ぶ）の網羅を優先した。
+
+### 家から（オンライン教材・記録）
+
+| ID | 公式URL | 確認日 | 裏付けた内容 | 不明点 |
+|---|---|---|---|---|
+| ikilog | https://ikilog.biodic.go.jp/ | 2026-09-12 | 環境省生物多様性センターが運営。「いきものログは誰でも利用できます」。ユーザ登録で報告・調査参加が可能。種名から観察地点を検索できる。教育利用ページあり | **利用料の記載を確認できず**（無料と断定しない）。年齢条件の記載なし |
+| kahaku-vr | https://www.kahaku.go.jp/VR/ | 2026-09-12 | 国立科学博物館が運営（©2020 National Museum of Nature and Science）。日本館・地球館・企画展・筑波実験植物園の3Dビュー。無料。自宅から閲覧可 | 対象年齢の記載なし。VRゴーグル使用時は機器側の年齢条件に従う旨の注記あり |
+| wbsj-startbird | https://www.wbsj.org/activity/spread-and-education/bbw/ | 2026-09-12 | 日本野鳥の会。道具の準備、野鳥の探し方、身近な野鳥と季節の野鳥の識別、フィールドマナー・撮影マナーを掲載 | 明示的な対象読者の記載なし。無料小冊子の配布条件はこのページでは未確認 |
+| nacsj-shizenshirabe | https://www.nacsj.or.jp/activities/ss/ | 2026-09-12 | 日本自然保護協会。「子どもからお年寄りまで誰もが気軽に参加できる日本の自然の健康診断調査」。2001〜2023年のテーマ（カメ・アリ・トンボ・チョウ・カタツムリ・バッタ・セミ・カマキリ・貝殻・湧き水・川・砂浜・海辺の花）。過去開催分の見分け方マニュアルを無料公開 | **現在募集中の回があるかは未確認**（掲載の最新は2023年カメ一斉調査）。conditionsに明記済み |
+| omnh-ouchi | https://www.omnh.jp/ouchi/index.html | 2026-09-12 | 大阪市立自然史博物館。標本解説動画、ギャラリートーク、3Dモデル、360°画像、「ごきんじょでかんさつに出かけよう」等の読みもの。すべて無料 | 対象年齢の明示なし（家族・親子向け〜大人向けと記載） |
+| maff-kids | https://www.maff.go.jp/j/kids/ | 2026-09-12 | 農林水産省こどもページ。「森林を知りたい」「水産業を知りたい」「農産物博士になろう」等。無料で閲覧可 | 対象年齢の明記なし（内容から小学生向けと推定されるが断定していない） |
+
+### 現地で一度（施設・体験プログラム）
+
+| ID | 公式URL | 確認日 | 裏付けた内容 | 不明点 |
+|---|---|---|---|---|
+| shizen-kyoikuen | https://ins.kahaku.go.jp/ | 2026-09-12 | 国立科学博物館附属自然教育園。「大人：320円 65歳以上、高校生以下：無料」「開園時間 9:00 - 16:30（入園は16:00まで）」。都市に残る自然林、開花情報、イベント一覧あり | 住所（港区白金台）は交通アクセスページ側。観察会の対象・費用は個別回で要確認 |
+| tsukuba-botanical | https://tbg.kahaku.go.jp/ ／ 入園案内 https://tbg.kahaku.go.jp/riyou/nyuen.html | 2026-09-12 | 国立科学博物館の研究施設。「世界の生態区」「生命を支える多様区」と温室。入園料は一般・大学生320円、**小・中・高校生と65歳以上は無料**。9:00〜16:30、月曜休園（祝日開園）、年末年始休園 | イベントの対象・費用は個別に要確認 |
+| biwahaku | https://www.biwahaku.jp/ ／ 料金 https://www.biwahaku.jp/guide/price.html | 2026-09-12 | 滋賀県立琵琶湖博物館（草津市下物町1091）。常設展示は**高校生・18歳未満・中学生以下が無料**、一般840円。企画展は高校生・18歳未満270円。9:30〜17:00（最終入館16:00）、月曜休館。国内最大級の淡水生物の水族展示、観察会などのイベントあり | 観察会の個別の対象・費用は未確認 |
+| chiba-umihaku | https://www.chiba-muse.or.jp/UMIHAKU/ ／ 利用案内 https://www.chiba-muse.or.jp/UMIHAKU/visit/ | 2026-09-12 | 千葉県立中央博物館分館 海の博物館（勝浦市吉尾123）。入館料 一般200円、**高校生・大学生100円**、中学生以下・65歳以上は無料。9:00〜16:30（入館16:00まで）、月曜休館 | なし（主要条件は確認済み） |
+| umihaku-kansatsu | https://www.chiba-muse.or.jp/UMIHAKU/event/category/kansatu/ | 2026-09-12 | 研究員が担当する観察会の一覧。「砂浜で貝殻を探そう」2026-10-10、「鵜原理想郷 秋の生きもの探し」2026-11-01、「ウのねぐら鵜ォッチング」2026-12-12。事前申込必要、一部の回は小学校4年生以上 | **対象・費用・定員は回ごとで、一覧ページには出ていない**。各回のページで要確認。reviewAfter 2026-11-02 |
+| hirameki-science | https://www.jsps.go.jp/hirameki/ ／ 実施一覧 https://www.jsps.go.jp/j-hirameki/02_jisshi_program.html | 2026-09-12 | 日本学術振興会。対象は「小学５・６年生、中学生、高校生」。科研費の研究を講義・実験として体験。「具体的な申込方法は、各『プログラム概要』記載の《お問合せ・お申込み先》へ直接お問い合わせください。本会への電話やメールによる申込みは受け付けておりません」。令和8(2026)年度の実施予定プログラム一覧を公開 | **参加費はプログラムごと（一覧ページでは未記載）**。生物・環境系プログラムの有無は個別PDFでの確認が必要 |
+| hokudai-coast-ecology | https://www2.fish.hokudai.ac.jp/event/29160/ | 2026-09-12 | 北海道大学大学院水産科学研究院主催「小さな動物も近所の誰かを気にしてる：海岸動物の行動生態学入門」。対象は中学生・高校生（保護者同伴可）、参加費無料、各回定員15名。2026-08-01の回と**2027-03-21の回**。3月コースの申込期間は2026-10-01〜2027-03-01。海岸での観察・磯採集、実習室での行動実験、研究施設紹介。場所は函館市港町3-1-1 | ページの最終更新が2026-05-01のため、**3月回の実施が現在も予定どおりかは未確認**。conditionsに明記済み。reviewAfter 2027-03-22 |
+| hiroshima-kokai | https://www.hiroshima-u.ac.jp/AC/kokai/31_koza | 2026-09-12 | 広島大学 2026年度高校生対象公開講座一覧。「受講料は無料です」。開講は2026-07-20〜2026-11-28。定員は講座により8〜130名。生物・環境系の講座（DNAと植物、両生類研究、オオサンショウウオ保護、宮島の植物と自然、生物の多様性と進化）を確認 | 中学生の参加可否は明示なし（conditionsでは高校生対象とのみ記載）。申込手順の詳細は別ページ。reviewAfter 2026-11-29 |
+| omnh | https://omnh.jp/ | 2026-09-12 | 大阪市立自然史博物館（大阪市東住吉区長居公園1-23）。行事（観察会・実習・講演会）一覧、子どもワークショップ、友の会（申込は http://www.omnh.net および https://omnh-shop.ocnk.net/product-list/123 ） | **入館料の金額がトップページに記載なし**。conditionsに「利用案内で確認」と明記 |
+
+### 続ける（継続活動・市民参加）
+
+| ID | 公式URL | 確認日 | 裏付けた内容 | 不明点 |
+|---|---|---|---|---|
+| wbsj-tanchokai | https://www.wbsj.org/about-us/group/tanchokai/ | 2026-09-12 | 日本野鳥の会。「野鳥の会会員でなくても、どなたでも参加できます」「探鳥会は、全国で年間約3千回開催しており、延べ約7万人の方が参加されています」。北海道〜九州・沖縄の7ブロックの支部が開催。掲載の探鳥会には行事保険がかけられている | **参加費・申込方法・持ち物（双眼鏡貸出）の記載なし**。支部ごとに要確認。一般回への子どもの参加可否も明記なし |
+| kodomo-ecoclub | https://www.j-ecoclub.jp/ | 2026-09-12 | 日本環境協会が運営。「幼児（3歳）から高校生までなら誰でも参加できる環境活動のクラブ」。活動報告に生物観察・河川調査・ビオトープ・農作物研究など。サイトからクラブ登録 | **参加費の記載を確認できず**。個人登録の可否の詳細も未確認 |
+| zenkoku-suisei | https://water-pub.env.go.jp/water-pub/mizu-site/mizu/suisei/ ／ 環境省報道発表 https://www.env.go.jp/press/press_05029.html | 2026-09-12 | 環境省・国土交通省が実施。29種の指標生物から水質を4階級（Ⅰきれいな水〜Ⅳとてもきたない水）で判定。「誰でも簡単に参加できることが大きな特長」。申込先は各都道府県の環境部局、一級河川直轄管理区間は各地方整備局。実施は夏休み期間が中心（4〜10月） | **参加費の記載なし**。サイト本体の下層ページ（about/way/text1a.html）は文字コードの都合で内容を読み取れず、報道発表を根拠にした。reviewAfter 2027-04-01 |
+| takao-satoyama | https://www.7midori.org/takao/volunteer/ | 2026-09-12 | セブン-イレブン記念財団運営の高尾の森自然学校（東京都八王子市川町705-1）。里山保全活動は**中学生以上**（小学生以下は要相談）、月3回程度（8月除く）9:30〜14:30、午前のみ参加可。ナラ枯れ木の伐採・コナラの萌芽更新・植樹。ほかにビオトープ、畑、小3〜中3のジュニアボランティア | **参加費の記載なし** |
+| satoyama-go | https://satoyama.tokyo-biodiversity.metro.tokyo.lg.jp/ ／ 八王子市の案内 https://www.city.hachioji.tokyo.jp/kurashi/life/004/green/kouiki/p006992.html | 2026-09-12 | 東京都の事業を公益財団法人東京都環境公社が受託運営。多摩地域の保全地域（横沢入、長房緑地、宇津木緑地など）で自然観察・森の手入れ・田んぼの活動。**中学生・高校生・大学等の学生を対象とする回**（2026-09-19 宇津木緑地保全地域、9:30〜12:30、定員30名先着、JR八王子駅集合の無料送迎バス）を八王子市の公式案内で確認 | **参加費の記載を確認できず**。定員充足の状況は未確認（先着順）。公式サイト側に中高生対象の明示は見あたらず、自治体の案内で補った。reviewAfter 2026-12-01 |
+| marine-challenge | https://marinechallenge.lne.st/outline/ | 2026-09-12 | 日本財団・JASTO・リバネス主催。対象は海洋・水環境分野の研究に挑戦する10代の個人またはチーム（大学生・高専生は研究室未所属者）。採択で研究費5万円、地方大会交通費補助、発表者に奨励金2万円。書類審査＋オンライン面談→地方大会→全国大会。**2026年度の募集期間は2025-12-01〜2026-02-27で締切済み** | 次回募集の時期は未確定。reviewAfter 2026-12-01 |
+| kikigaki | https://www.kikigaki.net/entry ／ 知る https://www.kikigaki.net/about | 2026-09-12 | 聞き書き甲子園実行委員会（農林水産省・文部科学省・環境省・国土緑化推進機構・地球緑化センターが参画）。対象は高校生、募集65名、参加費無料。森・川・海の名人（樵・炭焼き職人・漁師など）への一対一の聞き書き。事前研修、9〜11月の取材、作品提出。長距離移動と団体宿泊をともなう。**第25回の応募受付は2026-06-25必着で終了** | 次回（第26回）の募集要項は未公開。開始年度は明記なし。reviewAfter 2027-05-01 |
+| u22-procon | https://u22procon.com/ | 2026-09-12 | 一般社団法人ソフトウェア協会（SAJ）主催。対象は22歳以下（2004-04-02以降生まれ）または学生で28歳以下。個人・団体可、未応募のオリジナル作品に限る、ジャンル・言語制限なし、他コンテストとの併願は原則不可。**2026年度の応募は7月1日〜8月31日で締切済み** | **応募費用の記載を確認できず**。reviewAfter 2027-06-01 |
+
+### 学校で学ぶ（大学・専門学校・高校の活動）
+
+| ID | 公式URL | 確認日 | 裏付けた内容 | 不明点 |
+|---|---|---|---|---|
+| tuat-ecoregion | https://www.tuat.ac.jp/department/agriculture/region/curriculum.html | 2026-09-12 | 東京農工大学 農学部 地域生態システム学科のカリキュラム。実習科目として「地域生態システム学実習Ⅰ・Ⅱ」「フィールド安全管理学」「育林学実習」「樹木学実習」「山地保全・砂防計画学実習」「野生動物保全学実習」「森林保護・樹木医学実習」「森林土壌学実験・実習」「森林生産システム学実習」等を確認。分野は森林／野生動物／環境・工学／地域計画 | 演習林（FM多摩丘陵）での実習は学科サイト側の記述で、このカリキュラムページには具体的記載なし。**中高生向けの公開活動はなし**（在学生向けの授業としてconditionsに明記） |
+| hokudai-fisheries | https://www2.fish.hokudai.ac.jp/department-graduate-school/school-of-fisheries-sciences.html | 2026-09-12 | 北海道大学水産学部。4学科（海洋生物科学科・海洋資源科学科・増殖生命科学科・資源機能化学科）。1年後期に学科配属、2年は札幌、3年から函館キャンパス（函館市港町3-1-1）。附属練習船おしょろ丸・うしお丸への言及あり | **乗船実習が学部教育のどの科目で必修かは、このページでは確認できず**。conditionsに「公式のシラバスで確認」と明記。練習船ページ https://www2.fish.hokudai.ac.jp/facilities/ships.html は連絡先中心で実習内容の記載なし |
+| mie-bioresources | https://www.bio.mie-u.ac.jp/ | 2026-09-12 | 三重大学 生物資源学部（津市栗真町屋町1577）。2年次以降に海洋生物資源学／農林環境科学／生命化学のコースを選択。附属紀伊・黒潮生命地域フィールドサイエンスセンター（農場・演習林・水産実験所）と練習船「勢水丸」 | 個別の実習科目名までは未確認。中高生向け公開行事の有無は未確認 |
+| shinshu-bio | https://www.shinshu-u.ac.jp/faculty/science/bio/overview/post.html ／ 湖沼高地教育研究センター https://www.shinshu-u.ac.jp/faculty/science/kosyokochi/ ／ 諏訪臨湖実験所 https://www.shinshu-u.ac.jp/faculty/science/kosyokochi/kosyo-suwa.html | 2026-09-12 | 信州大学 理学部 生物学コース（松本市旭3-1-1）。フィールド実習がカリキュラムに含まれる。附属湖沼高地教育研究センターは諏訪臨湖実験所（諏訪市湖岸通り5-2-4）を拠点に陸水学の研究と諏訪湖定期観測を継続。教員が小型船舶免許を持ち、諏訪湖上で採水・水環境計測・水草観察の実習を実施。生物学コースの科目に生態学実験・進化生物学実習・臨湖実習 | **中高生向けの一般公開の記載は見あたらず**（conditionsに明記）。全国公開臨湖実習は大学生対象 |
+| gifu-forest-academy | https://www.forest.ac.jp/ | 2026-09-12 | 岐阜県が設置する専門学校（美濃市曽代88）。森と木のエンジニア科（高卒程度対象、1年共通＋2年で林業／林産業コース）、森と木のクリエーター科（22歳以上対象、林業・森林環境教育・木造建築・木工の4専攻）。オープンキャンパス実施 | 学費・出願条件の詳細は未確認（conditionsで入学案内へ誘導） |
+| igusa-bio-club | https://www.metro.ed.jp/igusa-h/activities/club_29/index.html | 2026-09-12 | 東京都立井草高等学校 生物部。部員39名、活動日は月・水・金（土日に野外活動）。尾瀬・伊豆大島・尾瀬ヶ原・至仏山・奥多摩・三浦半島・御岳山などで合宿・調査。日本進化学会・日本生物教育会でのポスター発表、部誌の発行 | **外部の中学生が参加できるかは記載なし**（在校生の部活動としてconditionsに明記）。学校の所在地はこのページでは未確認のため記載していない |
+
+## 確認できなかった・採用しなかったもの
+
+| 対象 | 状況 |
+|---|---|
+| 森林研究・整備機構 森林総合研究所（https://www.ffpri.affrc.go.jp/ ）、多摩森林科学園（https://www.ffpri.affrc.go.jp/tmk/ ） | 接続拒否（ECONNREFUSED）で本文を確認できず。**森・里山の「家から読める教材」の有力候補だが未採用**。次回再試行 |
+| 林野庁 こどもページ（https://www.rinya.maff.go.jp/j/kids/ ） | HTTP 403で本文を確認できず。未採用 |
+| 全国水生生物調査サイトの下層ページ（指標生物の見分け方など） | 文字コードの都合で本文を読み取れず。指標生物の解説を「家から読める教材」として個別登録するのは見送り、調査そのものの登録にとどめた |
+| 串本海中公園・海響館・マリンワールド海の中道などの磯観察会 | 実在を確認したが、**開催済みまたは保護者同伴必須・民間施設**のため、房総の海の博物館（公立・観察会シリーズ）を代表として採用した |
+| 中高生向けの音・音響の公的な体験プログラム | 大学の公開講座の一部にとどまり、音を対象にした中高生向けの継続的な入口を特定できなかった。**未充足** |
+
+## 既存13件（2026-09-11移行分）
+
+今回のUI変更ではリンク先を再調査していない。今回の作業でも再確認は行っていない（conceptIdsの付与のみ実施）。
 
 | ID | 既存の確認日 | 公式URL | 状態 |
 |---|---|---|---|
-| ocean-steam | 2026-09-11 | https://www.jamstec.go.jp/steam/ | 既存データから移行・再確認待ち |
-| scratch-create | 2026-09-11 | https://scratch.mit.edu/ideas | 既存データから移行・再確認待ち |
-| coderdojo | 2026-09-11 | https://coderdojo.jp/ | 既存データから移行・再確認待ち |
-| guitar-anatomy | 2026-09-11 | https://www.yamaha.com/ja/musical_instrument_guide/electric_guitar/ | 既存データから移行・再確認待ち |
-| fermentation | 2026-09-11 | https://www.maff.go.jp/j/pr/aff/2211/spe1_01.html | 既存データから移行・再確認待ち |
-| oshima-school | 2026-09-11 | https://www.metro.ed.jp/oosimakaiyokokusai-h/index.html | 既存データから移行・再確認待ち |
-| oshima-diving | 2026-09-11 | https://www.metro.ed.jp/oosimakaiyokokusai-h/activities/2026/08/29_3.html | 既存データから移行・再確認待ち |
-| oshima-visit | 2026-09-11 | https://www.metro.ed.jp/oosimakaiyokokusai-h/news/2026/08/6_7_27_1_1_1_1_1.html | 既存データから移行・再確認待ち |
-| kaiyo-life | 2026-09-11 | https://www.kaiyodai.ac.jp/faculty/s/ | 既存データから移行・再確認待ち |
-| kaiyo-engineering | 2026-09-11 | https://www.kaiyodai.ac.jp/faculty/e/ | 既存データから移行・再確認待ち |
-| kaiyo-environment | 2026-09-11 | https://www.kaiyodai.ac.jp/faculty/r/ | 既存データから移行・再確認待ち |
-| ritsumeikan-media | 2026-09-11 | https://admission.ritsumei.ac.jp/faculty/cias.html | 既存データから移行・再確認待ち |
-| kyushu-sound | 2026-09-11 | https://www.design.kyushu-u.ac.jp/schools/ad/ | 既存データから移行・再確認待ち |
+| ocean-steam | 2026-09-11 | https://www.jamstec.go.jp/steam/ | 再確認待ち（conceptIds: marine-life, environment-living を付与） |
+| scratch-create | 2026-09-11 | https://scratch.mit.edu/ideas | 再確認待ち（making-things を付与） |
+| coderdojo | 2026-09-11 | https://coderdojo.jp/ | 再確認待ち（making-things を付与） |
+| guitar-anatomy | 2026-09-11 | https://www.yamaha.com/ja/musical_instrument_guide/electric_guitar/ | 再確認待ち（making-things, sound-science を付与） |
+| fermentation | 2026-09-11 | https://www.maff.go.jp/j/pr/aff/2211/spe1_01.html | 再確認待ち（microbe-life を付与） |
+| oshima-school | 2026-09-11 | https://www.metro.ed.jp/oosimakaiyokokusai-h/index.html | 再確認待ち（marine-life, fieldwork を付与） |
+| oshima-diving | 2026-09-11 | https://www.metro.ed.jp/oosimakaiyokokusai-h/activities/2026/08/29_3.html | 再確認待ち（marine-life, fieldwork を付与） |
+| oshima-visit | 2026-09-11 | https://www.metro.ed.jp/oosimakaiyokokusai-h/news/2026/08/6_7_27_1_1_1_1_1.html | **2026-10-24開催の説明会。開催後に案内の切り替えが必要**（marine-life を付与） |
+| kaiyo-life | 2026-09-11 | https://www.kaiyodai.ac.jp/faculty/s/ | 再確認待ち（marine-life, biology を付与） |
+| kaiyo-engineering | 2026-09-11 | https://www.kaiyodai.ac.jp/faculty/e/ | 再確認待ち（marine-life を付与） |
+| kaiyo-environment | 2026-09-11 | https://www.kaiyodai.ac.jp/faculty/r/ | 再確認待ち（marine-life, environment-living を付与） |
+| ritsumeikan-media | 2026-09-11 | https://admission.ritsumei.ac.jp/faculty/cias.html | 再確認待ち。**対応するconceptがなく conceptIds は空のまま** |
+| kyushu-sound | 2026-09-11 | https://www.design.kyushu-u.ac.jp/schools/ad/ | 再確認待ち（sound-science を付与） |

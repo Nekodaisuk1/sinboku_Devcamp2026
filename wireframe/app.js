@@ -5,8 +5,8 @@ import {searchCatalog, catalogIds} from './catalog.mjs';
 import {routesForDomain, hasRoutes, routeDomains, ROUTES_CHECKED_ON} from './routes.mjs';
 import {renderRoutes} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
-import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, PLACEMENT_LIMIT, LABEL_LIMIT} from './field.mjs';
-import {renderField, renderFieldList} from './field-ui.mjs';
+import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS, PLACEMENT_LIMIT, LABEL_LIMIT} from './field.mjs';
+import {renderField, renderFieldList, curve} from './field-ui.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const $ = id => document.getElementById(id);
@@ -16,7 +16,10 @@ const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => r
 let state = emptyState();
 // 画面の一時的な状態。保存の対象にしない。
 const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker: false, legacy: false,
-            selected: null, routeKind: null, listView: false, about: false, picker: null, dragging: null, fieldWidth: 360, fieldScroll: null};
+            selected: null, routeKind: null, listView: false, about: false, picker: null,
+            verbSection: 'activities', fieldWidth: 360, fieldScroll: null,
+            // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
+            fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null};
 let persist = false;
 let storageNote = '';
 let toastTimer;
@@ -85,13 +88,54 @@ function route() {
 /* ---------- 野原 ---------- */
 
 function fieldView() {
+  // 絞り込みは「描くものを減らす」だけ。保存された置きものには手を触れない。
+  const scope = visibleFor(state.placements, {view: ui.fieldView, selected: ui.selected});
   const selected = ui.selected ?? '';
   const anchor = selected.startsWith('domain-')
-    ? revealWorld(state.placements).domains.find(domain => `domain-${domain.id}` === selected)?.x ?? 0.5
+    ? revealWorld(scope.placements).domains.find(domain => `domain-${domain.id}` === selected)?.x ?? 0.5
     : 0.5;
   const extra = selected.startsWith('domain-') && ui.routeKind ? routePath(selected.slice(7), ui.routeKind, anchor) : {nodes: [], links: []};
   const extraNodes = extra.nodes.map(node => ({...node, links: extra.links.filter(link => link.from === node.id)}));
-  return layout({placements: state.placements, extraNodes, width: ui.fieldWidth});
+  // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
+  // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
+  const keep = new Set([...linkedSet(scope.placements, ui.selected), ui.moving].filter(Boolean));
+  const view = layout({placements: scope.placements, extraNodes, width: ui.fieldWidth, expandedLanes: ui.expandedLanes, keep});
+  return {...view, scope};
+}
+
+/** 絞り込んだときに、何件を隠しているかを必ず言う。黙って減らさない。 */
+function scopeMarkup(scope) {
+  const total = state.placements.length;
+  if (!total || (!scope.hidden && !scope.note)) return '';
+  const counted = scope.hidden ? `${total}件のうち${total - scope.hidden}件を表示しています。` : '';
+  return `<p class="field-scope">${escape(counted)}${escape(scope.note ?? '')}</p>`;
+}
+
+/**
+ * 広げている段を、野原の外にも出す。段の見出しにある「まとめる」は、
+ * 広げて縦に長くなった段をスクロールすると画面の外へ消えてしまい、戻せなくなる。
+ */
+function expandedMarkup(view) {
+  const open = view.lanes.filter(lane => lane.expanded);
+  if (!open.length) return '';
+  // 段の名前は「◯◯を選ぶ」なので、「を閉じる」を足すと「選ぶを閉じる」になる。
+  // 見出しは名前だけにして、何をする釦かは aria-label で言う。
+  return `<p class="field-expanded">広げている段：${open.map(lane =>
+    `<button class="lane-chip on" data-expand-lane="${escape(lane.id)}" data-expand-from="list" aria-label="${escape(lane.title)}の段をまとめる">${escape(lane.title)}<span aria-hidden="true"> ✕</span></button>`).join('')}</p>`;
+}
+
+function fieldViewMarkup() {
+  if (state.placements.length === 0) return '';
+  return `<div class="field-views" role="group" aria-label="野原の表示">
+    ${FIELD_VIEWS.map(item => `<button class="view-chip${ui.fieldView === item.id ? ' on' : ''}" data-field-view="${escape(item.id)}" aria-pressed="${ui.fieldView === item.id}" title="${escape(item.hint)}">${escape(item.label)}</button>`).join('')}
+  </div>`;
+}
+
+function listSortMarkup() {
+  return `<div class="list-sorts" role="group" aria-label="一覧の並べ方">
+    <span class="list-sorts-label">並べ方</span>
+    ${LIST_SORTS.map(item => `<button class="lane-chip${ui.listSort === item.id ? ' on' : ''}" data-list-sort="${escape(item.id)}" aria-pressed="${ui.listSort === item.id}">${escape(item.label)}</button>`).join('')}
+  </div>`;
 }
 
 /**
@@ -119,29 +163,45 @@ function highlightFor(view) {
 function tutorialMarkup() {
   const count = state.placements.length;
   if (count === 0) {
-    return `<section class="tutor tutor-start">
+    return `<section class="tutor tutor-start" aria-label="野原のはじめかた">
       <p class="tutor-step">はじめかた</p>
-      <h2>まず、ひとつ置いてみよう。</h2>
-      <p>いま好きなこと・やっていることを、いちばん下の「いま」に置きます。置くと、そこから線が伸びて学問が現れます。</p>
+      <h2>好きなものを、ひとつ置く</h2>
+      <p>選ぶと線が伸びて、つながる学問が現れます。</p>
       <div class="tutor-choices">
         ${Object.entries(topics).map(([id, topic]) => `<button class="tutor-choice" data-quick-topic="${escape(id)}">${escape(topic.label)}</button>`).join('')}
         <button class="tutor-choice write" data-open-picker="custom">自分で書く</button>
       </div>
     </section>`;
   }
-  if (count === 1) {
-    const rest = Object.entries(topics).filter(([id]) => !state.placements.some(placement => placement.ref === id));
-    return `<section class="tutor">
-      <p class="tutor-step">つぎ</p>
-      <h2>もうひとつ置くと、合流が見えます。</h2>
-      <p>別の好きなことを置いてください。2本の線が同じ学問に届いたら、そこが光ります。関係がなさそうな2つほど、面白いことになります。</p>
-      <div class="tutor-choices">
-        ${rest.map(([id, topic]) => `<button class="tutor-choice" data-quick-topic="${escape(id)}">${escape(topic.label)}</button>`).join('')}
-        <button class="tutor-choice write" data-open-picker="custom">自分で書く</button>
-      </div>
-    </section>`;
-  }
   return '';
+}
+
+function contextMarkup(next, grade, week) {
+  const placement = state.placements.at(-1);
+  const timing = next.when && next.when.months >= 0
+    ? `あと${next.when.months}か月`
+    : grade ? next.defer : '中3の12月ごろが目安';
+  const decision = next.name || '次の分岐点';
+  return `<section class="field-context" aria-label="いま確認できること">
+    <button class="context-item context-decision" data-node-open="lane-${escape(next.decision)}">
+      <span>次に開く扉</span>
+      <b>${escape(decision)}</b>
+      <small>${escape(timing)} · いま全部を決めなくて大丈夫</small>
+    </button>
+    ${state.placements.length === 1 ? `<button class="context-item context-resume" data-open-picker="topic">
+      <span>つぎの一手</span>
+      <b>もうひとつ置いて、共通点を見る</b>
+      <small>別の好きなことや活動を選ぶ</small>
+    </button>` : placement ? `<button class="context-item context-resume" data-node-open="${escape(placement.id)}">
+      <span>野原のつづき</span>
+      <b>「${escape(placement.label)}」を見る</b>
+      <small>野原に${state.placements.length}件${week ? ` · 7日間の記録${week}件` : ''}</small>
+    </button>` : `<a class="context-item context-explore" href="#find">
+      <span>何を置くか迷ったら</span>
+      <b>やっていることから探す</b>
+      <small>36の活動と42の掲載情報</small>
+    </a>`}
+  </section>`;
 }
 
 function convergenceMarkup() {
@@ -158,10 +218,14 @@ function convergenceMarkup() {
   }
   return `<section class="converge">
     <h2>ここで合流しています</h2>
-    <ul>${found.map(item => `<li>
-      <p class="converge-from">${item.labels.map(label => `<span>${escape(label)}</span>`).join('<em>と</em>')}</p>
-      <p class="converge-to">どちらも <button class="link-button" data-node-open="domain-${escape(item.domain)}">${escape(item.name)}</button> につながっています</p>
-    </li>`).join('')}</ul>
+    <ul>${found.map(item => {
+      // 名前を全部並べない。1つの学問に8件届くことがあり、並べると1行が画面を埋める。
+      const {shown, rest, all, name} = convergenceSentence(item);
+      return `<li>
+      <p class="converge-from">${shown.map(label => `<span>${escape(label)}</span>`).join('<em>と</em>')}${rest ? `<em>ほか</em><span>${rest}件</span>` : ''}</p>
+      <p class="converge-to">${escape(all)} <button class="link-button" data-node-open="domain-${escape(item.domain)}">${escape(name)}</button> につながっています</p>
+    </li>`;
+    }).join('')}</ul>
     <p class="converge-note">同じ領域に届いているという意味です。向き不向きの判定ではありません。</p>
   </section>`;
 }
@@ -325,6 +389,7 @@ function nowPage() {
         <button class="primary" data-open-picker="topic">＋ 置く</button>
         <button class="ghost" data-list-view aria-pressed="${ui.listView}">${ui.listView ? '野原で見る' : '一覧で読む'}</button>
       </div>
+      ${fieldViewMarkup()}
       ${ui.about ? '<p class="field-about">縦だけが時間です。横の位置に意味はありません。意味を持つのは、置いたものから伸びた線が、どこで合流するかです。関係がなさそうな2つが同じ学問に届くことがあります。</p>' : ''}
       ${ui.gradePicker ? `<div class="grade-choices">
         ${GRADES.map(item => `<button class="grade-choice${state.grade === item.id ? ' on' : ''}" data-grade="${item.id}">${escape(item.label)}</button>`).join('')}
@@ -332,22 +397,24 @@ function nowPage() {
       </div><p class="grade-note">分岐点まであと何か月かを出すためだけに使います。この端末の中だけです。</p>` : ''}
     </section>
 
+    ${contextMarkup(next, grade, week)}
+
     ${ui.listView
-      ? renderFieldList(view, convergences(state.placements))
-      : `<div class="field-wrap" id="field-wrap">${renderField(view, {selected: ui.selected, dragging: ui.dragging, highlight: highlightFor(view), next: next.decision})}</div>
-         <p class="field-legend">段の見出しをタップすると、その分岐点について読めます。置いたものは指で動かせます。図が読みにくいときは「一覧で読む」へ。</p>`}
+      ? `${listSortMarkup()}
+         ${view.scope.placements.length
+            ? renderFieldList(listGroups(view.scope.placements, ui.listSort), convergences(view.scope.placements))
+            : '<p class="field-list-empty">まだ何も置いていません。</p>'}
+         ${scopeMarkup(view.scope)}`
+      : `<div class="field-stage">
+           <div class="field-wrap" id="field-wrap">${renderField(view, {selected: ui.selected, highlight: highlightFor(view), next: next.decision})}</div>
+           ${tutorialMarkup()}
+         </div>
+         ${expandedMarkup(view)}
+         ${scopeMarkup(view.scope)}
+         <p class="field-legend">段の見出しをタップすると、その分岐点について読めます。置いたものは指でも、選んでから矢印キーでも動かせます。混みあった段は「広げる」で1つずつに分けられます。図が読みにくいときは「一覧で読む」へ。</p>`}
 
     ${selectionPanel(view)}
-    ${tutorialMarkup()}
     ${convergenceMarkup()}
-
-    <section class="today">
-      <h2>今日決めること</h2>
-      <p>${next.status === 'next'
-        ? `「${escape(next.name)}」の1つだけです。${next.when && next.when.months >= 0 ? `あと${next.when.months}か月。` : ''}ほかの段は、まだ決める段階ではないか、すでに過ぎています。`
-        : 'いちばん下の分岐点1つだけです。上の段は、まだ決める段階ではありません。'}</p>
-      <p class="today-note">${week ? `この7日間に${week}件の記録。` : '記録は0件。空のままで問題ありません。'}　公立高校の一般入試を想定した目安で、地域・学校・入試方式によって前後します。</p>
-    </section>
 
     ${storageSection()}
     ${pickerMarkup()}`;
@@ -389,20 +456,20 @@ function verbDetail(verbId) {
   const fields = domainsForVerb(verbId);
   const items = resourcesForVerb(verbId, {athome: ui.athome});
   const coverage = verbCoverage(verbId);
-  return `<section class="verb-detail">
-    <a class="back" href="#find">← ほかの動詞を見る</a>
-    <h2><span aria-hidden="true">${escape(verb.icon)}</span> ${escape(verb.label)}</h2>
-    <p class="verb-summary">${escape(verb.summary)}</p>
-    <p class="verb-detail-text">${escape(verb.detail)}</p>
-    <label class="athome"><input type="checkbox" data-athome ${ui.athome ? 'checked' : ''}> 家でできるものだけ</label>
-
+  const sections = [
+    ['activities', 'やってみる', groups.reduce((total, group) => total + group.items.length, 0)],
+    ['domains', '学問', fields.length],
+    ['resources', '掲載情報', items.length]
+  ];
+  const activitySection = `<section class="verb-pane" aria-label="今日できること">
     <h3>今日できること</h3>
     ${groups.length
       ? `<p class="verb-note">同じ「${escape(verb.label)}」が、好きなことをまたいで並びます。${ui.athome ? `家でできるのは${coverage.athome}件。` : `全部で${coverage.activities}件。`}</p>
          ${groups.map(group => `<div class="activity-group"><h4 class="activity-topic">${escape(group.label)}</h4><ul class="activity-list">${group.items.map(activityMarkup).join('')}</ul></div>`).join('')}`
       : '<p class="empty-note">この条件に合う活動アイデアは、まだ用意できていません。条件を外すと出ます。</p>'}
     <p class="editorial">活動のアイデアです。募集中のイベントや、特定の団体の案内ではありません。動詞の割り当てはこのアプリの編集です。</p>
-
+  </section>`;
+  const domainSection = `<section class="verb-pane" aria-label="つながる学問">
     <h3>この動詞を、学問にすると</h3>
     <p class="verb-note">向き不向きの判定ではありません。「${escape(verb.label)}」を仕事や研究として続けている分野です。</p>
     <ul class="domain-list">${fields.map(field => `<li>
@@ -411,10 +478,23 @@ function verbDetail(verbId) {
       <p class="domain-example">${escape(field.example)}</p>
       <a class="secondary" href="#routes/${escape(field.id)}">${escape(field.name)}にたどり着く道を見る →</a>
     </li>`).join('')}</ul>
-
+  </section>`;
+  const resourceSection = `<section class="verb-pane" aria-label="掲載情報">
     <h3>掲載情報（${items.length}件）</h3>
     ${items.length ? `<ul class="resource-list">${items.map(resourceMarkup).join('')}</ul>`
       : '<p class="empty-note">この条件の掲載情報はありません。掲載がないことと、世の中に存在しないことは別です。</p>'}
+  </section>`;
+  const panes = {activities: activitySection, domains: domainSection, resources: resourceSection};
+  return `<section class="verb-detail">
+    <a class="back" href="#find">← ほかの動詞を見る</a>
+    <h2><span aria-hidden="true">${escape(verb.icon)}</span> ${escape(verb.label)}</h2>
+    <p class="verb-summary">${escape(verb.summary)}</p>
+    <p class="verb-detail-text">${escape(verb.detail)}</p>
+    <label class="athome"><input type="checkbox" data-athome ${ui.athome ? 'checked' : ''}> 家でできるものだけ</label>
+    <div class="verb-section-tabs" role="group" aria-label="見る内容">
+      ${sections.map(([id, label, count]) => `<button class="verb-section-tab${ui.verbSection === id ? ' on' : ''}" data-verb-section="${id}" aria-pressed="${ui.verbSection === id}">${label}<span>${count}</span></button>`).join('')}
+    </div>
+    ${panes[ui.verbSection] ?? activitySection}
   </section>`;
 }
 
@@ -425,9 +505,15 @@ function searchResultMarkup(entry) {
     : entry.type === 'activity' ? `#find/${entry.activity.verb}`
     : entry.type === 'topic' ? '#find' : entry.resource.url;
   const external = entry.type === 'resource';
+  const placeAction = entry.type === 'resource'
+    ? `<button class="text-button" data-place-resource="${escape(entry.id)}">野原に置く</button>`
+    : entry.type === 'activity'
+      ? `<button class="text-button" data-place-activity="${escape(entry.id)}">野原に置く</button>`
+      : entry.type === 'topic'
+        ? `<button class="text-button" data-quick-topic="${escape(entry.id)}">野原に置く</button>` : '';
   return `<li class="result">
     <p class="result-type">${escape(labels[entry.type])}</p>
-    ${href ? `<a href="${escape(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escape(entry.name)}${external ? ' ↗' : ''}</a>` : `<span>${escape(entry.name)}</span>`}
+    <div class="result-head">${href ? `<a href="${escape(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escape(entry.name)}${external ? ' ↗' : ''}</a>` : `<span>${escape(entry.name)}</span>`}${placeAction}</div>
     <p>${escape(entry.summary)}</p>
   </li>`;
 }
@@ -519,8 +605,9 @@ function render() {
     element.setAttribute('aria-current', element.dataset.tab === tab ? 'page' : 'false');
   }
   const chip = $('storage-toggle');
-  chip.textContent = `端末保存：${persist ? 'オン' : 'オフ'}`;
+  chip.textContent = `次回も残す：${persist ? 'オン' : 'オフ'}`;
   chip.setAttribute('aria-pressed', String(persist));
+  chip.classList.toggle('attention', !persist && state.placements.length > 0);
   // 幅は実際の表示幅をそのまま使う。合わなければ測り直して一度だけ描き直す。
   if (current.page === 'now' && !ui.listView && measureField()) return render();
   const wrap = $('field-wrap');
@@ -533,7 +620,16 @@ function render() {
     fieldObserver.disconnect();
     fieldObserver.observe(wrap);
   }
-  if (ui.picker) $('picker')?.showModal();
+  if (ui.picker) {
+    const dialog = $('picker');
+    dialog?.showModal();
+    dialog?.addEventListener('close', () => {
+      if (!ui.picker) return;
+      ui.picker = null;
+      render();
+      document.querySelector('[data-open-picker]')?.focus();
+    }, {once: true});
+  }
   if (ui.editing) {
     const input = $('stance-input');
     if (input) {input.focus(); input.setSelectionRange(input.value.length, input.value.length);}
@@ -560,17 +656,25 @@ function place({kind, ref, label, verb = null, lane = 'now'}) {
     const fresh = after[after.length - 1];
     notify(`合流：${fresh.labels.join('と')} → ${fresh.name}`);
   } else {
-    notify(`「${placement.label}」を置きました。`);
+    notify(`「${placement.label}」を置きました。${persist ? '' : ' 次回も残すなら、右上で保存をオンに。'}`);
   }
 }
 
 /* ---------- 操作 ---------- */
 
 document.addEventListener('click', event => {
+  // 動かした直後の click は、選択の切り替えとして扱わない。
+  if (justDragged) {justDragged = false; return;}
+
+  // 段を広げる・まとめるは、段そのものの選択より先に拾う。
+  const expand = event.target.closest('[data-expand-lane]');
+  if (expand) return expandLane(expand.dataset.expandLane, expand.dataset.expandFrom ?? 'field');
+
   const svgNode = event.target.closest('[data-node]');
   if (svgNode) {
     ui.selected = ui.selected === svgNode.dataset.node ? null : svgNode.dataset.node;
     ui.routeKind = null;
+    if (ui.moving !== ui.selected) ui.moving = null;
     return render();
   }
   const laneHit = event.target.closest('.lane');
@@ -586,11 +690,17 @@ document.addEventListener('click', event => {
   if (target.hasAttribute('data-deselect')) {ui.selected = null; ui.routeKind = null; return render();}
   if (target.dataset.nodeOpen) {ui.selected = target.dataset.nodeOpen; ui.routeKind = null; ui.listView = false; return render();}
   if (target.hasAttribute('data-list-view')) {ui.listView = !ui.listView; return render();}
+  if (target.dataset.fieldView) {ui.fieldView = target.dataset.fieldView; return render();}
+  if (target.dataset.listSort) {ui.listSort = target.dataset.listSort; return render();}
   if (target.hasAttribute('data-about')) {ui.about = !ui.about; return render();}
   if (target.hasAttribute('data-grade-open')) {ui.gradePicker = !ui.gradePicker; return render();}
   if (target.dataset.grade !== undefined) {state.grade = target.dataset.grade || null; ui.gradePicker = false; save(); return render();}
 
-  if (target.dataset.quickTopic) return place({kind: 'topic', ref: target.dataset.quickTopic, label: topics[target.dataset.quickTopic].label});
+  if (target.dataset.quickTopic) {
+    place({kind: 'topic', ref: target.dataset.quickTopic, label: topics[target.dataset.quickTopic].label});
+    if (route().page !== 'now') location.hash = '#now';
+    return;
+  }
   if (target.dataset.openPicker) {ui.picker = {tab: target.dataset.openPicker, lane: 'now'}; return render();}
   if (target.hasAttribute('data-close-picker')) {ui.picker = null; return render();}
   if (target.dataset.pickerTab) {ui.picker = {...ui.picker, tab: target.dataset.pickerTab}; return render();}
@@ -634,6 +744,7 @@ document.addEventListener('click', event => {
     return render();
   }
   if (target.dataset.routeKind) {ui.routeKind = ui.routeKind === target.dataset.routeKind ? null : target.dataset.routeKind; return render();}
+  if (target.dataset.verbSection) {ui.verbSection = target.dataset.verbSection; return render();}
 
   if (target.dataset.stanceEdit) {ui.editing = target.dataset.stanceEdit; return render();}
   if (target.hasAttribute('data-stance-cancel')) {ui.editing = null; return render();}
@@ -655,6 +766,59 @@ document.addEventListener('click', event => {
     if (panel) panel.hidden = !panel.hidden;
   }
 });
+
+document.addEventListener('keydown', event => {
+  // 指で動かせることは、キーボードでも同じようにできなければならない。
+  const movable = event.target.closest('[data-movable]');
+  if (movable && NUDGE[event.key]) {
+    const placement = state.placements.find(item => item.id === movable.dataset.node);
+    if (placement) {
+      event.preventDefault();
+      return nudge(placement, event.key, event.shiftKey);
+    }
+  }
+  if (!['Enter', ' '].includes(event.key)) return;
+  const target = event.target.closest('[data-node], [data-expand-lane], .lane');
+  if (!target) return;
+  event.preventDefault();
+  target.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+});
+
+const NUDGE = {ArrowLeft: 'x', ArrowRight: 'x', ArrowUp: 'lane', ArrowDown: 'lane'};
+
+/** キーボードで置きものを動かす。横は本人の位置をずらすだけ、縦は段を1つ移す。 */
+function nudge(placement, key, fine) {
+  const step = fine ? 0.01 : 0.05;
+  let moved = placement;
+  if (NUDGE[key] === 'x') {
+    const x = Math.min(Math.max(placement.x + (key === 'ArrowLeft' ? -step : step), 0), 1);
+    moved = {...placement, x};
+  } else {
+    // LANES は上が未来。↑で未来へ、↓で今へ。
+    const index = LANE_IDS.indexOf(placement.lane) + (key === 'ArrowUp' ? -1 : 1);
+    if (index < 0 || index >= LANE_IDS.length) return;
+    moved = {...placement, lane: LANE_IDS[index]};
+  }
+  state.placements = state.placements.map(item => item.id === placement.id ? moved : item);
+  ui.moving = placement.id;
+  save();
+  render();
+  document.querySelector(`[data-node="${CSS.escape(placement.id)}"]`)?.focus();
+  if (moved.lane !== placement.lane) notify(`「${placement.label}」を${laneById(moved.lane).title}の段へ動かしました。`);
+}
+
+/** 段を広げる／まとめる。見え方だけを変えるので、保存はしない。 */
+function expandLane(id, from = 'field') {
+  ui.expandedLanes = ui.expandedLanes.includes(id)
+    ? ui.expandedLanes.filter(item => item !== id)
+    : [...ui.expandedLanes, id];
+  render();
+  // 押した場所に近いほうへ戻す。野原の外から閉じたときに、段の見出しへ飛ばさない。
+  const selector = from === 'list'
+    ? `.field-expanded [data-expand-lane="${CSS.escape(id)}"]`
+    : `.lane-toggle[data-expand-lane="${CSS.escape(id)}"]`;
+  (document.querySelector(selector) ?? document.querySelector(`[data-expand-lane="${CSS.escape(id)}"]`))?.focus();
+}
 
 document.addEventListener('submit', event => {
   const form = event.target;
@@ -710,41 +874,67 @@ document.addEventListener('input', event => {
 /* ---------- 置いたものを動かす ---------- */
 
 let drag = null;
+let justDragged = false;
 
 document.addEventListener('pointerdown', event => {
   const handle = event.target.closest('[data-movable]');
   if (!handle || !lastView) return;
-  const box = handle.closest('svg').getBoundingClientRect();
-  drag = {id: handle.dataset.node, box, moved: false, pointer: event.pointerId, startX: event.clientX, startY: event.clientY};
+  const svg = handle.closest('svg');
+  drag = {id: handle.dataset.node, handle, svg, box: svg.getBoundingClientRect(),
+          moved: false, pointer: event.pointerId, startX: event.clientX, startY: event.clientY,
+          x: null, lane: null};
 });
+
+/**
+ * 動かしている最中は、画面全体を描き直さない。
+ * 20件置いてあると描き直しが指に追いつかないので、動かしているノードと、
+ * そこにつながる線だけを書き換える。段の高さはこの間は動かさない。
+ */
+function paintDrag() {
+  const placement = state.placements.find(item => item.id === drag.id);
+  const box = placement && previewBox({label: placement.label, x: drag.x, lane: drag.lane}, lastView);
+  if (!box) return;
+  drag.handle.setAttribute('transform', `translate(${box.left.toFixed(1)} ${box.y.toFixed(1)})`);
+  const id = CSS.escape(drag.id);
+  for (const path of drag.svg.querySelectorAll(`path[data-from="${id}"], path[data-to="${id}"]`)) {
+    const from = path.dataset.from === drag.id ? box : lastView.byId.get(path.dataset.from);
+    const to = path.dataset.to === drag.id ? box : lastView.byId.get(path.dataset.to);
+    if (from && to) path.setAttribute('d', curve(from, to));
+  }
+}
 
 document.addEventListener('pointermove', event => {
   if (!drag || event.pointerId !== drag.pointer) return;
   // 少し動いてからドラッグ扱いにする。タップで選ぶ操作を邪魔しない。
   if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6) return;
-  drag.moved = true;
-  ui.dragging = drag.id;
+  if (!drag.moved) {drag.moved = true; drag.handle.classList.add('is-dragging');}
   event.preventDefault();
-  const x = (event.clientX - drag.box.left) / drag.box.width;
-  const lane = laneAt(event.clientY - drag.box.top, lastView.lanes);
-  state.placements = state.placements.map(placement =>
-    placement.id === drag.id ? {...placement, x: Math.min(Math.max(x, 0), 1), lane} : placement);
-  render();
-  const fresh = document.querySelector(`[data-node="${CSS.escape(drag.id)}"]`);
-  if (fresh) drag.box = fresh.closest('svg').getBoundingClientRect();
+  drag.x = Math.min(Math.max((event.clientX - drag.box.left) / drag.box.width, 0), 1);
+  drag.lane = laneAt((event.clientY - drag.box.top) * (lastView.height / drag.box.height), lastView.lanes);
+  paintDrag();
 });
 
-document.addEventListener('pointerup', event => {
+function endDrag(event, commit) {
   if (!drag || event.pointerId !== drag.pointer) return;
-  const moved = drag.moved;
+  const finished = drag;
   drag = null;
-  ui.dragging = null;
-  if (!moved) return;
+  if (!finished.moved) return;
   // 動かしたときは選択を変えない。クリック扱いにもしない。
   event.preventDefault();
-  save();
+  justDragged = true;
+  setTimeout(() => {justDragged = false;}, 300);
+  if (commit) {
+    state.placements = state.placements.map(placement =>
+      placement.id === finished.id ? {...placement, x: finished.x, lane: finished.lane} : placement);
+    ui.moving = finished.id;
+    save();
+  }
+  // 指を離したここで初めて確定して描き直す。段の高さもここでそろう。
   render();
-}, true);
+}
+
+document.addEventListener('pointerup', event => endDrag(event, true), true);
+document.addEventListener('pointercancel', event => endDrag(event, false), true);
 
 // 幅の変化は resize より要素の観測のほうが確実に拾える。
 const fieldObserver = new ResizeObserver(() => {
