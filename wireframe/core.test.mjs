@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {routeDomains, routesForDomain, decisionPoints, mathLevels, mathSpread, ROUTES_CHECKED_ON} from './routes.mjs';
 import {buildTimeline, nextDecision, stageWhen, schoolYearStart, STAGES, GRADES, validateStances, validateGrade} from './timeline.mjs';
 import {validateLog, addEntry, removeEntry, byMonth, recentCount, sortLog, LOG_LIMIT} from './log.mjs';
-import {encodeState, decodeState, emptyState} from './store.mjs';
+import {encodeState, decodeState, emptyState, STATE_BYTES} from './store.mjs';
 import {verbs, activitiesForVerb, activitiesByTopic, domainsForVerb, resourcesForVerb, allActivities, verbCoverage, domains, topics, resources} from './verbs.mjs';
 import {searchCatalog, catalogIds, normalizeQuery} from './catalog.mjs';
 import {validateKnowledge} from './scripts/knowledge.mjs';
@@ -307,10 +307,18 @@ test('a collapsed ladder still shows the next decision, whatever the grade', () 
 
 import {
   LANES, LANE_IDS, layout, laneAt, revealWorld, convergences, reachOf, routePath, validatePlacements, packLane, freeX, PLACEMENT_LIMIT,
-  MAX_ROWS, RECENT_COUNT, FIELD_VIEWS, LIST_SORTS, linkedSet, visibleFor, listGroups, previewBox, convergenceSentence, CONVERGENCE_NAMES
+  MAX_ROWS, RECENT_COUNT, FIELD_VIEWS, LIST_SORTS, linkedSet, visibleFor, listGroups, previewBox, convergenceSentence, CONVERGENCE_NAMES,
+  PLACEMENT_KINDS, SELF_KINDS, URL_LIMIT, TITLE_LIMIT, PHOTO_LIMIT, PHOTO_BYTES, sourceOf, contentOf, describeSource
 } from './field.mjs';
 
-const put = (id, ref, x, lane = 'now', kind = 'topic') => ({id, lane, x, label: id, kind, ref, verb: null, note: ''});
+// topic / url / title / photo は既定で null、source は kind から導いた既定値。
+// Build 23 で増えたフィールドを、呼び出し側ごとに書かずに済ませるための既定値。
+const put = (id, ref, x, lane = 'now', kind = 'topic', extra = {}) => ({
+  id, lane, x, label: id, kind, ref, verb: null, note: '',
+  topic: null, url: null, title: null, photo: null,
+  source: SELF_KINDS.includes(kind) ? 'self' : 'catalog',
+  ...extra
+});
 
 test('the field places time on the vertical axis only, from the future down to today', () => {
   const view = layout({placements: [put('a', 'games', 0.3)], width: 360});
@@ -403,8 +411,14 @@ test('placements survive saving and reject unknown lanes, references and positio
   const resource = [...catalog.resources][0];
   const placements = [
     put('a', 'games', 0.25),
-    {id: 'b', lane: 'highschool', x: 1, label: activity.title, kind: 'activity', ref: activity.id, verb: null, note: ''},
-    {id: 'c', lane: 'lab', x: 0, label: resources[resource].name, kind: 'resource', ref: resource, verb: verbs[0].id, note: 'メモ'}
+    {
+      id: 'b', lane: 'highschool', x: 1, label: activity.title, kind: 'activity', ref: activity.id, verb: null, note: '',
+      topic: null, url: null, title: null, photo: null, source: 'catalog'
+    },
+    {
+      id: 'c', lane: 'lab', x: 0, label: resources[resource].name, kind: 'resource', ref: resource, verb: verbs[0].id, note: 'メモ',
+      topic: null, url: null, title: null, photo: null, source: 'catalog'
+    }
   ];
   const state = {...emptyState(), placements};
   assert.deepEqual(decodeState(encodeState(state), catalog).placements, placements);
@@ -583,4 +597,139 @@ test('a convergence sentence names a few and counts the rest, and only says "ど
   assert.equal(many.all, 'どれも', 'eight things are not "both"');
   assert.equal(many.shown.length, CONVERGENCE_NAMES);
   assert.equal(many.rest, 8 - CONVERGENCE_NAMES, 'the ones left out are counted, never dropped in silence');
+});
+
+/* --- Build 23: 統一したデータの形と検証 --- */
+
+test('PLACEMENT_KINDS lists every kind the field can hold, and SELF_KINDS names exactly the ones the user added themselves', () => {
+  assert.deepEqual(PLACEMENT_KINDS, ['topic', 'activity', 'resource', 'custom', 'link', 'photo']);
+  assert.deepEqual(SELF_KINDS, ['custom', 'link', 'photo']);
+  for (const kind of SELF_KINDS) assert.ok(PLACEMENT_KINDS.includes(kind), `${kind} must also be a placement kind`);
+});
+
+test('a url only accepts http and https, and rejects javascript:, data: and file: as an entry, not a silent drop', () => {
+  const link = put('u1', null, 0.5, 'now', 'link', {url: 'https://example.com/path'});
+  assert.equal(validatePlacements([link], catalog)[0].url, 'https://example.com/path');
+  assert.equal(validatePlacements([{...link, url: 'http://example.com'}], catalog)[0].url, 'http://example.com');
+  for (const bad of ['javascript:alert(1)', 'data:text/html,hi', 'file:///etc/passwd', 'not a url']) {
+    assert.throws(() => validatePlacements([{...link, url: bad}], catalog), /url/, `${bad} must be rejected`);
+  }
+  assert.throws(() => validatePlacements([{...link, url: `https://${'a'.repeat(URL_LIMIT)}`}], catalog), /url/, 'a url past URL_LIMIT is rejected');
+});
+
+test('a link placement must carry a url, and can never carry a catalog reference', () => {
+  assert.throws(() => validatePlacements([put('u2', null, 0.5, 'now', 'link')], catalog), /needs a url/);
+  assert.throws(() => validatePlacements([put('u3', 'games', 0.5, 'now', 'link', {url: 'https://example.com'})], catalog), /no catalog reference/);
+  const ok = validatePlacements([put('u4', null, 0.5, 'now', 'link', {url: 'https://example.com'})], catalog);
+  assert.equal(ok[0].url, 'https://example.com');
+  assert.equal(ok[0].ref, null);
+});
+
+test('a photo placement only accepts a jpeg or png data url, and rejects one that is too big or the wrong shape', () => {
+  const small = `data:image/png;base64,${'a'.repeat(10)}`;
+  assert.equal(validatePlacements([put('ph1', null, 0.5, 'now', 'photo', {photo: small})], catalog)[0].photo, small);
+  assert.throws(() => validatePlacements([put('ph2', null, 0.5, 'now', 'photo')], catalog), /needs a photo/);
+  assert.throws(() => validatePlacements([put('ph3', null, 0.5, 'now', 'photo', {photo: 'data:text/plain;base64,aGk='})], catalog), /photo/, 'not an image, no matter how it is spelled');
+  const tooBig = `data:image/jpeg;base64,${'a'.repeat(PHOTO_BYTES)}`;
+  assert.throws(() => validatePlacements([put('ph4', null, 0.5, 'now', 'photo', {photo: tooBig})], catalog), /photo/, 'one photo past PHOTO_BYTES is rejected');
+});
+
+test('placing more photos than the per-device limit is rejected as a whole, not trimmed silently', () => {
+  const photo = `data:image/png;base64,${'a'.repeat(20)}`;
+  const many = Array.from({length: PHOTO_LIMIT + 1}, (_, index) => put(`ph${index}`, null, index / (PHOTO_LIMIT + 2), 'now', 'photo', {photo}));
+  assert.throws(() => validatePlacements(many, catalog), /Too many photos/);
+  assert.equal(validatePlacements(many.slice(0, PHOTO_LIMIT), catalog).length, PHOTO_LIMIT, 'exactly at the limit is still fine');
+});
+
+test('a catalog entry (topic, activity or resource) cannot carry a topic tag, a url, a title or a photo of its own', () => {
+  const topicPlacement = put('t1', 'games', 0.5, 'now', 'topic');
+  assert.throws(() => validatePlacements([{...topicPlacement, topic: 'sea'}], catalog), /topic tag/);
+  assert.throws(() => validatePlacements([{...topicPlacement, url: 'https://example.com'}], catalog), /url/);
+  assert.throws(() => validatePlacements([{...topicPlacement, title: 'メモ'}], catalog), /title/);
+  assert.throws(() => validatePlacements([{...topicPlacement, photo: 'data:image/png;base64,aa'}], catalog), /photo/);
+});
+
+test('sourceOf and contentOf read a placement\'s origin and shape straight from its fields', () => {
+  assert.equal(sourceOf(put('a', 'games', 0.5, 'now', 'topic')), 'catalog');
+  assert.equal(sourceOf(put('a', null, 0.5, 'now', 'custom')), 'self');
+  assert.equal(sourceOf(put('a', null, 0.5, 'now', 'link', {url: 'https://example.com'})), 'self');
+  assert.equal(sourceOf(put('a', null, 0.5, 'now', 'photo', {photo: 'data:image/png;base64,aa'})), 'self');
+  assert.equal(contentOf(put('a', null, 0.5, 'now', 'custom')), 'text', 'a written entry is called text, not custom');
+  assert.equal(contentOf(put('a', null, 0.5, 'now', 'link')), 'link');
+  assert.equal(contentOf(put('a', null, 0.5, 'now', 'photo')), 'photo');
+  for (const kind of ['topic', 'activity', 'resource']) assert.equal(contentOf(put('a', null, 0.5, 'now', kind)), kind);
+});
+
+test('a self-added entry reaches nowhere until a tag is chosen, whether it is written, a link or a photo', () => {
+  for (const kind of SELF_KINDS) {
+    const extra = kind === 'link' ? {url: 'https://example.com'} : kind === 'photo' ? {photo: 'data:image/png;base64,aa'} : {};
+    const bare = put('s1', null, 0.5, 'now', kind, extra);
+    assert.deepEqual(reachOf(bare), [], `${kind} with no tag chosen must not connect anywhere`);
+  }
+});
+
+test('choosing what it is about and how one is involved intersects the two fields, and falls back to "what it is about" when they share nothing', () => {
+  // 実在のデータで積を検証する。games の領域と dig の領域は information で重なる。
+  const both = reachOf(put('w1', null, 0.5, 'now', 'custom', {topic: 'games', verb: 'dig'}));
+  const gamesDomains = topics.games.ids;
+  const digDomains = domainsForVerb('dig').map(domain => domain.id);
+  assert.deepEqual(both.sort(), gamesDomains.filter(id => digDomains.includes(id)).sort());
+  assert.ok(both.length > 0 && both.length < gamesDomains.length, 'a real intersection, not the whole topic');
+
+  // 重ならない動詞（カタログに無い＝どこも扱わない動詞）を選んだときは、何についてが扱う領域に落ちる。
+  const empty = reachOf(put('w2', null, 0.5, 'now', 'custom', {topic: 'sea', verb: 'nosuchverb'}));
+  assert.deepEqual(empty.sort(), topics.sea.ids.slice().sort(), 'an empty intersection falls back to the topic side');
+
+  // 片方だけならその領域がそのまま使われる。
+  assert.deepEqual(reachOf(put('w3', null, 0.5, 'now', 'custom', {topic: 'sea'})).sort(), topics.sea.ids.slice().sort());
+  assert.deepEqual(reachOf(put('w4', null, 0.5, 'now', 'custom', {verb: 'dig'})).sort(), digDomains.sort());
+});
+
+test('placements with the new fields survive a save and reload without changing shape', () => {
+  const placements = [
+    put('link1', null, 0.2, 'now', 'link', {url: 'https://example.com/page', title: 'メモ', topic: 'sea'}),
+    put('photo1', null, 0.6, 'now', 'photo', {photo: `data:image/jpeg;base64,${'a'.repeat(30)}`, title: '写真'})
+  ];
+  const state = {...emptyState(), placements};
+  const restored = decodeState(encodeState(state), catalog);
+  assert.deepEqual(restored.placements, placements, 'link and photo placements round-trip byte for byte');
+});
+
+test('an old record saved without a source field still loads, and source is derived from kind', () => {
+  const legacyPlacements = [
+    {id: 'a', lane: 'now', x: 0.4, label: 'ゲーム', kind: 'topic', ref: 'games', verb: null, note: ''},
+    {id: 'b', lane: 'now', x: 0.6, label: 'じぶんで書いた', kind: 'custom', ref: null, verb: null, note: ''}
+  ];
+  const raw = JSON.stringify({
+    version: 2, grade: null, stances: {}, log: [], placements: legacyPlacements,
+    marks: [], heldRoutes: [], verb: null, expanded: false
+  });
+  const restored = decodeState(raw, catalog);
+  assert.equal(sourceOf(restored.placements[0]), 'catalog', 'a Build 22 topic placement is still a catalog placement');
+  assert.equal(sourceOf(restored.placements[1]), 'self', 'a Build 22 written entry is still self-added');
+});
+
+test('encodeState refuses to save silently once the state grows past the device limit', () => {
+  assert.ok(encodeState(emptyState()).length < STATE_BYTES, 'an empty state is nowhere near the limit');
+  const huge = {...emptyState(), placements: [{id: 'huge', note: 'x'.repeat(STATE_BYTES)}]};
+  assert.throws(() => encodeState(huge), /超えて/, 'a save past STATE_BYTES throws instead of failing silently later');
+});
+
+test('describeSource marks the self-added and the family-sent as unconfirmed, and never marks a catalog listing that way', () => {
+  const resourceId = [...catalog.resources][0];
+  const listed = put('r1', resourceId, 0.5, 'now', 'resource');
+  assert.equal(describeSource(listed).caution, null, 'a catalog listing already carries its own source and check date');
+  assert.equal(describeSource(listed).label, '掲載情報');
+
+  const topicPlacement = put('t2', 'games', 0.5, 'now', 'topic');
+  assert.equal(describeSource(topicPlacement).caution, null);
+  assert.equal(describeSource(topicPlacement).label, 'このアプリの項目');
+
+  const own = put('m1', null, 0.5, 'now', 'custom');
+  assert.equal(describeSource(own).caution, '内容は確認していません');
+  assert.equal(describeSource(own).label, '自分で追加');
+
+  const family = {...own, source: 'family'};
+  assert.equal(describeSource(family).caution, '内容は確認していません');
+  assert.equal(describeSource(family).label, '家族から');
 });

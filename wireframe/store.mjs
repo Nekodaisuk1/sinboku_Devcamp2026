@@ -6,13 +6,16 @@ export const STORAGE_KEY = 'shimboku.hub.v2';
 // Build 18 までの保存形式。読み替えずに残す。黙って捨てたり上書きしたりしない。
 export const LEGACY_KEY = 'shimboku.workspace.v1';
 export const MARK_LIMIT = 200;
+// 端末の保存に収まる大きさの上限。写真を足していくと際限なく育つので、
+// 超えたら黙って止めず、ここで例外にして本人に伝える。
+export const STATE_BYTES = 4 * 1024 * 1024;
 
 export function emptyState() {
   return {grade: null, stances: {}, log: [], placements: [], marks: [], heldRoutes: [], verb: null, expanded: false};
 }
 
 export function encodeState(state) {
-  return JSON.stringify({
+  const json = JSON.stringify({
     version: 2,
     grade: state.grade ?? null,
     stances: state.stances,
@@ -23,6 +26,10 @@ export function encodeState(state) {
     verb: state.verb ?? null,
     expanded: state.expanded === true
   });
+  // 写真を足すと保存データが際限なく育つ。黙って保存が止まる（あるいは
+  // 端末の容量エラーで落ちる）前に、ここで例外にして本人に伝える。
+  if (json.length > STATE_BYTES) throw new Error('この端末に保存できる大きさを超えています。写真を減らすか、小さくしてください。');
+  return json;
 }
 
 /**

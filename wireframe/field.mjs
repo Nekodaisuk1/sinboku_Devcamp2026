@@ -24,6 +24,16 @@ export const LANE_IDS = LANES.map(lane => lane.id);
 export const PLACEMENT_LIMIT = 60;
 export const LABEL_LIMIT = 40;
 
+// Build 23: 置きものの出どころと中身を、kind だけでなく統一した形で持たせる。
+// PLACEMENT_KINDS は保存データが名乗れる kind の全部。SELF_KINDS はそのうち
+// 「本人が足したもの」――カタログの裏付けがないので、線を推測で伸ばさない対象。
+export const PLACEMENT_KINDS = ['topic', 'activity', 'resource', 'custom', 'link', 'photo'];
+export const SELF_KINDS = ['custom', 'link', 'photo'];
+export const URL_LIMIT = 400;
+export const TITLE_LIMIT = 80;
+export const PHOTO_LIMIT = 12; // 端末保存に収めるための上限（枚数）
+export const PHOTO_BYTES = 160 * 1024; // 1枚あたりの上限。dataURL の文字数で判定する
+
 // 20件も置くと野原が読めなくなるので、表示側の絞り込みと並べ替えの選択肢をここで定義する。
 // 保存データには一切影響しない「見せ方」だけの語彙。
 export const FIELD_VIEWS = [
@@ -41,20 +51,58 @@ export const LIST_SORTS = [
 export const laneById = id => LANES.find(lane => lane.id === id) || null;
 export const laneIndex = id => LANE_IDS.indexOf(id);
 
+/* ---------- 置いたものの出どころと中身 ---------- */
+
+/**
+ * 置きものの出どころ。掲載情報と、自分で足したものを、同じ顔にしないための1か所。
+ * 保存データに source があればそれを使い、無ければ（Build 22 までの記録）kind から導く。
+ */
+export function sourceOf(placement) {
+  return placement.source ?? (SELF_KINDS.includes(placement.kind) ? 'self' : 'catalog');
+}
+
+/** 置きものの中身の種類。custom だけ kind と名前が違う（自由入力＝text）。 */
+export function contentOf(placement) {
+  return placement.kind === 'custom' ? 'text' : placement.kind;
+}
+
+/**
+ * 画面に出す出どころの説明を、1か所で決める。
+ * 自分で足したもの／家族からのものには、必ず「内容は確認していません」を添える。
+ * 掲載情報（出典と確認日がある）には付けない。同じ顔をさせないための境目。
+ */
+export function describeSource(placement) {
+  const source = sourceOf(placement);
+  if (source === 'self') return {label: '自分で追加', caution: '内容は確認していません'};
+  if (source === 'family') return {label: '家族から', caution: '内容は確認していません'};
+  return {label: contentOf(placement) === 'resource' ? '掲載情報' : 'このアプリの項目', caution: null};
+}
+
 /* ---------- 置いたものが、どの学問につながるか ---------- */
 
 /**
  * 置いたもの1つから伸びる先の学問。
  * 好きなこと → その入口が扱う領域。活動 → その活動グループが扱う領域。
- * 自由入力 → 本人が選んだ動詞を続けている領域。
+ * 自分で足したもの（自由入力・リンク・写真）→ 本人が選んだタグを続けている領域。
  * 掲載情報 → その情報が属する領域。つながりが分からないものは、線を作らない。
  */
 export function reachOf(placement) {
   if (placement.kind === 'topic') return knowledge.topics[placement.ref]?.ids ?? [];
   if (placement.kind === 'resource') return knowledge.resources[placement.ref]?.domains ?? [];
   if (placement.kind === 'activity') return domainsForActivity(placement.ref);
-  // 自由入力は、本人が動詞を選んだときだけつながる。推測でつながない。
-  if (placement.kind === 'custom') return placement.verb ? verbById(placement.verb)?.domains ?? [] : [];
+  if (SELF_KINDS.includes(placement.kind)) {
+    // 自分で足したものは、本人が明示的に選んだタグからだけつながる。推測でつながない。
+    const topicDomains = placement.topic ? knowledge.topics[placement.topic]?.ids ?? [] : null;
+    const verbDomains = placement.verb ? verbById(placement.verb)?.domains ?? [] : null;
+    if (topicDomains && verbDomains) {
+      // 「何について」と「関わり方」の両方があるときは積集合。
+      // 和集合にすると1つ置いただけで何領域にも線が伸び、合流が意味を失う。
+      const both = topicDomains.filter(domain => verbDomains.includes(domain));
+      // 積が空なら「何について」の方を採る。そちらの方が具体的だから。
+      return both.length ? both : topicDomains;
+    }
+    return topicDomains ?? verbDomains ?? [];
+  }
   return [];
 }
 
@@ -424,18 +472,65 @@ export function validatePlacements(value, catalog) {
     if (!LANE_IDS.includes(item.lane)) throw new Error('Unknown lane');
     if (typeof item.x !== 'number' || !Number.isFinite(item.x) || item.x < 0 || item.x > 1) throw new Error('Invalid placement position');
     if (typeof item.label !== 'string' || !item.label.trim() || item.label.length > LABEL_LIMIT) throw new Error('Invalid placement label');
-    if (!['topic', 'activity', 'resource', 'custom'].includes(item.kind)) throw new Error('Unknown placement kind');
+    if (!PLACEMENT_KINDS.includes(item.kind)) throw new Error('Unknown placement kind');
+    const isCatalogKind = item.kind === 'topic' || item.kind === 'activity' || item.kind === 'resource';
     const ref = item.ref ?? null;
     if (item.kind === 'topic' && !Object.hasOwn(knowledge.topics, ref)) throw new Error('Unknown interest');
     if (item.kind === 'activity' && !catalog.activities.has(ref)) throw new Error('Unknown activity');
     if (item.kind === 'resource' && !catalog.resources.has(ref)) throw new Error('Unknown resource');
-    if (item.kind === 'custom' && ref !== null) throw new Error('A written entry has no catalog reference');
+    // custom / link / photo はどれも本人が足したもので、カタログの裏付けを持たない。
+    if (SELF_KINDS.includes(item.kind) && ref !== null) throw new Error('A written entry has no catalog reference');
     const verb = item.verb ?? null;
     if (verb !== null && !catalog.verbs.has(verb)) throw new Error('Unknown verb on placement');
     const note = item.note ?? '';
     if (typeof note !== 'string' || note.length > 140) throw new Error('Invalid placement note');
-    return {id: item.id, lane: item.lane, x: item.x, label: item.label.trim(), kind: item.kind, ref, verb, note};
+
+    // 「何について」のタグ。catalog 由来のものは、既にそれ自身が何についてかを名乗っている。
+    const topic = item.topic ?? null;
+    if (topic !== null) {
+      if (isCatalogKind) throw new Error('A catalog entry cannot carry its own topic tag');
+      if (!Object.hasOwn(knowledge.topics, topic)) throw new Error('Unknown topic tag');
+    }
+
+    // URL はネットワーク通信をしないので中身までは見ない。javascript: や data: を
+    // 貼られて実行してしまわないよう、http/https だけを通す。
+    const url = item.url ?? null;
+    if (url !== null) {
+      if (isCatalogKind) throw new Error('A catalog entry cannot carry a url');
+      if (typeof url !== 'string' || url.length > URL_LIMIT) throw new Error('Invalid placement url');
+      let parsed;
+      try {
+        parsed = new URL(url);
+      } catch {
+        throw new Error('Invalid placement url');
+      }
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') throw new Error('Invalid placement url');
+    }
+    if (item.kind === 'link' && url === null) throw new Error('A link entry needs a url');
+
+    const title = item.title ?? null;
+    if (title !== null) {
+      if (isCatalogKind) throw new Error('A catalog entry cannot carry its own title');
+      if (typeof title !== 'string' || title.length > TITLE_LIMIT) throw new Error('Invalid placement title');
+    }
+
+    // 写真は端末に保存する dataURL そのもの。画像以外や大きすぎるものは保存できないと伝える。
+    const photo = item.photo ?? null;
+    if (photo !== null) {
+      if (isCatalogKind) throw new Error('A catalog entry cannot carry a photo');
+      if (typeof photo !== 'string' || photo.length > PHOTO_BYTES) throw new Error('Invalid placement photo');
+      if (!photo.startsWith('data:image/jpeg;base64,') && !photo.startsWith('data:image/png;base64,')) throw new Error('Invalid placement photo');
+    }
+    if (item.kind === 'photo' && photo === null) throw new Error('A photo entry needs a photo');
+
+    // source は保存データにあればそれだけを信じ、無ければ kind から導く。
+    const rawSource = item.source ?? null;
+    if (rawSource !== null && !['catalog', 'self', 'family'].includes(rawSource)) throw new Error('Unknown placement source');
+    const source = rawSource ?? (SELF_KINDS.includes(item.kind) ? 'self' : 'catalog');
+
+    return {id: item.id, lane: item.lane, x: item.x, label: item.label.trim(), kind: item.kind, ref, verb, note, topic, url, title, photo, source};
   });
+  if (placements.filter(placement => placement.photo !== null).length > PHOTO_LIMIT) throw new Error('Too many photos');
   return placements;
 }
 

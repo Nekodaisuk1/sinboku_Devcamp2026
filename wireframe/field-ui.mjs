@@ -1,4 +1,4 @@
-import {convergenceSentence} from './field.mjs';
+import {convergenceSentence, sourceOf, contentOf} from './field.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 
@@ -60,14 +60,34 @@ function nodeMarkup(node, ctx) {
   const {selected, dimmed, dragging} = ctx;
   const classes = ['node', `node-${node.node}`];
   if (node.node === 'domain' && node.domain.converged) classes.push('node-converged');
+  const isPlacement = node.node === 'placement';
+  // 自分で足した置きものは、色だけでなく破線の枠＋小さな印で見分けられるようにする。
+  // まとめノード（node-cluster）も破線なので、密度の違う破線にして混同を避ける。
+  const self = isPlacement && sourceOf(node) === 'self';
+  const content = isPlacement ? contentOf(node) : null;
+  const isLink = content === 'link';
+  const isPhoto = content === 'photo';
+  if (self) classes.push('node-self');
   if (node.id === selected) classes.push('is-selected');
   if (dimmed) classes.push('is-dim');
   if (node.id === dragging) classes.push('is-dragging');
-  const movable = node.node === 'placement';
-  return `<g class="${classes.join(' ')}" data-node="${escape(node.id)}"${movable ? ' data-movable="1"' : ''} role="button" tabindex="0" aria-label="${escape(node.label)}を開く" transform="translate(${node.left.toFixed(1)} ${node.y.toFixed(1)})">
+  const movable = isPlacement;
+  // アクセシブルな名前のほうに種別と出どころを言葉で足す。記号や枠線だけに意味を載せない。
+  const descriptors = [];
+  if (isLink) descriptors.push('リンク');
+  if (isPhoto) descriptors.push('写真');
+  if (self) descriptors.push('自分で追加');
+  const name = `${escape(node.label)}${descriptors.length ? `（${descriptors.join('・')}）` : ''}`;
+  // リンク・写真の記号はラベルの前に置く装飾。読み上げには要らないので aria-hidden にし、
+  // 意味（種別・出どころ）は上の aria-label（name）側だけで言う。
+  const mark = isLink ? '<tspan class="node-mark" aria-hidden="true">↗ </tspan>'
+    : isPhoto ? '<tspan class="node-mark" aria-hidden="true">▣ </tspan>'
+    : '';
+  return `<g class="${classes.join(' ')}" data-node="${escape(node.id)}"${movable ? ' data-movable="1"' : ''}${isPlacement ? ` data-source="${escape(sourceOf(node))}"` : ''} role="button" tabindex="0" aria-label="${name}を開く" transform="translate(${node.left.toFixed(1)} ${node.y.toFixed(1)})">
     <rect width="${node.w.toFixed(1)}" height="${node.h}" rx="${(node.h / 2).toFixed(1)}" class="node-body"></rect>
     ${node.node === 'domain' && node.domain.converged ? `<circle cx="${(node.w - 11).toFixed(1)}" cy="11" r="4" class="node-spark"></circle>` : ''}
-    <text x="${(node.w / 2).toFixed(1)}" y="${node.h / 2 + 5}" text-anchor="middle" class="node-label">${escape(node.label)}</text>
+    ${self ? `<rect x="${(node.w - 15).toFixed(1)}" y="4" width="7" height="7" class="node-mark"></rect>` : ''}
+    <text x="${(node.w / 2).toFixed(1)}" y="${node.h / 2 + 5}" text-anchor="middle" class="node-label">${mark}${escape(node.label)}</text>
   </g>`;
 }
 
@@ -133,7 +153,7 @@ export function renderFieldList(groups, convergenceList) {
   const sections = groups.map(group => `<section class="field-list-lane">
       <h4>${escape(group.title)}<span>${escape(group.note ?? '')}</span></h4>
       ${group.items.length
-        ? `<ul>${group.items.map(item => `<li><button data-node-open="${escape(item.id)}">${escape(item.label)}</button>${item.sub ? `<span class="field-list-sub">${escape(item.sub)}</span>` : ''}${item.converged ? '<em>合流</em>' : ''}</li>`).join('')}</ul>`
+        ? `<ul>${group.items.map(item => `<li><button data-node-open="${escape(item.id)}">${escape(item.label)}</button>${item.sub ? `<span class="field-list-sub">${escape(item.sub)}</span>` : ''}${item.caution ? `<span class="field-list-caution">${escape(item.caution)}</span>` : ''}${item.converged ? '<em>合流</em>' : ''}</li>`).join('')}</ul>`
         : '<p class="field-list-empty">まだ何も置いていません。</p>'}
     </section>`).join('');
   return `<div class="field-list">

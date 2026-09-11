@@ -5,7 +5,9 @@ import {searchCatalog, catalogIds} from './catalog.mjs';
 import {routesForDomain, hasRoutes, routeDomains, ROUTES_CHECKED_ON} from './routes.mjs';
 import {renderRoutes} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
-import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS, PLACEMENT_LIMIT, LABEL_LIMIT} from './field.mjs';
+import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
+        sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
+        PLACEMENT_LIMIT, LABEL_LIMIT} from './field.mjs';
 import {renderField, renderFieldList, curve} from './field-ui.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
@@ -19,7 +21,9 @@ const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker:
             selected: null, routeKind: null, listView: false, about: false, picker: null,
             verbSection: 'activities', fieldWidth: 360, fieldScroll: null,
             // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
-            fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null};
+            fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null,
+            // 取り込む前の下書き。確認画面を通るまで state には入れない。
+            draft: null};
 let persist = false;
 let storageNote = '';
 let toastTimer;
@@ -35,8 +39,11 @@ function save() {
     storageNote = '';
   } catch (error) {
     // 保存できなかったことを黙って飲み込まない。本人が気づけるようにする。
+    // 写真を足して入りきらなくなった場合と、ブラウザが保存を止めている場合では、次にやることが違う。
     persist = false;
-    storageNote = `記録を保存できませんでした（${error.name}）。このブラウザの設定で保存が止められている可能性があります。`;
+    storageNote = error.name === 'QuotaExceededError' || /大きすぎ/.test(error.message)
+      ? `記録を保存できませんでした。${error.message} 写真を置いた置きものを外すと、また保存できるようになります。画面を閉じるまでは、いまの内容は残っています。`
+      : `記録を保存できませんでした（${error.name}）。このブラウザの設定で保存が止められている可能性があります。`;
     render();
   }
 }
@@ -85,6 +92,47 @@ function route() {
   return {page: 'now'};
 }
 
+/* ---------- 外から届いたページを、置く前に確認する ---------- */
+
+/**
+ * ブックマークレットから `#add?u=...&t=...` で届いたページを下書きにする。
+ * 届いた文字列は、このアプリの外で作られたものとして扱う。中身を取りに行かない（通信しない）し、
+ * 何についての話かも推測しない。開くかどうかも、タグを付けるかも、本人が決める。
+ */
+function startLinkDraft(url, title = '') {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('これはページのアドレスとして読み取れませんでした。');
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('置けるのは http と https のページだけです。');
+  if (url.length > URL_LIMIT) throw new Error(`アドレスが長すぎます（${URL_LIMIT}文字まで）。`);
+  ui.draft = {kind: 'link', url, title: (title || parsed.hostname).slice(0, LABEL_LIMIT),
+              photo: null, topic: null, verb: null, lane: ui.picker?.lane ?? 'now'};
+  ui.picker = null;
+}
+
+/** ハッシュに届いた取り込み要求を1回だけ消費する。再読み込みで二重に出さない。 */
+function consumeAddHash() {
+  const raw = location.hash.replace(/^#/, '');
+  if (raw !== 'add' && !raw.startsWith('add?')) return false;
+  const query = new URLSearchParams(raw.slice(3).replace(/^\?/, ''));
+  const url = (query.get('u') ?? '').trim();
+  const title = (query.get('t') ?? '').trim();
+  history.replaceState(null, '', '#now');
+  if (!url) {
+    notify('送られてきたページのアドレスが読み取れませんでした。');
+    return true;
+  }
+  try {
+    startLinkDraft(url, title);
+  } catch (error) {
+    notify(error.message);
+  }
+  return true;
+}
+
 /* ---------- 野原 ---------- */
 
 function fieldView() {
@@ -129,6 +177,16 @@ function fieldViewMarkup() {
   return `<div class="field-views" role="group" aria-label="野原の表示">
     ${FIELD_VIEWS.map(item => `<button class="view-chip${ui.fieldView === item.id ? ' on' : ''}" data-field-view="${escape(item.id)}" aria-pressed="${ui.fieldView === item.id}" title="${escape(item.hint)}">${escape(item.label)}</button>`).join('')}
   </div>`;
+}
+
+/** 一覧にも出どころを出す。図が読めない人にも、掲載情報と自分で足したものの違いが分かるように。 */
+function listWithSource(groups) {
+  return groups.map(group => ({...group, items: group.items.map(item => {
+    const placement = state.placements.find(entry => entry.id === item.id);
+    if (!placement) return item;
+    const origin = describeSource(placement);
+    return {...item, sub: [item.sub, origin.label].filter(Boolean).join(' · '), caution: origin.caution};
+  })}));
 }
 
 function listSortMarkup() {
@@ -234,15 +292,25 @@ function placementPanel(placement) {
   const reach = reachOf(placement).map(id => domains[id]?.name).filter(Boolean);
   const lane = laneById(placement.lane);
   const records = state.log.filter(entry => entry.placement === placement.id);
+  const origin = describeSource(placement);
+  const own = sourceOf(placement) === 'self';
   return `<section class="panel">
     <button class="panel-close" data-deselect>× 閉じる</button>
-    <p class="panel-kind">自分で置いたもの · ${escape(lane.title)}</p>
+    <p class="panel-kind">${escape(origin.label)} · ${escape(lane.title)}</p>
     <h2>${escape(placement.label)}</h2>
+    ${origin.caution ? `<p class="placement-caution">${escape(origin.caution)}。${placement.url ? 'リンク先を開くかどうかは、自分で決めてください。' : ''}</p>` : ''}
+    ${placement.photo ? `<img class="photo-preview" src="${escape(placement.photo)}" alt="「${escape(placement.label)}」として置いた写真">` : ''}
+    ${placement.url ? `<a class="secondary" href="${escape(placement.url)}" target="_blank" rel="noopener noreferrer nofollow">このページを開く ↗<small class="confirm-url">${escape(placement.url)}</small></a>` : ''}
     ${reach.length
       ? `<p class="panel-reach">ここから <b>${reach.map(escape).join('・')}</b> に線が伸びています。</p>`
-      : '<p class="panel-reach muted">まだどこにもつながっていません。下で関わり方を選ぶと線が伸びます。</p>'}
+      : '<p class="panel-reach muted">まだどこにもつながっていません。下でタグを選ぶと線が伸びます。</p>'}
 
-    ${placement.kind === 'custom' || !reach.length ? `<div class="panel-block">
+    ${own ? `<div class="panel-block">
+      <p class="panel-label">何について？</p>
+      <div class="lane-row">${Object.entries(topics).map(([id, topic]) => `<button class="lane-chip${placement.topic === id ? ' on' : ''}" data-set-topic="${escape(id)}" aria-pressed="${placement.topic === id}">${escape(topic.label)}</button>`).join('')}</div>
+    </div>` : ''}
+
+    ${own || !reach.length ? `<div class="panel-block">
       <p class="panel-label">どんなふうに関わっている？</p>
       <div class="verb-row">${verbs.map(verb => `<button class="verb-chip small${placement.verb === verb.id ? ' on' : ''}" data-set-verb="${escape(verb.id)}" aria-pressed="${placement.verb === verb.id}">${escape(verb.icon)} ${escape(verb.label)}</button>`).join('')}</div>
     </div>` : ''}
@@ -345,23 +413,134 @@ function selectionPanel(view) {
   return '';
 }
 
+/* ---------- 写真：この端末の中だけに置く ---------- */
+
+const PHOTO_STEPS = [[480, 0.7], [480, 0.55], [360, 0.55], [240, 0.5]];
+
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('この写真を読み込めませんでした。'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('この写真を画像として読めませんでした。'));
+    image.src = dataUrl;
+  });
+}
+
+/**
+ * 端末保存に収まる大きさまで小さくする。入らなければ黙って諦めず、本人に言う。
+ * 送信はしない。縮小もこの端末の中で終わる。
+ */
+async function shrinkPhoto(file) {
+  const image = await loadImage(await readFile(file));
+  for (const [side, quality] of PHOTO_STEPS) {
+    const scale = Math.min(1, side / Math.max(image.width, image.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+    const encoded = canvas.toDataURL('image/jpeg', quality);
+    if (encoded.length <= PHOTO_BYTES) return encoded;
+  }
+  throw new Error('この写真は、この端末に残すには大きすぎました。別の写真を選んでください。');
+}
+
+/* ---------- 置く前の確認 ---------- */
+
+/** いまの選び方だと、どこへ線が伸びるのかを先に言う。置いてから驚かせない。 */
+function draftReachNote(draft) {
+  const reach = reachOf({kind: draft.kind, ref: null, topic: draft.topic, verb: draft.verb})
+    .map(id => domains[id]?.name).filter(Boolean);
+  if (!reach.length) return 'いまのままだと、どこにもつながりません。タグを選ぶと線が伸びます。選ばないまま置いてもかまいません。';
+  return `いまの選び方だと、${reach.join('・')}へ線が伸びます。`;
+}
+
+function draftMarkup() {
+  if (!ui.draft) return '';
+  const draft = ui.draft;
+  return `<dialog class="picker confirm-panel" id="draft" aria-label="野原に置く前の確認">
+    <div class="picker-head">
+      <p class="picker-lane">置く前に確認します</p>
+      <button class="text-button" data-draft-cancel>やめる</button>
+    </div>
+    <p class="placement-caution">これは<b>自分で追加</b>するものです。このアプリは中身を見に行っていないので、内容は確認していません。${draft.kind === 'link' ? 'リンク先を開くかどうかは、自分で決めてください。' : ''}</p>
+    <form data-draft-form>
+      ${draft.kind === 'link' ? `<div class="confirm-row"><span>リンク先</span><p class="confirm-url">${escape(draft.url)}</p></div>` : ''}
+      ${draft.kind === 'photo' ? `<div class="confirm-row"><span>写真</span><img class="photo-preview" src="${escape(draft.photo)}" alt="置こうとしている写真"></div>` : ''}
+
+      <label for="draft-title">野原に出す名前</label>
+      <input id="draft-title" name="title" type="text" maxlength="${LABEL_LIMIT}" value="${escape(draft.title)}" placeholder="例：波の高さの調べ方" autocomplete="off" required>
+
+      <p class="panel-label">何について？</p>
+      <div class="lane-row">${Object.entries(topics).map(([id, topic]) => `<button type="button" class="lane-chip${draft.topic === id ? ' on' : ''}" data-draft-topic="${escape(id)}" aria-pressed="${draft.topic === id}">${escape(topic.label)}</button>`).join('')}</div>
+
+      <p class="panel-label">どんなふうに関わる？</p>
+      <div class="verb-row">${verbs.map(verb => `<button type="button" class="verb-chip small${draft.verb === verb.id ? ' on' : ''}" data-draft-verb="${escape(verb.id)}" aria-pressed="${draft.verb === verb.id}">${escape(verb.icon)} ${escape(verb.label)}</button>`).join('')}</div>
+
+      <p class="panel-label">いつやりたい？</p>
+      <div class="lane-row">${LANES.map(item => `<button type="button" class="lane-chip${draft.lane === item.id ? ' on' : ''}" data-draft-lane="${escape(item.id)}" aria-pressed="${draft.lane === item.id}">${escape(item.id === 'now' ? 'いま' : item.horizon)}</button>`).join('')}</div>
+
+      <p class="panel-hint">${escape(draftReachNote(draft))}</p>
+      <button class="primary" type="submit">野原に置く</button>
+    </form>
+  </dialog>`;
+}
+
+/** 見ているページを野原へ送るブックマークレット。CSPで自分の画面では動かないので、登録用として出す。 */
+function bookmarkletMarkup() {
+  const target = `${location.origin}${location.pathname}`;
+  const code = `javascript:(function(){window.open('${target}#add?u='+encodeURIComponent(location.href)+'&t='+encodeURIComponent(document.title||''),'_blank');})()`;
+  return `<details class="bookmarklet">
+    <summary>見ているページを、ここへ送れるようにする</summary>
+    <p class="panel-hint">下のリンクをブラウザのお気に入りバーへドラッグして登録します。登録したあと、気になるページで押すと、この画面の確認に届きます。送られるのはアドレスとページの題名だけで、このアプリから外へは何も出しません。</p>
+    <p><a class="bookmarklet-link" href="${escape(code)}" onclick="return false">野原へ送る</a></p>
+    <p class="panel-hint">ドラッグできないときは、次の文字列をお気に入りのアドレス欄に貼り付けてください。</p>
+    <textarea class="bookmarklet-code" rows="3" readonly>${escape(code)}</textarea>
+  </details>`;
+}
+
 function pickerMarkup() {
   if (!ui.picker) return '';
   const {tab, lane: laneId} = ui.picker;
-  const tabs = [['topic', '好きなこと'], ['activity', 'やってみる'], ['resource', '掲載情報'], ['custom', '自分で書く']];
+  const tabs = [['topic', '好きなこと'], ['activity', 'やってみる'], ['resource', '掲載情報'], ['custom', '自分で足す']];
   const body = tab === 'topic'
     ? `<ul class="pick-list">${Object.entries(topics).map(([id, topic]) => `<li><button data-pick="topic:${escape(id)}"><b>${escape(topic.label)}</b><span>${escape(topic.root)}</span></button></li>`).join('')}</ul>`
     : tab === 'activity'
       ? `<ul class="pick-list">${allActivities().map(activity => `<li><button data-pick="activity:${escape(activity.id)}"><b>${escape(activity.title)}</b><span>${escape(topics[activity.topic]?.label ?? '')} · ${escape(verbById(activity.verb)?.label ?? '')} · 目安${activity.minutes}分</span></button></li>`).join('')}</ul>`
       : tab === 'resource'
         ? `<ul class="pick-list">${Object.entries(resources).map(([id, item]) => `<li><button data-pick="resource:${escape(id)}"><b>${escape(item.name)}</b><span>${escape(item.kind)}</span></button></li>`).join('')}</ul>`
-        : `<form class="pick-write" data-pick-write>
-            <label for="pick-label">なにを置く？</label>
-            <input id="pick-label" name="label" type="text" maxlength="${LABEL_LIMIT}" placeholder="例：アンプを自作する" autocomplete="off" required>
-            <p class="panel-label">どんなふうに関わる？（あとで選んでもかまいません）</p>
-            <div class="verb-row">${verbs.map(verb => `<label class="verb-chip small"><input type="radio" name="verb" value="${escape(verb.id)}"> ${escape(verb.icon)} ${escape(verb.label)}</label>`).join('')}</div>
-            <button class="primary" type="submit">置く</button>
-          </form>`;
+        : `<div class="pick-self">
+            <form class="pick-write" data-pick-write>
+              <label for="pick-label">思いついたことを書く</label>
+              <input id="pick-label" name="label" type="text" maxlength="${LABEL_LIMIT}" placeholder="例：アンプを自作する" autocomplete="off" required>
+              <p class="panel-label">どんなふうに関わる？（あとで選んでもかまいません）</p>
+              <div class="verb-row">${verbs.map(verb => `<label class="verb-chip small"><input type="radio" name="verb" value="${escape(verb.id)}"> ${escape(verb.icon)} ${escape(verb.label)}</label>`).join('')}</div>
+              <button class="primary" type="submit">置く</button>
+            </form>
+
+            <form class="pick-link" data-pick-link>
+              <label for="pick-url">見つけたページを置く</label>
+              <input id="pick-url" name="url" type="url" inputmode="url" maxlength="${URL_LIMIT}" placeholder="https://" autocomplete="off" required>
+              <button class="secondary" type="submit">確認する</button>
+              <p class="panel-hint">貼り付けても、すぐには置きません。置く前に確認画面が出ます。中身は見に行きません。</p>
+            </form>
+
+            <div class="pick-photo">
+              <label for="pick-photo">写真から置く</label>
+              <input id="pick-photo" type="file" accept="image/*" data-photo-input>
+              <p class="panel-hint">写真はこの端末の中だけに残ります。送信しません。保存できる大きさまで小さくしてから置きます（${PHOTO_LIMIT}枚まで）。</p>
+            </div>
+
+            ${bookmarkletMarkup()}
+          </div>`;
   return `<dialog class="picker" id="picker" aria-label="野原に置くものを選ぶ">
     <div class="picker-head">
       <p class="picker-lane">${escape(laneById(laneId).id === 'now' ? 'いまの段に置きます' : `${laneById(laneId).horizon}の段に置きます`)}</p>
@@ -402,7 +581,7 @@ function nowPage() {
     ${ui.listView
       ? `${listSortMarkup()}
          ${view.scope.placements.length
-            ? renderFieldList(listGroups(view.scope.placements, ui.listSort), convergences(view.scope.placements))
+            ? renderFieldList(listWithSource(listGroups(view.scope.placements, ui.listSort)), convergences(view.scope.placements))
             : '<p class="field-list-empty">まだ何も置いていません。</p>'}
          ${scopeMarkup(view.scope)}`
       : `<div class="field-stage">
@@ -417,7 +596,8 @@ function nowPage() {
     ${convergenceMarkup()}
 
     ${storageSection()}
-    ${pickerMarkup()}`;
+    ${pickerMarkup()}
+    ${draftMarkup()}`;
 }
 
 /* ---------- 探す（動詞から） ---------- */
@@ -630,6 +810,17 @@ function render() {
       document.querySelector('[data-open-picker]')?.focus();
     }, {once: true});
   }
+  if (ui.draft) {
+    // 確認画面を Escape で閉じたら、下書きは捨てる。黙って置かない。
+    const dialog = $('draft');
+    dialog?.showModal();
+    dialog?.addEventListener('close', () => {
+      if (!ui.draft) return;
+      ui.draft = null;
+      render();
+      document.querySelector('[data-open-picker]')?.focus();
+    }, {once: true});
+  }
   if (ui.editing) {
     const input = $('stance-input');
     if (input) {input.focus(); input.setSelectionRange(input.value.length, input.value.length);}
@@ -638,17 +829,20 @@ function render() {
 
 /* ---------- 野原に置く ---------- */
 
-function place({kind, ref, label, verb = null, lane = 'now'}) {
+function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null}) {
   if (state.placements.length >= PLACEMENT_LIMIT) return notify(`野原に置けるのは${PLACEMENT_LIMIT}件までです。`);
   if (ref && state.placements.some(placement => placement.ref === ref && placement.lane === lane)) return notify('同じ段に、もう置いてあります。');
+  if (url && state.placements.some(placement => placement.url === url)) return notify('このページは、もう野原にあります。');
   const placement = {
     id: newPlacementId(), lane, x: freeX(state.placements, lane),
-    label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note: ''
+    label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note: '',
+    topic, url, title, photo
   };
   const before = convergences(state.placements).length;
   state.placements = [...state.placements, placement];
   ui.selected = placement.id;
   ui.picker = null;
+  ui.draft = null;
   save();
   const after = convergences(state.placements);
   render();
@@ -722,6 +916,17 @@ document.addEventListener('click', event => {
     return;
   }
 
+  if (target.dataset.draftTopic) {ui.draft = {...ui.draft, topic: ui.draft.topic === target.dataset.draftTopic ? null : target.dataset.draftTopic}; return render();}
+  if (target.dataset.draftVerb) {ui.draft = {...ui.draft, verb: ui.draft.verb === target.dataset.draftVerb ? null : target.dataset.draftVerb}; return render();}
+  if (target.dataset.draftLane) {ui.draft = {...ui.draft, lane: target.dataset.draftLane}; return render();}
+  if (target.hasAttribute('data-draft-cancel')) {ui.draft = null; notify('置くのをやめました。何も残していません。'); return render();}
+
+  if (target.dataset.setTopic) {
+    state.placements = state.placements.map(placement =>
+      placement.id === ui.selected ? {...placement, topic: placement.topic === target.dataset.setTopic ? null : target.dataset.setTopic} : placement);
+    save();
+    return render();
+  }
   if (target.dataset.setVerb) {
     state.placements = state.placements.map(placement =>
       placement.id === ui.selected ? {...placement, verb: placement.verb === target.dataset.setVerb ? null : target.dataset.setVerb} : placement);
@@ -833,6 +1038,25 @@ document.addEventListener('submit', event => {
     save();
     return render();
   }
+  if (form.hasAttribute('data-pick-link')) {
+    event.preventDefault();
+    try {
+      startLinkDraft(form.elements.url.value.trim());
+    } catch (error) {
+      return notify(error.message);
+    }
+    return render();
+  }
+  if (form.hasAttribute('data-draft-form')) {
+    event.preventDefault();
+    const draft = ui.draft;
+    const title = form.elements.title.value.trim();
+    if (!title) return notify('野原に出す名前を書いてください。');
+    return place({
+      kind: draft.kind, ref: null, label: title, verb: draft.verb, lane: draft.lane,
+      topic: draft.topic, url: draft.url, title, photo: draft.photo
+    });
+  }
   if (form.hasAttribute('data-pick-write')) {
     event.preventDefault();
     const label = form.elements.label.value.trim();
@@ -856,6 +1080,20 @@ document.addEventListener('submit', event => {
 });
 
 document.addEventListener('change', event => {
+  if (event.target.hasAttribute('data-photo-input')) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (state.placements.filter(placement => placement.photo).length >= PHOTO_LIMIT) {
+      return notify(`写真を置けるのは${PHOTO_LIMIT}枚までです。`);
+    }
+    shrinkPhoto(file).then(photo => {
+      ui.draft = {kind: 'photo', url: null, title: '', photo, topic: null, verb: null, lane: ui.picker?.lane ?? 'now'};
+      ui.picker = null;
+      render();
+    }).catch(error => notify(error.message));
+    return;
+  }
   if (event.target.hasAttribute('data-persist')) {setPersist(event.target.checked); return render();}
   if (event.target.hasAttribute('data-athome')) {ui.athome = event.target.checked; return render();}
   if (event.target.name === 'filter') {ui.filter = event.target.value; return render();}
@@ -945,6 +1183,8 @@ const fieldObserver = new ResizeObserver(() => {
 window.addEventListener('hashchange', () => {
   ui.editing = null;
   ui.picker = null;
+  // ブックマークレットから届いた取り込み要求は、ここで下書きに変える。
+  consumeAddHash();
   render();
   $('main-content').focus();
   window.scrollTo(0, 0);
@@ -952,4 +1192,5 @@ window.addEventListener('hashchange', () => {
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 restore();
+consumeAddHash();
 render();
