@@ -9,16 +9,41 @@ import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
 import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
-        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, buildExternalInformationDraft, placementForResource, setDomainConnection, resetDomainConnections} from './field.mjs';
+        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, buildExternalInformationDraft, placementForResource, setDomainConnection, resetDomainConnections,
+        withoutDismissedRouteSchools} from './field.mjs';
 import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
 import {selectFieldNode, highlightAfterClick, schoolExpansionAfterClick} from './field.mjs';
+import {schoolId, toggleSchoolMark, dismissSchool, recordSchoolView, formatSchoolViewTime, SCHOOL_REASON_LIMIT} from './school-records.mjs';
+import {universityCandidates} from './education.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const $ = id => document.getElementById(id);
 
-const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => routesForDomain(id, domains[id]).map(route => route.id)))};
+const routeCatalog = routeDomains().flatMap(domainId => routesForDomain(domainId, domains[domainId]).map(route => ({domainId, route})));
+const schoolCatalog = new Map(routeCatalog.flatMap(({domainId, route}) => route.steps
+  .filter(step => ['university', 'highschool'].includes(step.stage) && step.link)
+  .map(step => {
+    const id = schoolId(step.link.url, step.title);
+    return [id, {schoolId: id, label: step.title, stage: step.stage, domain: domainId, url: step.link.url}];
+  })));
+for (const candidate of universityCandidates) {
+  const id = schoolId(candidate.url, candidate.name);
+  schoolCatalog.set(id, {schoolId: id, label: candidate.name, stage: 'university', domain: candidate.domains[0], url: candidate.url});
+}
+for (const {domainId, route} of routeCatalog) {
+  const step = route.steps.find(item => item.stage === 'highschool' && item.link);
+  if (!step) continue;
+  const label = step.link.name ?? step.title;
+  const id = schoolId(step.link.url, label);
+  schoolCatalog.set(id, {schoolId: id, label, stage: 'highschool', domain: domainId, url: step.link.url});
+}
+const catalog = {
+  ...catalogIds(),
+  routes: new Set(routeCatalog.map(({route}) => route.id)),
+  schools: new Set(schoolCatalog.keys())
+};
 
 let state = emptyState();
 // 画面の一時的な状態。保存の対象にしない。
@@ -32,7 +57,8 @@ const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker:
             draft: null,
             // 掲載情報の絞り込み。既定はどれも「絞らない」。本人が絞ったときだけ絞る。
             picks: {category: null, online: false, cost: null, grade: null, when: null},
-            picksOpen: false, coverageOpen: false, shareLink: '', mapShareLink: '', sharedMap: false};
+            picksOpen: false, coverageOpen: false, shareLink: '', mapShareLink: '', sharedMap: false,
+            dismissSchoolId: null};
 let persist = false;
 let storageNote = '';
 let toastTimer;
@@ -99,6 +125,8 @@ function route() {
   if (name === 'find') return {page: 'find', verb: verbById(argument) ? argument : null};
   if (name === 'routes' && hasRoutes(argument)) return {page: 'routes', domain: argument};
   if (name === 'recommend') return {page: 'recommend'};
+  if (name === 'inbox') return {page: 'inbox'};
+  if (name === 'records') return {page: 'records'};
   return {page: 'now'};
 }
 
@@ -139,7 +167,7 @@ function consumeRecommendationHash() {
   const raw = location.hash.replace(/^#/, '');
   if (!raw.startsWith('inbox?')) return false;
   const encoded = new URLSearchParams(raw.slice(6)).get('d') ?? '';
-  history.replaceState(null, '', '#now');
+  history.replaceState(null, '', '#inbox');
   try {
     const payload = decodeRecommendation(encoded, catalog);
     const result = receiveRecommendation(payload, state.recommendations, catalog, {
@@ -182,10 +210,18 @@ function fieldView() {
   const anchor = routeDomain
     ? revealWorld(scope.placements).domains.find(domain => domain.id === routeDomain)?.x ?? 0.5
     : 0.5;
-  const extra = routeDomain
+  const routeExtra = routeDomain
     ? routePath(routeDomain, ui.routeKind, anchor, {expandedSchoolId: ui.expandedSchoolId})
     : {nodes: [], links: []};
-  const extraNodes = extra.nodes.map(node => ({...node, links: extra.links.filter(link => link.from === node.id)}));
+  const reviewedExtra = {
+    ...routeExtra,
+    nodes: routeExtra.nodes.map(node => node.link && ['university', 'highschool'].includes(node.stage)
+      ? {...node, schoolId: schoolId(node.link.url, node.label)}
+      : node)
+  };
+  const extra = withoutDismissedRouteSchools(reviewedExtra, new Set(state.schoolDismissals.map(item => item.schoolId)));
+  const markedSchools = new Set(state.schoolMarks);
+  const extraNodes = extra.nodes.map(node => ({...node, marked: markedSchools.has(node.schoolId), links: extra.links.filter(link => link.from === node.id)}));
   // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
   // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
   const openSchools = extraNodes.filter(node => node.kind === 'school-option').map(node => node.id);
@@ -389,7 +425,12 @@ function domainPanel(domainId) {
     ${routes.length ? `<div class="panel-block route-compare-panel">
       <p class="panel-label">進路ルートは${routes.length}通り。${selectedRoute ? '選んだルートを進路マップに表示しています。' : '選ぶ前に、すべてのルートを進路マップに表示しています。'}</p>
       ${selectedRoute ? '<button class="text-button route-show-all" data-route-all>すべてのルートをもう一度比べる</button>' : ''}
-      ${renderUniversityCandidates(routes)}
+      ${renderUniversityCandidates(routes, 4, {
+        domainId,
+        marked: new Set(state.schoolMarks),
+        dismissed: new Set(state.schoolDismissals.map(item => item.schoolId)),
+        dismissing: ui.dismissSchoolId
+      })}
       <div class="route-choice-grid">${routes.map(item => {
         return `<article class="route-choice${ui.routeKind === item.kind ? ' on' : ''}">
           <button data-route-kind="${escape(item.kind)}" aria-pressed="${ui.routeKind === item.kind}">
@@ -407,13 +448,29 @@ function domainPanel(domainId) {
 
 function routeNodePanel(node) {
   const option = node.kind === 'school-option';
+  const catalogSchool = schoolCatalog.get(node.schoolId);
+  const school = catalogSchool && node.link ? {...catalogSchool, label: node.label, domain: node.domain, url: node.link.url} : catalogSchool;
   return `<section class="panel">
     <button class="panel-close" data-deselect>× 閉じる</button>
     <p class="panel-kind">${option ? '似た学部・活動を持つ学校' : '進路ルートの途中'}</p>
     <h2>${escape(node.label)}</h2>
     <p>${escape(node.detail)}</p>
-    ${node.link ? `<a class="secondary" href="${escape(node.link.url)}" target="_blank" rel="noopener noreferrer">${escape(node.link.name)} ↗<small>出典 ${escape(node.link.source)}・別のタブで開きます</small></a>` : ''}
+    ${node.link ? `<a class="secondary" href="${escape(node.link.url)}" target="_blank" rel="noopener noreferrer"${school ? ` data-school-open="${escape(school.schoolId)}"` : ''}>${escape(node.link.name)} ↗<small>出典 ${escape(node.link.source)}・別のタブで開きます</small></a>` : ''}
+    ${school ? schoolReviewControls(school.schoolId) : ''}
   </section>`;
+}
+
+function schoolReviewControls(id) {
+  const marked = state.schoolMarks.includes(id);
+  return `<div class="school-review-actions">
+    <button class="school-mark${marked ? ' is-marked' : ''}" data-school-mark="${escape(id)}" aria-pressed="${marked}">${marked ? '★ よかった' : '☆ よかった印'}</button>
+    <button class="text-button warn" data-school-dismiss="${escape(id)}">候補から外す</button>
+  </div>
+  ${ui.dismissSchoolId === id ? `<form class="school-dismiss-form" data-school-dismiss-form="${escape(id)}">
+    <label>外す理由 <input name="reason" maxlength="${SCHOOL_REASON_LIMIT}" required placeholder="例：希望する実習が少なかった"></label>
+    <button class="primary small" type="submit">理由を残して外す</button>
+    <button class="text-button" type="button" data-school-dismiss-cancel>やめる</button>
+  </form>` : ''}`;
 }
 
 function lanePanel(laneId) {
@@ -649,7 +706,6 @@ function nowPage() {
       placedRefs: new Set(state.placements.filter(placement => placement.kind === 'topic').map(placement => placement.ref)),
       open: state.placements.length === 0
     })}
-    ${recommendationInboxMarkup()}
     ${contextMarkup(next, grade, week)}
 
     ${ui.listView
@@ -669,12 +725,6 @@ function nowPage() {
     ${convergenceMarkup()}
 
     ${storageSection()}
-    <section class="family-entry" aria-labelledby="family-entry-title">
-      <p class="eyebrow">家族と見つける</p>
-      <h2 id="family-entry-title">おすすめを送ってもらう</h2>
-      <p>家族が作ったリンクから、この受信箱へ1件ずつ届きます。進路マップに追加するかは自分で決められます。</p>
-      <a class="secondary inline-action" href="#recommend">家族用の送り方を開く</a>
-    </section>
     ${pickerMarkup()}
     ${draftMarkup()}`;
 }
@@ -699,7 +749,6 @@ function recommendationCard(item) {
 
 function recommendationInboxMarkup() {
   const items = state.recommendations ?? [];
-  if (!items.length) return '';
   const fresh = items.filter(item => item.status === 'new');
   const later = items.filter(item => item.status === 'later');
   return `<section class="recommend-inbox" aria-labelledby="recommend-inbox-title">
@@ -708,6 +757,42 @@ function recommendationInboxMarkup() {
     <p class="panel-hint">リンク先の内容はこのアプリでは確認していません。開くか、進路マップへ追加するかは自分で選べます。</p>
     ${fresh.length ? `<ul class="recommend-list">${fresh.map(recommendationCard).join('')}</ul>` : '<p class="recommend-empty">新しく届いたものはありません。</p>'}
     ${later.length ? `<details class="recommend-later"><summary>あとで見る（${later.length}件）</summary><ul class="recommend-list">${later.map(recommendationCard).join('')}</ul></details>` : ''}
+  </section>`;
+}
+
+function inboxPage() {
+  return `<section class="page-head record-page">
+    <p class="eyebrow">家族から届いた情報</p>
+    <h1>受信箱</h1>
+    <p class="lead">届いたおすすめをまとめて確認し、進路マップに置くものだけを選べます。</p>
+    ${recommendationInboxMarkup()}
+    <section class="family-entry" aria-labelledby="family-entry-title">
+      <p class="eyebrow">家族と見つける</p>
+      <h2 id="family-entry-title">おすすめを送ってもらう</h2>
+      <p>家族が作ったリンクから、この受信箱へ1件ずつ届きます。</p>
+      <a class="secondary inline-action" href="#recommend">家族用の送り方を開く</a>
+    </section>
+  </section>`;
+}
+
+const schoolStageLabel = stage => stage === 'university' ? '大学・学部' : '高校・高専';
+
+function recordsPage() {
+  const marked = state.schoolMarks.map(id => schoolCatalog.get(id)).filter(Boolean);
+  return `<section class="page-head record-page">
+    <p class="eyebrow">比べた内容を振り返る</p>
+    <h1>学校の検討記録</h1>
+    <p class="lead">よかった候補、候補から外した理由、公式ページを見た履歴をここで確認できます。</p>
+    <section class="record-board"><h2>★ よかった候補</h2>
+      ${marked.length ? `<ul>${marked.map(item => `<li><span>${escape(schoolStageLabel(item.stage))}</span><a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer" data-school-open="${escape(item.schoolId)}">${escape(item.label)} ↗</a><button class="text-button" data-school-mark="${escape(item.schoolId)}">印を外す</button></li>`).join('')}</ul>` : '<p>まだ印を付けた学校はありません。</p>'}
+    </section>
+    <section class="record-board"><h2>候補から外した記録</h2>
+      ${state.schoolDismissals.length ? `<ul>${state.schoolDismissals.map(item => `<li><span>${escape(item.date)} · ${escape(schoolStageLabel(item.stage))}</span><strong>${escape(item.label)}</strong><p>${escape(item.reason)}</p><button class="text-button" data-school-restore="${escape(item.schoolId)}">候補に戻す</button></li>`).join('')}</ul>` : '<p>候補から外した記録はありません。</p>'}
+    </section>
+    <section class="record-board"><h2>閲覧履歴</h2>
+      ${state.schoolViews.length ? `<ol>${state.schoolViews.map(item => `<li><time datetime="${escape(item.viewedAt)}">${escape(formatSchoolViewTime(item.viewedAt))}</time><a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer" data-school-open="${escape(item.schoolId)}">${escape(item.label)} ↗</a></li>`).join('')}</ol>` : '<p>学校の公式ページを開くと、ここに履歴が残ります。</p>'}
+    </section>
+    ${storageSection()}
   </section>`;
 }
 
@@ -997,7 +1082,15 @@ function routesPage(domainId) {
       <h1>${escape(domains[domainId].name)}への進み方</h1>
       <p class="lead">同じ学問へ進むルートは1つではありません。高校までに決める内容が、ルートごとに違います。</p>
     </section>
-    <div class="routes-body">${renderRoutes({domainId, domain: domains[domainId], saved: new Set(state.heldRoutes), checkedOn: ROUTES_CHECKED_ON})}</div>`;
+    <div class="routes-body">${renderRoutes({
+      domainId,
+      domain: domains[domainId],
+      saved: new Set(state.heldRoutes),
+      checkedOn: ROUTES_CHECKED_ON,
+      schoolMarks: new Set(state.schoolMarks),
+      dismissedSchools: new Set(state.schoolDismissals.map(item => item.schoolId)),
+      dismissingSchool: ui.dismissSchoolId
+    })}</div>`;
 }
 
 function storageSection() {
@@ -1028,9 +1121,14 @@ function render() {
   main.innerHTML = current.page === 'find' ? findPage(current.verb)
     : current.page === 'routes' ? routesPage(current.domain)
     : current.page === 'recommend' ? recommendPage()
+    : current.page === 'inbox' ? inboxPage()
+    : current.page === 'records' ? recordsPage()
     : nowPage();
   main.dataset.page = current.page;
-  const tab = current.page === 'now' ? 'now' : ['find', 'routes'].includes(current.page) ? 'find' : null;
+  const tab = current.page === 'now' ? 'now'
+    : ['find', 'routes'].includes(current.page) ? 'find'
+    : ['inbox', 'records'].includes(current.page) ? current.page
+    : null;
   for (const element of document.querySelectorAll('.tab')) {
     element.classList.toggle('active', element.dataset.tab === tab);
     element.setAttribute('aria-current', element.dataset.tab === tab ? 'page' : 'false');
@@ -1160,6 +1258,16 @@ document.addEventListener('click', event => {
   const expand = event.target.closest('[data-expand-lane]');
   if (expand) return expandLane(expand.dataset.expandLane, expand.dataset.expandFrom ?? 'field');
 
+  const schoolLink = event.target.closest('a[data-school-open]');
+  if (schoolLink) {
+    const school = schoolCatalog.get(schoolLink.dataset.schoolOpen);
+    if (school) {
+      state.schoolViews = recordSchoolView(state.schoolViews, school, new Date().toISOString());
+      save();
+    }
+    return;
+  }
+
   const svgNode = event.target.closest('[data-node]');
   if (svgNode) {
     const clickedId = svgNode.dataset.node;
@@ -1188,6 +1296,26 @@ document.addEventListener('click', event => {
 
   const target = event.target.closest('button');
   if (!target) return;
+
+  if (target.dataset.schoolMark) {
+    state.schoolMarks = toggleSchoolMark(state.schoolMarks, target.dataset.schoolMark);
+    save();
+    return render();
+  }
+  if (target.dataset.schoolDismiss) {
+    ui.dismissSchoolId = target.dataset.schoolDismiss;
+    return render();
+  }
+  if (target.hasAttribute('data-school-dismiss-cancel')) {
+    ui.dismissSchoolId = null;
+    return render();
+  }
+  if (target.dataset.schoolRestore) {
+    state.schoolDismissals = state.schoolDismissals.filter(item => item.schoolId !== target.dataset.schoolRestore);
+    save();
+    notify('候補に戻しました。');
+    return render();
+  }
 
   if (target.id === 'storage-toggle') {setPersist(!persist); return render();}
   if (target.hasAttribute('data-share-map')) {
@@ -1440,6 +1568,27 @@ function expandLane(id, from = 'field') {
 document.addEventListener('submit', event => {
   const form = event.target;
   if (form.hasAttribute('data-search')) return event.preventDefault();
+  if (form.dataset.schoolDismissForm) {
+    event.preventDefault();
+    const school = schoolCatalog.get(form.dataset.schoolDismissForm);
+    if (!school) return notify('この学校を確認できませんでした。');
+    try {
+      state.schoolDismissals = dismissSchool(state.schoolDismissals, school, {
+        reason: form.elements.reason.value,
+        date: today()
+      });
+      state.schoolMarks = state.schoolMarks.filter(id => id !== school.schoolId);
+      ui.dismissSchoolId = null;
+      ui.expandedSchoolId = null;
+      if (ui.selected === school.schoolId) ui.selected = null;
+      save();
+      render();
+      notify('理由を検討記録に残し、候補から外しました。');
+    } catch (error) {
+      notify(error.message);
+    }
+    return;
+  }
   if (form.dataset.renamePlacement) {
     event.preventDefault();
     const label = form.elements.label.value.trim().slice(0, LABEL_LIMIT);

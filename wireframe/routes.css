@@ -24,6 +24,13 @@
 #routes-page .route-university-group ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
 #routes-page .route-university-group li{display:grid;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper);font-size:12px}
 #routes-page .route-university-group li>span{font-size:10px;color:var(--muted)}
+#routes-page .route-university-group li.is-marked{border-color:#d29a2d;background:#fff8df}
+.school-review-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:7px}
+.school-mark{border:1px solid var(--line);border-radius:999px;background:var(--paper);padding:6px 10px;font:inherit;font-size:11px;font-weight:700;color:var(--muted)}
+.school-mark.is-marked{border-color:#d29a2d;background:#fff0b8;color:#654500}
+.school-dismiss-form{display:grid;gap:7px;margin-top:8px;padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--ground)}
+.school-dismiss-form label{display:grid;gap:4px;font-size:11px;font-weight:700}
+.school-dismiss-form input{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font:inherit}
 #routes-page .route-university-group details{margin-top:10px}
 #routes-page .route-university-group summary{min-height:36px;display:flex;align-items:center;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer}
 
@@ -60,6 +67,8 @@
 .route-defer-detail p{font-size:11px;color:var(--muted);line-height:1.8;margin-top:6px}
 .route-source{display:block;margin-top:11px;font-size:12px}
 .route-step small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+.route-step.is-marked{background:#fff8df;border-radius:10px}
+.route-step.is-dismissed{color:var(--muted);border:1px dashed var(--line);border-radius:10px;margin:8px 0;padding-top:13px;padding-bottom:13px}
 
 .route-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:auto;padding-top:16px;border-top:1px solid var(--line)}
 .route-math-detail{margin-top:12px;padding:12px 14px;background:#fbfcf9;border:1px solid var(--line);border-radius:9px;font-size:11px;line-height:1.8;color:var(--muted)}

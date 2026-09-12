@@ -125,6 +125,7 @@ function nodeMarkup(node, ctx) {
   const isLink = content === 'link';
   const isPhoto = content === 'photo';
   if (self) classes.push('node-self');
+  if (node.marked) classes.push('node-school-marked');
   if (node.id === selected) classes.push('is-selected');
   if (dimmed) classes.push('is-dim');
   if (node.id === dragging) classes.push('is-dragging');
@@ -134,7 +135,9 @@ function nodeMarkup(node, ctx) {
   if (isLink) descriptors.push('リンク');
   if (isPhoto) descriptors.push('写真');
   if (self) descriptors.push('自分で追加');
-  const name = `${escape(node.label)}${descriptors.length ? `（${descriptors.join('・')}）` : ''}`;
+  if (node.marked) descriptors.push('よかった印');
+  const visibleLabel = `${node.marked ? '★ ' : ''}${node.label}`;
+  const name = `${escape(visibleLabel)}${descriptors.length ? `（${descriptors.join('・')}）` : ''}`;
   // リンク・写真の記号はラベルの前に置く装飾。読み上げには要らないので aria-hidden にし、
   // 意味（種別・出どころ）は上の aria-label（name）側だけで言う。
   const mark = isLink ? '<tspan class="node-mark" aria-hidden="true">↗ </tspan>'
@@ -144,7 +147,7 @@ function nodeMarkup(node, ctx) {
     <rect width="${node.w.toFixed(1)}" height="${node.h}" rx="${(node.h / 2).toFixed(1)}" class="node-body"></rect>
     ${node.node === 'domain' && node.domain.converged ? `<circle cx="${(node.w - 11).toFixed(1)}" cy="11" r="4" class="node-spark"></circle>` : ''}
     ${self ? `<rect x="${(node.w - 15).toFixed(1)}" y="4" width="7" height="7" class="node-mark"></rect>` : ''}
-    <text x="${(node.w / 2).toFixed(1)}" y="${node.h / 2 + 5}" text-anchor="middle" class="node-label">${mark}${escape(node.label)}</text>
+    <text x="${(node.w / 2).toFixed(1)}" y="${node.h / 2 + 5}" text-anchor="middle" class="node-label">${mark}${escape(visibleLabel)}</text>
   </g>`;
 }
 

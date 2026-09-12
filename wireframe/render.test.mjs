@@ -7,6 +7,7 @@ import {renderField, renderFieldList} from './field-ui.mjs';
 import * as fieldUiModule from './field-ui.mjs';
 import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {domains} from './verbs.mjs';
+import {schoolId} from './school-records.mjs';
 
 const put = (id, ref, x, lane = 'now', kind = 'topic') => ({id, lane, x, label: id, kind, ref, verb: null, note: ''});
 
@@ -191,6 +192,7 @@ test('route comparison shows each route feature and a direct official detail lin
 
 test('university candidates show four together and put later candidates behind an expandable control', () => {
   const routes = Array.from({length: 6}, (_, index) => ({
+    id: `media-route-${index + 1}`,
     kindName: `Route ${index + 1}`,
     steps: [{stage: 'university', title: `University ${index + 1}`, link: {url: `https://example.edu/${index + 1}`}}]
   }));
@@ -198,4 +200,58 @@ test('university candidates show four together and put later candidates behind a
   assert.equal((html.match(/class="candidate-primary"/g) ?? []).length, 4);
   assert.equal((html.match(/class="candidate-more"/g) ?? []).length, 2);
   assert.match(html, /<details><summary>ほか2件を広げる<\/summary>/);
+});
+
+test('school candidates expose visible review actions', () => {
+  const routes = [{
+    id: 'media-general',
+    kindName: 'General route',
+    steps: [
+      {stage: 'university', title: 'Example University', link: {url: 'https://example.edu/university'}},
+      {stage: 'highschool', title: 'Example High School', link: {url: 'https://example.edu/highschool'}}
+    ]
+  }];
+  const html = renderUniversityCandidates(routes, 4, {domainId: 'media'});
+  const id = schoolId('https://example.edu/university', 'Example University');
+  assert.ok(html.includes(`data-school-mark="${id}"`));
+  assert.ok(html.includes(`data-school-dismiss="${id}"`));
+  assert.ok(html.includes(`data-school-open="${id}"`));
+});
+
+test('high-school route steps expose the same review actions as universities', () => {
+  const html = renderRoutes({
+    domainId: 'media',
+    domain: domains.media,
+    saved: new Set(),
+    schoolMarks: new Set(),
+    dismissedSchools: new Set(),
+    checkedOn: '2026-09-12'
+  });
+  const id = schoolId('https://www.kyoiku.metro.tokyo.lg.jp/admission/high_school/', '普通科（理科と数学を続けられる学校）');
+  assert.ok(html.includes(`data-school-mark="${id}"`));
+  assert.ok(html.includes(`data-school-dismiss="${id}"`));
+  assert.ok(html.includes(`data-school-open="${id}"`));
+});
+
+test('a marked school is visibly identified on the map without relying on color', () => {
+  const view = layout({
+    placements: [put('a', 'games', 0.5)],
+    extraNodes: [{id: 'route-media-general-university', lane: 'faculty', label: 'Example University', x: 0.5, marked: true}],
+    width: 360
+  });
+  const html = renderField(view);
+  assert.match(html, /node-school-marked/);
+  assert.match(html, /★ Example University/);
+  assert.match(html, /よかった印/);
+});
+
+test('the inbox and school records are independent main tabs', async () => {
+  const [html, app] = await Promise.all([
+    readFile(new URL('./index.html', import.meta.url), 'utf8'),
+    readFile(new URL('./app.js', import.meta.url), 'utf8')
+  ]);
+  assert.match(html, /href="#records"[^>]+data-tab="records"/);
+  assert.match(html, /href="#inbox"[^>]+data-tab="inbox"/);
+  assert.match(app, /page === 'inbox'/);
+  assert.match(app, /page === 'records'/);
 });
