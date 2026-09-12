@@ -612,6 +612,13 @@ test('selecting a node for editing does not collapse an open route graph', () =>
   );
 });
 
+test('inspecting another node preserves the highlighted route context', () => {
+  assert.equal(typeof fieldModule.highlightAfterClick, 'function');
+  assert.equal(fieldModule.highlightAfterClick(null, 'topic-1'), 'topic-1');
+  assert.equal(fieldModule.highlightAfterClick('topic-1', 'route-media-general-course'), 'topic-1');
+  assert.equal(fieldModule.highlightAfterClick('topic-1', 'topic-2'), 'topic-1');
+});
+
 test('dropping a node reads its lane from the vertical position, and never leaves the field', () => {
   const view = layout({placements: [put('a', 'games', 0.5)], width: 360});
   assert.equal(laneAt(view.lanes[0].top + 1, view.lanes), 'lab');

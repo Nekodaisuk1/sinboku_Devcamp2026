@@ -13,7 +13,7 @@ import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, re
 import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
-import {selectFieldNode} from './field.mjs';
+import {selectFieldNode, highlightAfterClick} from './field.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const $ = id => document.getElementById(id);
@@ -23,7 +23,7 @@ const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => r
 let state = emptyState();
 // 画面の一時的な状態。保存の対象にしない。
 const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker: false, legacy: false,
-            selected: null, routeDomain: null, routeKind: null, listView: false, about: false, picker: null,
+            selected: null, highlighted: null, routeDomain: null, routeKind: null, listView: false, about: false, picker: null,
             verbSection: 'activities', fieldWidth: 360, fieldScroll: null,
             // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
             fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null,
@@ -176,7 +176,8 @@ function consumeSharedMapHash() {
 
 function fieldView() {
   // 絞り込みは「描くものを減らす」だけ。保存された置きものには手を触れない。
-  const scope = visibleFor(state.placements, {view: ui.fieldView, selected: ui.selected});
+  const focus = ui.highlighted ?? ui.selected;
+  const scope = visibleFor(state.placements, {view: ui.fieldView, selected: focus});
   const routeDomain = ui.routeDomain;
   const anchor = routeDomain
     ? revealWorld(scope.placements).domains.find(domain => domain.id === routeDomain)?.x ?? 0.5
@@ -185,7 +186,7 @@ function fieldView() {
   const extraNodes = extra.nodes.map(node => ({...node, links: extra.links.filter(link => link.from === node.id)}));
   // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
   // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
-  const keep = new Set([...linkedSet(scope.placements, ui.selected), ui.moving].filter(Boolean));
+  const keep = new Set([...linkedSet(scope.placements, focus), focus, ui.selected, ui.moving].filter(Boolean));
   const view = layout({placements: scope.placements, extraNodes, width: ui.fieldWidth, expandedLanes: ui.expandedLanes, keep});
   return {...view, scope};
 }
@@ -240,11 +241,11 @@ function listSortMarkup() {
  * 経路だけは1本の道なので、最後までたどる。何もかも明るくすると、選んだ意味がなくなる。
  */
 function highlightFor(view) {
-  if (!ui.selected || !view.byId.has(ui.selected)) return new Set();
-  const lit = new Set([ui.selected]);
+  if (!ui.highlighted || !view.byId.has(ui.highlighted)) return new Set();
+  const lit = new Set([ui.highlighted]);
   for (const link of view.links) {
-    if (link.from === ui.selected) lit.add(link.to);
-    if (link.to === ui.selected) lit.add(link.from);
+    if (link.from === ui.highlighted) lit.add(link.to);
+    if (link.to === ui.highlighted) lit.add(link.from);
   }
   let frontier = [...lit];
   while (frontier.length) {
@@ -618,6 +619,7 @@ function nowPage() {
         <button class="grade-open" data-grade-open>${grade ? `いま ${escape(grade.label)}` : 'いま何年生？'}</button>
         <button class="primary" data-open-picker="topic">＋ 項目を追加</button>
         <button class="ghost" data-list-view aria-pressed="${ui.listView}">${ui.listView ? 'マップで見る' : '一覧で読む'}</button>
+        ${ui.highlighted ? '<button class="ghost" data-clear-highlight>ハイライトを解除</button>' : ''}
         ${ui.routeDomain ? '<button class="ghost" data-close-route>ルート表示を閉じる</button>' : ''}
         ${state.placements.length ? '<button class="ghost" data-share-map>このマップを共有</button>' : ''}
       </div>
@@ -1073,6 +1075,7 @@ function place({kind, ref, label, verb = null, lane = 'now', topic = null, url =
   const before = convergences(state.placements).length;
   state.placements = [...state.placements, placement];
   ui.selected = placement.id;
+  ui.highlighted = placement.id;
   ui.routeDomain = null;
   ui.picker = null;
   ui.draft = null;
@@ -1117,6 +1120,7 @@ function placeInterestPlan(plan) {
   });
   state.placements = placements;
   ui.selected = created.at(-1).id;
+  ui.highlighted = ui.selected;
   ui.routeDomain = null;
   save();
   const after = convergences(state.placements);
@@ -1142,6 +1146,7 @@ document.addEventListener('click', event => {
   const svgNode = event.target.closest('[data-node]');
   if (svgNode) {
     const clickedId = svgNode.dataset.node;
+    ui.highlighted = highlightAfterClick(ui.highlighted, clickedId);
     const routeNode = clickedId.startsWith('route-');
     const next = selectFieldNode({currentSelected: ui.selected, clickedId, routeDomain: ui.routeDomain});
     ui.selected = next.selected;
@@ -1211,6 +1216,7 @@ document.addEventListener('click', event => {
     return render();
   }
   if (target.hasAttribute('data-deselect')) {ui.selected = null; return render();}
+  if (target.hasAttribute('data-clear-highlight')) {ui.highlighted = null; return render();}
   if (target.hasAttribute('data-close-route')) {
     ui.routeDomain = null;
     ui.routeKind = null;
@@ -1218,6 +1224,9 @@ document.addEventListener('click', event => {
     return render();
   }
   if (target.dataset.nodeOpen) {
+    if (!target.dataset.nodeOpen.startsWith('lane-')) {
+      ui.highlighted = highlightAfterClick(ui.highlighted, target.dataset.nodeOpen);
+    }
     const next = selectFieldNode({currentSelected: ui.selected, clickedId: target.dataset.nodeOpen, routeDomain: ui.routeDomain});
     ui.selected = next.selected;
     ui.routeDomain = next.routeDomain;
@@ -1312,6 +1321,7 @@ document.addEventListener('click', event => {
     state.placements = state.placements.filter(placement => placement.id !== id);
     state.log = state.log.map(entry => entry.placement === id ? {...entry, placement: null} : entry);
     ui.selected = null;
+    if (ui.highlighted === id) ui.highlighted = null;
     ui.routeDomain = null;
     save();
     notify('進路マップから削除しました。やったことの記録は残しています。');
