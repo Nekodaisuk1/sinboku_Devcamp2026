@@ -2,7 +2,7 @@ import {decisionPoints} from './routes.mjs';
 import {routesForDomain, hasRoutes, routeDomains} from './routes.mjs';
 import knowledge from './knowledge-data.mjs';
 import {verbById, domainsForActivity} from './verbs.mjs';
-import {universityCandidatesForDomain} from './education.mjs';
+import {highSchoolCandidatesForDomain, universityCandidatesForDomain} from './education.mjs';
 
 /**
  * 時間の野原。縦軸は時間だけが決め、横軸は本人が自由に置く。
@@ -315,8 +315,17 @@ function pathForRoute(route, domainId, x) {
  * kindId がない間は決める前の比較として全経路を横に並べ、選ばれたら1本に絞る。
  */
 function highSchoolCandidates(domainId, excludeUrl) {
-  const found = [];
+  const verified = highSchoolCandidatesForDomain(domainId, {limit: 4, excludeUrl}).map(item => ({
+    id: item.id,
+    name: item.name,
+    activity: `${item.prefecture}｜${item.activity}`,
+    link: {name: item.name, url: item.url, source: item.source}
+  }));
+  if (verified.length >= 4) return verified;
+
+  const found = [...verified];
   const seen = new Set([excludeUrl].filter(Boolean));
+  for (const item of verified) seen.add(item.link.url);
   const orderedDomains = [domainId, ...routeDomains().filter(id => id !== domainId)];
   for (const candidateDomain of orderedDomains) {
     for (const route of routesForDomain(candidateDomain, knowledge.domains[candidateDomain])) {
