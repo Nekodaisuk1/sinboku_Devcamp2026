@@ -11,7 +11,7 @@ import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, re
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
         PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, buildExternalInformationDraft, placementForResource, setDomainConnection, resetDomainConnections,
         withoutDismissedRouteSchools, markedSchoolNodeIds} from './field.mjs';
-import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
+import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve, captureNodePointer} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
 import {selectFieldNode, highlightAfterClick, schoolExpansionAfterClick} from './field.mjs';
@@ -1740,11 +1740,13 @@ let justDragged = false;
 document.addEventListener('pointerdown', event => {
   const handle = event.target.closest('[data-movable]');
   if (!handle || !lastView) return;
+  event.preventDefault();
+  captureNodePointer(handle, event.pointerId);
   const svg = handle.closest('svg');
   drag = {id: handle.dataset.node, handle, svg, box: svg.getBoundingClientRect(),
           moved: false, pointer: event.pointerId, startX: event.clientX, startY: event.clientY,
           x: null, lane: null};
-});
+}, {passive: false});
 
 /**
  * 動かしている最中は、画面全体を描き直さない。

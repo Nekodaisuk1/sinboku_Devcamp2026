@@ -70,6 +70,12 @@ export function curve(from, to) {
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${x1.toFixed(1)} ${mid.toFixed(1)}, ${x2.toFixed(1)} ${mid.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
+export function captureNodePointer(node, pointerId) {
+  if (typeof node.setPointerCapture !== 'function') return false;
+  node.setPointerCapture(pointerId);
+  return true;
+}
+
 // 段の地の部分（.lane グループ）。クリックで段を選べる部分だけをここに入れる。
 function laneMarkup(lane, width, next) {
   return `<g class="lane lane-${lane.id}${lane.id === next ? ' lane-next' : ''}" role="button" tabindex="0" aria-label="${escape(lane.title)}、${escape(lane.horizon)}。内容を開く">
