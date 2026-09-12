@@ -8,8 +8,8 @@ import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
 import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
-        PLACEMENT_LIMIT, LABEL_LIMIT} from './field.mjs';
-import {renderField, renderFieldList, curve} from './field-ui.mjs';
+        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan} from './field.mjs';
+import {renderField, renderFieldList, renderInterestBuilder, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
 
@@ -614,6 +614,12 @@ function nowPage() {
       </div><p class="grade-note">次の選択時期まであと何か月かを出すためだけに使います。この端末の中だけです。</p>` : ''}
     </section>
 
+    ${renderInterestBuilder({
+      topics,
+      verbs,
+      placedRefs: new Set(state.placements.filter(placement => placement.kind === 'topic').map(placement => placement.ref)),
+      open: state.placements.length === 0
+    })}
     ${recommendationInboxMarkup()}
     ${contextMarkup(next, grade, week)}
 
@@ -1059,6 +1065,46 @@ function place({kind, ref, label, verb = null, lane = 'now', topic = null, url =
   return true;
 }
 
+/** 最初に選んだ複数の興味を、1回の保存と描画でまとめて追加する。 */
+function placeInterestPlan(plan) {
+  const existingTopics = new Set(state.placements.filter(item => item.kind === 'topic').map(item => item.ref));
+  const existingCustom = new Set(state.placements
+    .filter(item => item.kind === 'custom')
+    .map(item => item.label.trim().toLocaleLowerCase('ja')));
+  const additions = plan.filter(item => item.kind === 'topic'
+    ? !existingTopics.has(item.ref)
+    : !existingCustom.has(item.label.trim().toLocaleLowerCase('ja')));
+  if (!plan.length) { notify('追加する興味を選んでください。'); return false; }
+  if (!additions.length) { notify('選んだ興味はすべて追加済みです。'); return false; }
+  if (state.placements.length + additions.length > PLACEMENT_LIMIT) {
+    notify(`進路マップに追加できるのは${PLACEMENT_LIMIT}件までです。`);
+    return false;
+  }
+
+  const before = convergences(state.placements).length;
+  let placements = [...state.placements];
+  const created = additions.map(item => {
+    const placement = {
+      id: newPlacementId(), lane: 'now', x: freeX(placements, 'now'),
+      label: item.label, kind: item.kind, ref: item.ref, verb: item.verb, note: '',
+      topic: item.topic, url: null, title: null, photo: null, source: item.source
+    };
+    placements.push(placement);
+    return placement;
+  });
+  state.placements = placements;
+  ui.selected = created.at(-1).id;
+  save();
+  const after = convergences(state.placements);
+  render();
+  if (after.length > before) {
+    notify(`${created.length}件の興味を追加しました。共通する学問もマップに表示しています。`);
+  } else {
+    notify(`${created.length}件の興味からマップを作りました。${persist ? '' : ' 次回も残すなら、右上で保存をオンに。'}`);
+  }
+  return true;
+}
+
 /* ---------- 操作 ---------- */
 
 document.addEventListener('click', event => {
@@ -1277,6 +1323,21 @@ function expandLane(id, from = 'field') {
 document.addEventListener('submit', event => {
   const form = event.target;
   if (form.hasAttribute('data-search')) return event.preventDefault();
+  if (form.hasAttribute('data-interest-builder')) {
+    event.preventDefault();
+    const data = new FormData(form);
+    try {
+      const plan = buildInterestPlan({
+        topicIds: data.getAll('topics'),
+        customLabel: data.get('customLabel'),
+        verbId: data.get('verbId') || null
+      });
+      placeInterestPlan(plan);
+    } catch (error) {
+      notify(error.message);
+    }
+    return;
+  }
   if (form.hasAttribute('data-recommend-form')) {
     event.preventDefault();
     try {

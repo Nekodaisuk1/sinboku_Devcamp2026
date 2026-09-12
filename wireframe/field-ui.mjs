@@ -2,6 +2,44 @@ import {convergenceSentence, sourceOf, contentOf} from './field.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 
+/** 本人が複数の興味を明示して、まとめて進路マップの起点にするフォーム。 */
+export function renderInterestBuilder({topics, verbs, placedRefs = new Set(), open = false}) {
+  const topicChoices = Object.entries(topics).map(([id, topic]) => {
+    const placed = placedRefs.has(id);
+    return `<label class="interest-choice${placed ? ' is-placed' : ''}">
+      <input type="checkbox" name="topics" value="${escape(id)}"${placed ? ' disabled' : ''}>
+      <span>${escape(topic.label)}</span>${placed ? '<small>追加済み</small>' : ''}
+    </label>`;
+  }).join('');
+  return `<details class="interest-builder"${open ? ' open' : ''}>
+    <summary>
+      <span>自分の興味からマップを作る</span>
+      <small>気になるものを複数選べます</small>
+    </summary>
+    <form data-interest-builder>
+      <fieldset>
+        <legend>いま興味があるもの</legend>
+        <p class="interest-hint">1つに絞らなくて大丈夫です。選んだものだけをマップの起点にします。</p>
+        <div class="interest-choices">${topicChoices}</div>
+      </fieldset>
+      <fieldset class="interest-custom">
+        <legend>ほかに興味があれば追加</legend>
+        <label>興味の名前
+          <input name="customLabel" type="text" maxlength="40" placeholder="例：天体観測" autocomplete="off">
+        </label>
+        <label>その興味との関わり方
+          <select name="verbId">
+            <option value="">関わり方を選ぶ</option>
+            ${verbs.map(verb => `<option value="${escape(verb.id)}">${escape(verb.label)}</option>`).join('')}
+          </select>
+        </label>
+        <p class="interest-hint">自由に書いた興味は、選んだ関わり方だけを手がかりに学問へつなぎます。</p>
+      </fieldset>
+      <button class="primary" type="submit">この内容でマップを作る</button>
+    </form>
+  </details>`;
+}
+
 // 置いたものが上へ伸びる線。時間が上に流れるので、縦向きの曲線にする。
 // app.js がドラッグ中に同じ式で線を引き直せるよう export する。
 export function curve(from, to) {
