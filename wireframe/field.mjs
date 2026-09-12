@@ -412,6 +412,11 @@ export function selectFieldNode({currentSelected = null, clickedId, routeDomain 
   };
 }
 
+/** 詳細表示の対象が変わっても、本人が見ている接続の起点は明示的に外すまで維持する。 */
+export function highlightAfterClick(currentHighlight, clickedId) {
+  return currentHighlight || clickedId;
+}
+
 /** 大学・高校は追加の操作部品を挟まず、ノードそのもののクリックで候補を開閉する。 */
 export function schoolExpansionAfterClick(node, currentExpandedId = null) {
   if (node?.kind === 'school-option') return currentExpandedId;
