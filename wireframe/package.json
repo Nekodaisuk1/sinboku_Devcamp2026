@@ -1,0 +1,13 @@
+{
+  "name": "shimboku-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test core.test.mjs render.test.mjs",
+    "check": "node scripts/knowledge.mjs --check && node --check app.js && node --check field.mjs && node --check field-ui.mjs && node --check timeline.mjs && node --check verbs.mjs && node --check log.mjs && node --check store.mjs && node --check catalog.mjs && node --check routes.mjs && node --check routes-ui.mjs && node --check server.mjs && node --check scripts/build.mjs && node --check core.test.mjs && node --check render.test.mjs",
+    "knowledge:check": "node scripts/knowledge.mjs --check",
+    "knowledge:build": "node scripts/knowledge.mjs",
+    "build": "node scripts/build.mjs"
+  }
+}
