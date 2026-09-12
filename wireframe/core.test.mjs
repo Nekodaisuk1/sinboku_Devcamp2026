@@ -14,8 +14,25 @@ import {
 import {validateKnowledge} from './scripts/knowledge.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, validateRecommendations,
         RECOMMENDATION_LIMIT} from './recommendations.mjs';
+import * as fieldModule from './field.mjs';
 
 const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => routesForDomain(id, {name: id}).map(route => route.id)))};
+
+test('an interest plan contains only the interests the user explicitly chose', () => {
+  assert.equal(typeof fieldModule.buildInterestPlan, 'function');
+  const plan = fieldModule.buildInterestPlan({
+    topicIds: ['games', 'music', 'games'],
+    customLabel: '天体観測',
+    verbId: 'observe'
+  });
+  assert.deepEqual(plan.map(item => [item.kind, item.ref, item.label, item.verb]), [
+    ['topic', 'games', topics.games.label, null],
+    ['topic', 'music', topics.music.label, null],
+    ['custom', null, '天体観測', 'observe']
+  ]);
+  assert.throws(() => fieldModule.buildInterestPlan({topicIds: ['unknown']}), /Unknown topic/);
+  assert.throws(() => fieldModule.buildInterestPlan({customLabel: '天体観測'}), /関わり方/);
+});
 
 /* --- Build 14 から引き継いだ経路の要件。再構成で壊れていないことを確かめる --- */
 

@@ -23,6 +23,37 @@ export const LANES = [
 export const LANE_IDS = LANES.map(lane => lane.id);
 export const PLACEMENT_LIMIT = 60;
 export const LABEL_LIMIT = 40;
+export const INTEREST_PLAN_LIMIT = 5;
+
+/**
+ * 最初に本人が選んだ興味を、進路マップへ追加できる形にそろえる。
+ * 名前から興味や学問を推測せず、チェックした項目と明示した関わり方だけを使う。
+ */
+export function buildInterestPlan({topicIds = [], customLabel = '', verbId = null} = {}) {
+  if (!Array.isArray(topicIds)) throw new Error('Interests must be a list');
+  const uniqueTopicIds = [...new Set(topicIds.map(id => String(id)))];
+  for (const id of uniqueTopicIds) {
+    if (!knowledge.topics[id]) throw new Error(`Unknown topic: ${id}`);
+  }
+
+  const label = String(customLabel ?? '').trim();
+  if (label.length > LABEL_LIMIT) throw new Error(`興味の名前は${LABEL_LIMIT}文字までです。`);
+  const verb = verbId ? verbById(String(verbId)) : null;
+  if (label && !verb) throw new Error('自由に書いた興味には、関わり方を選んでください。');
+
+  const plan = uniqueTopicIds.map(id => ({
+    kind: 'topic', ref: id, label: knowledge.topics[id].label, verb: null,
+    topic: null, source: 'catalog'
+  }));
+  if (label) plan.push({
+    kind: 'custom', ref: null, label, verb: verb.id,
+    topic: null, source: 'self'
+  });
+  if (plan.length > INTEREST_PLAN_LIMIT) {
+    throw new Error(`最初に選べる興味は${INTEREST_PLAN_LIMIT}件までです。`);
+  }
+  return plan;
+}
 
 // Build 23: 置きものの出どころと中身を、kind だけでなく統一した形で持たせる。
 // PLACEMENT_KINDS は保存データが名乗れる kind の全部。SELF_KINDS はそのうち
