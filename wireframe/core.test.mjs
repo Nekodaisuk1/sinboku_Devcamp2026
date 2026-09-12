@@ -501,6 +501,23 @@ test('all routes can be compared on the field before one is chosen', () => {
   }
 });
 
+test('selecting an intermediate route node keeps its route visible', () => {
+  assert.equal(typeof fieldModule.selectFieldNode, 'function');
+  const clickedId = 'route-media-general-course';
+  const next = fieldModule.selectFieldNode({
+    currentSelected: 'domain-media',
+    clickedId,
+    routeDomain: 'media'
+  });
+  assert.deepEqual(next, {selected: clickedId, routeDomain: 'media'});
+  assert.ok(routePath(next.routeDomain, null, 0.5).nodes.some(node => node.id === clickedId));
+  assert.deepEqual(
+    fieldModule.selectFieldNode({...next, currentSelected: clickedId, clickedId}),
+    next,
+    'clicking the route node again must not collapse the route'
+  );
+});
+
 test('dropping a node reads its lane from the vertical position, and never leaves the field', () => {
   const view = layout({placements: [put('a', 'games', 0.5)], width: 360});
   assert.equal(laneAt(view.lanes[0].top + 1, view.lanes), 'lab');

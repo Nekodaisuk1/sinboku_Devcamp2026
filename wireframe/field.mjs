@@ -333,6 +333,16 @@ export function routePath(domainId, kindId, anchorX) {
   };
 }
 
+/** 中間ノードを選んでも、ルートを描く起点の学問は維持する。 */
+export function selectFieldNode({currentSelected = null, clickedId, routeDomain = null}) {
+  if (clickedId.startsWith('route-')) return {selected: clickedId, routeDomain};
+  const selected = currentSelected === clickedId ? null : clickedId;
+  return {
+    selected,
+    routeDomain: selected?.startsWith('domain-') ? selected.slice(7) : null
+  };
+}
+
 /* ---------- 並べ方：縦は時間、横は置いた場所。重なる分だけ段が厚くなる ---------- */
 
 const NODE_HEIGHT = 34;

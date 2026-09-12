@@ -12,6 +12,7 @@ import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, re
 import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
+import {selectFieldNode} from './field.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const $ = id => document.getElementById(id);
@@ -21,7 +22,7 @@ const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => r
 let state = emptyState();
 // 画面の一時的な状態。保存の対象にしない。
 const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker: false, legacy: false,
-            selected: null, routeKind: null, listView: false, about: false, picker: null,
+            selected: null, routeDomain: null, routeKind: null, listView: false, about: false, picker: null,
             verbSection: 'activities', fieldWidth: 360, fieldScroll: null,
             // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
             fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null,
@@ -158,10 +159,13 @@ function fieldView() {
   // 絞り込みは「描くものを減らす」だけ。保存された置きものには手を触れない。
   const scope = visibleFor(state.placements, {view: ui.fieldView, selected: ui.selected});
   const selected = ui.selected ?? '';
-  const anchor = selected.startsWith('domain-')
-    ? revealWorld(scope.placements).domains.find(domain => `domain-${domain.id}` === selected)?.x ?? 0.5
+  const routeDomain = selected.startsWith('domain-') ? selected.slice(7)
+    : selected.startsWith('route-') ? ui.routeDomain
+    : null;
+  const anchor = routeDomain
+    ? revealWorld(scope.placements).domains.find(domain => domain.id === routeDomain)?.x ?? 0.5
     : 0.5;
-  const extra = selected.startsWith('domain-') ? routePath(selected.slice(7), ui.routeKind, anchor) : {nodes: [], links: []};
+  const extra = routeDomain ? routePath(routeDomain, ui.routeKind, anchor) : {nodes: [], links: []};
   const extraNodes = extra.nodes.map(node => ({...node, links: extra.links.filter(link => link.from === node.id)}));
   // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
   // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
@@ -1088,6 +1092,7 @@ function placeInterestPlan(plan) {
   });
   state.placements = placements;
   ui.selected = created.at(-1).id;
+  ui.routeDomain = null;
   save();
   const after = convergences(state.placements);
   render();
@@ -1111,15 +1116,19 @@ document.addEventListener('click', event => {
 
   const svgNode = event.target.closest('[data-node]');
   if (svgNode) {
-    ui.selected = ui.selected === svgNode.dataset.node ? null : svgNode.dataset.node;
-    ui.routeKind = null;
+    const clickedId = svgNode.dataset.node;
+    const routeNode = clickedId.startsWith('route-');
+    const next = selectFieldNode({currentSelected: ui.selected, clickedId, routeDomain: ui.routeDomain});
+    ui.selected = next.selected;
+    ui.routeDomain = next.routeDomain;
+    if (!routeNode) ui.routeKind = null;
     if (ui.moving !== ui.selected) ui.moving = null;
     return render();
   }
   const laneHit = event.target.closest('.lane');
   if (laneHit) {
     const found = [...laneHit.classList].find(name => name.startsWith('lane-') && LANE_IDS.includes(name.slice(5)));
-    if (found) {ui.selected = `lane-${found.slice(5)}`; ui.routeKind = null; return render();}
+    if (found) {ui.selected = `lane-${found.slice(5)}`; ui.routeDomain = null; ui.routeKind = null; return render();}
   }
 
   const target = event.target.closest('button');
@@ -1157,8 +1166,14 @@ document.addEventListener('click', event => {
     notify('受信箱から消しました。');
     return render();
   }
-  if (target.hasAttribute('data-deselect')) {ui.selected = null; ui.routeKind = null; return render();}
-  if (target.dataset.nodeOpen) {ui.selected = target.dataset.nodeOpen; ui.routeKind = null; ui.listView = false; return render();}
+  if (target.hasAttribute('data-deselect')) {ui.selected = null; ui.routeDomain = null; ui.routeKind = null; return render();}
+  if (target.dataset.nodeOpen) {
+    ui.selected = target.dataset.nodeOpen;
+    ui.routeDomain = ui.selected.startsWith('domain-') ? ui.selected.slice(7) : null;
+    ui.routeKind = null;
+    ui.listView = false;
+    return render();
+  }
   if (target.hasAttribute('data-list-view')) {ui.listView = !ui.listView; return render();}
   if (target.dataset.fieldView) {ui.fieldView = target.dataset.fieldView; return render();}
   if (target.hasAttribute('data-picks-open')) {ui.picksOpen = !ui.picksOpen; return render();}
@@ -1246,6 +1261,7 @@ document.addEventListener('click', event => {
     state.placements = state.placements.filter(placement => placement.id !== id);
     state.log = state.log.map(entry => entry.placement === id ? {...entry, placement: null} : entry);
     ui.selected = null;
+    ui.routeDomain = null;
     save();
     notify('進路マップから削除しました。やったことの記録は残しています。');
     return render();
