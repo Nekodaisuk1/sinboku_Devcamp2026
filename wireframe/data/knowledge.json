@@ -935,7 +935,15 @@
       "reason": "海の写真・観測・環境の問いを扱う教材。生き物と環境のつながりを、観察する視点で考えられます。",
       "step": "教材の見出しから、気になる問いを1つ選ぶ。",
       "id": "ocean-steam",
-      "category": "material", "prefecture": null, "grades": ["j1", "j2", "j3"], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "environment-living"
@@ -945,7 +953,9 @@
       "verbs": [
         "dig",
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "information",
@@ -987,7 +997,11 @@
       "reason": "プログラムの順番と、絵・音による表現を同時に試せます。遊びを作る入口にもなります。",
       "step": "気になるチュートリアルを1つ開き、動きか音を1つ変えてみる。",
       "id": "scratch-create",
-      "category": "material", "prefecture": null, "grades": [], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "making-things"
       ],
@@ -995,7 +1009,9 @@
       "reviewAfter": null,
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "information",
@@ -1036,7 +1052,11 @@
       "reason": "ScratchやWeb制作など、興味に合わせて取り組む地域の活動です。扱う内容は道場ごとに違います。",
       "step": "近くの道場を1つ選び、開催案内を確認する。",
       "id": "coderdojo",
-      "category": "continuing", "prefecture": null, "grades": [], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "making-things"
       ],
@@ -1044,7 +1064,9 @@
       "reviewAfter": null,
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "sound",
@@ -1080,7 +1102,11 @@
       "reason": "音の仕組みと、楽器の形・材料を同じ対象から見られます。音響とデザインをつなぐ読みものです。",
       "step": "「しくみ」から気になる見出しを選ぶ。楽器の購入は不要。",
       "id": "guitar-anatomy",
-      "category": "material", "prefecture": null, "grades": [], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "making-things",
         "sound-science"
@@ -1089,7 +1115,9 @@
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "food",
@@ -1125,7 +1153,11 @@
       "reason": "料理に使う食品を、微生物と成分の変化から見る入口です。好きな料理から科学の問いを見つけられます。",
       "step": "家で使う調味料を1つ思い浮かべて、記事に登場するか探す。",
       "id": "fermentation",
-      "category": "material", "prefecture": null, "grades": [], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "microbe-life"
       ],
@@ -1133,7 +1165,9 @@
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1168,14 +1202,24 @@
       "child": "oshima-diving",
       "reason": "海への興味を、授業だけでなく学校生活や部活動から考える入口。生態学を専門的に学べると保証するものではありません。",
       "id": "oshima-school",
-      "category": "school", "prefecture": "東京都", "grades": ["j1", "j2", "j3"], "cost": "unknown", "deadline": null,
+      "category": "school",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork"
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1210,7 +1254,15 @@
       "host": "oshima-school",
       "reason": "海への関心を実技の面から広げる活動例です。生物調査そのものを行うという意味ではありません。",
       "id": "oshima-diving",
-      "category": "club", "prefecture": "東京都", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "club",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork"
@@ -1219,7 +1271,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1259,7 +1313,11 @@
       "date": "2026-10-24",
       "reason": "実際の学校や活動を見て、続けたいか確かめる入口。体験参加と入学資格は別です。",
       "id": "oshima-visit",
-      "category": "event", "prefecture": "東京都", "grades": [], "cost": "unknown", "deadline": null,
+      "category": "event",
+      "prefecture": "東京都",
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life"
       ],
@@ -1267,7 +1325,8 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": "single"
     },
     {
       "domain": "food",
@@ -1302,14 +1361,24 @@
       ],
       "reason": "海洋生物と食品を同じ学部の中で扱います。料理が好きという入口から、食品を研究する進路にもつながります。",
       "id": "kaiyo-life",
-      "category": "university", "prefecture": "東京都", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "biology"
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "engineering",
@@ -1343,13 +1412,23 @@
       ],
       "reason": "海で使う機械だけでなく、情報や物流という仕組みにも目を向ける進路です。",
       "id": "kaiyo-engineering",
-      "category": "university", "prefecture": "東京都", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life"
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "environment",
@@ -1383,14 +1462,24 @@
       ],
       "reason": "環境を理解する学びと、資源をどう扱うかという問いを比較できます。",
       "id": "kaiyo-environment",
-      "category": "university", "prefecture": "東京都", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "environment-living"
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "media",
@@ -1426,11 +1515,21 @@
       ],
       "reason": "ゲームはプログラミングだけではありません。作品表現や社会との関わりも含む学びを比較できます。",
       "id": "ritsumeikan-media",
-      "category": "university", "prefecture": "大阪府", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "大阪府",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "sound",
@@ -1465,13 +1564,23 @@
       ],
       "reason": "音楽への興味を、文化だけでなく物理や聴覚、情報の視点からも深められます。",
       "id": "kyushu-sound",
-      "category": "university", "prefecture": "福岡県", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "福岡県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "sound-science"
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1512,7 +1621,11 @@
       "reason": "「どこで何が見つかったか」を種名から追えます。海・森・川・街のどこで見つけたものも、同じ形で記録できます。",
       "step": "知っている生き物の名前を1つ入れて、近くに記録があるか見る。",
       "id": "ikilog",
-      "category": "material", "prefecture": null, "grades": [], "cost": "unknown", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "citizen-survey",
         "record-keeping",
@@ -1522,7 +1635,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1562,7 +1677,11 @@
       "reason": "実物の標本がどう並んでいるかを先に見ておくと、現地へ行ったとき何を見たいかが決まります。",
       "step": "地球館の1フロアだけ回って、気になった展示の名前を控える。",
       "id": "kahaku-vr",
-      "category": "material", "prefecture": null, "grades": [], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "biology",
         "plant-life"
@@ -1571,7 +1690,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1610,7 +1731,11 @@
       "reason": "鳥は街でも海でも森でも見られます。見分け方を先に知っておくと、どこへ行っても同じ目で見られます。",
       "step": "窓から見える鳥を1種類だけ、名前まで調べてみる。",
       "id": "wbsj-startbird",
-      "category": "material", "prefecture": null, "grades": [], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "bird-life",
         "fieldwork",
@@ -1621,7 +1746,9 @@
       "verbs": [
         "observe",
         "compare"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1661,7 +1788,11 @@
       "reason": "テーマごとに「どこを見れば見分けられるか」が書かれています。虫・貝・水辺と、対象を変えて同じ観察ができます。",
       "step": "気になるテーマを1つ開き、見分けるポイントを3つ書き出す。",
       "id": "nacsj-shizenshirabe",
-      "category": "material", "prefecture": null, "grades": [], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "citizen-survey",
         "insect-life",
@@ -1674,7 +1805,9 @@
       "verbs": [
         "compare",
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1714,7 +1847,11 @@
       "reason": "博物館の人がどこを見て種類を判断しているかがわかります。自分で拾ったものの扱い方にもつながります。",
       "step": "「ごきんじょでかんさつに出かけよう」を読んで、近所で1つ探してみる。",
       "id": "omnh-ouchi",
-      "category": "material", "prefecture": null, "grades": [], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "biology",
         "record-keeping",
@@ -1724,7 +1861,9 @@
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "food",
@@ -1765,7 +1904,15 @@
       "reason": "生き物を食べものや産業の側から見ると、森・海・畑が同じ話としてつながります。",
       "step": "「森林を知りたい」を開いて、木が育つまでの年数を確かめる。",
       "id": "maff-kids",
-      "category": "material", "prefecture": null, "grades": ["j1", "j2", "j3"], "cost": "free", "deadline": null,
+      "category": "material",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "marine-life",
@@ -1775,7 +1922,9 @@
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1815,7 +1964,18 @@
       "reason": "街の真ん中にも森と水辺があります。遠くへ行かなくても、森・草地・池の違いを一度に見比べられます。",
       "step": "入口でその日の開花・観察情報を見てから歩く。",
       "id": "shizen-kyoikuen",
-      "category": "place", "prefecture": "東京都", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "free", "deadline": null,
+      "category": "place",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "urban-nature",
         "fieldwork",
@@ -1826,7 +1986,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1865,7 +2027,18 @@
       "reason": "同じ「植物」でも、育つ環境ごとに姿が違うことを、歩いて比べられます。",
       "step": "温室と屋外で、葉の厚さや形がどう違うか見比べる。",
       "id": "tsukuba-botanical",
-      "category": "place", "prefecture": "茨城県", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "free", "deadline": null,
+      "category": "place",
+      "prefecture": "茨城県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "plant-life",
         "fieldwork",
@@ -1875,7 +2048,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1915,7 +2090,18 @@
       "reason": "海の魚とは違う、川と湖の生き物だけを集めた展示です。淡水という切り口で生き物を見直せます。",
       "step": "水族展示で、同じ魚が湖と川のどちらにいるか確かめる。",
       "id": "biwahaku",
-      "category": "place", "prefecture": "滋賀県", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "free", "deadline": null,
+      "category": "place",
+      "prefecture": "滋賀県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "freshwater-life",
         "biology",
@@ -1926,7 +2112,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -1965,7 +2153,18 @@
       "reason": "水族館とは別に、標本から海の生き物を見る場所です。近くの海岸で観察会も開かれています。",
       "step": "展示で見た生き物が、近くの海岸のどこにいるか確かめる。",
       "id": "chiba-umihaku",
-      "category": "place", "prefecture": "千葉県", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "paid", "deadline": null,
+      "category": "place",
+      "prefecture": "千葉県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "paid",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "biology",
@@ -1975,7 +2174,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2019,7 +2220,18 @@
       "reason": "一人では見つけられない生き物を、研究している人と一緒に探せます。同じ海岸でも季節ごとにテーマが変わります。",
       "step": "一覧から行ける日の回を選び、対象と申込の締切を確認する。",
       "id": "umihaku-kansatsu",
-      "category": "event", "prefecture": "千葉県", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "event",
+      "prefecture": "千葉県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork",
@@ -2029,7 +2241,9 @@
       "reviewAfter": "2026-11-02",
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": "listing",
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2074,7 +2288,18 @@
       "reason": "大学の研究室で実際に何をしているかを、進学前に一度見られます。学部の名前だけではわからない中身がわかります。",
       "step": "実施プログラム一覧で、自分が行ける場所のものを探す。",
       "id": "hirameki-science",
-      "category": "event", "prefecture": null, "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "event",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "research-challenge",
         "biology",
@@ -2084,7 +2309,9 @@
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": "listing",
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2133,7 +2360,18 @@
       "reason": "ひらめき☆ときめきサイエンスの実例です。海の生き物を「行動」から調べる方法を、研究している場所で体験できます。",
       "step": "申込開始日を控えて、募集ページを確認する。",
       "id": "hokudai-coast-ecology",
-      "category": "event", "prefecture": "北海道", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "free", "deadline": "2027-03-01",
+      "category": "event",
+      "prefecture": "北海道",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": "2027-03-01",
       "conceptIds": [
         "marine-life",
         "fieldwork",
@@ -2143,7 +2381,8 @@
       "reviewAfter": "2027-03-22",
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": "single"
     },
     {
       "domain": "ecology",
@@ -2191,7 +2430,15 @@
       "reason": "生物・環境の講座が複数あります。大学の先生がどんな問いを立てているかを、一日で確かめられます。",
       "step": "講座一覧から生き物に関わるものを探し、開催日と申込方法を確認する。",
       "id": "hiroshima-kokai",
-      "category": "event", "prefecture": "広島県", "grades": ["h1", "h2", "h3"], "cost": "free", "deadline": null,
+      "category": "event",
+      "prefecture": "広島県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "biology",
         "research-challenge",
@@ -2201,7 +2448,9 @@
       "reviewAfter": "2026-11-29",
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": "listing",
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2244,7 +2493,11 @@
       "reason": "同じ場所に毎月通う会もあります。季節で入れかわる鳥を、続けて見ることで違いがわかります。",
       "step": "住んでいる地域の支部を探し、次回の開催日を見る。",
       "id": "wbsj-tanchokai",
-      "category": "continuing", "prefecture": null, "grades": [], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "bird-life",
         "fieldwork",
@@ -2254,7 +2507,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "environment",
@@ -2298,7 +2553,18 @@
       "reason": "一度の体験ではなく、同じ場所を続けて見る活動です。自分で決めたテーマを一年通して調べられます。",
       "step": "ほかのクラブの活動報告を読んで、自分にもできそうなテーマを探す。",
       "id": "kodomo-ecoclub",
-      "category": "continuing", "prefecture": null, "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "citizen-survey",
         "environment-living",
@@ -2308,7 +2574,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "environment",
@@ -2352,7 +2620,18 @@
       "reason": "同じ方法で全国の人が調べているので、自分の川の結果をほかの場所と比べられます。",
       "step": "住んでいる都道府県の窓口を調べ、近くの川の結果が出ているか見る。",
       "id": "zenkoku-suisei",
-      "category": "continuing", "prefecture": null, "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "freshwater-life",
         "citizen-survey",
@@ -2363,7 +2642,9 @@
       "reviewAfter": "2027-04-01",
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2407,7 +2688,18 @@
       "reason": "観察するだけでなく、人が手を入れることで保たれる森があります。手入れの前と後で生き物がどう変わるかを見られます。",
       "step": "次の活動日を確認し、午前だけ参加できるか問い合わせる。",
       "id": "takao-satoyama",
-      "category": "continuing", "prefecture": "東京都", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-care",
         "forest-life",
@@ -2418,7 +2710,9 @@
       "reviewAfter": null,
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2462,7 +2756,18 @@
       "reason": "都内にも、続けて通える里山があります。季節ごとに作業が変わるので、一年を通して同じ場所を見られます。",
       "step": "活動スケジュールから、中高生も参加できる回を探す。",
       "id": "satoyama-go",
-      "category": "continuing", "prefecture": "東京都", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-care",
         "fieldwork",
@@ -2472,7 +2777,9 @@
       "reviewAfter": "2026-12-01",
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2516,7 +2823,18 @@
       "reason": "観察や記録を「自分の研究」にしたいときの受け皿です。今年の募集は終わっていますが、何が求められるかを先に読めます。",
       "step": "これまで採択された研究のテーマを見て、自分の問いに近いものを探す。",
       "id": "marine-challenge",
-      "category": "continuing", "prefecture": null, "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "research-challenge",
         "marine-life",
@@ -2526,7 +2844,9 @@
       "reviewAfter": "2026-12-01",
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2575,7 +2895,15 @@
       "reason": "生き物そのものではなく、そこで暮らしてきた人から森や海を知る方法です。記録して伝えるところまでが活動に入っています。",
       "step": "過去の作品を1つ読んで、どんな聞き方をしているか見る。",
       "id": "kikigaki",
-      "category": "continuing", "prefecture": null, "grades": ["h1", "h2", "h3"], "cost": "free", "deadline": null,
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "marine-life",
@@ -2585,7 +2913,9 @@
       "reviewAfter": "2027-05-01",
       "verbs": [
         "tell"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2624,7 +2954,15 @@
       ],
       "reason": "「森が好き」から進める学科の一つです。講義だけでなく実習が組まれていることが、カリキュラムから確認できます。",
       "id": "tuat-ecoregion",
-      "category": "university", "prefecture": "東京都", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "fieldwork",
@@ -2632,7 +2970,9 @@
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2676,7 +3016,15 @@
       ],
       "reason": "海の生き物を、資源・食品・環境のどこから見るかで学科が分かれています。同じ「海」でも進む先が違います。",
       "id": "hokudai-fisheries",
-      "category": "university", "prefecture": "北海道", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "北海道",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork",
@@ -2684,7 +3032,9 @@
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2728,7 +3078,15 @@
       ],
       "reason": "海と森を別々の学部に分けず、同じ学部の中から選べます。決めきらずに入って、あとから寄せていけます。",
       "id": "mie-bioresources",
-      "category": "university", "prefecture": "三重県", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "三重県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "forest-life",
@@ -2736,7 +3094,9 @@
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2779,7 +3139,15 @@
       ],
       "reason": "川や湖の生き物を専門に扱える大学は多くありません。湖の実験所を持っていることが、学べる内容に直結します。",
       "id": "shinshu-bio",
-      "category": "university", "prefecture": "長野県", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "university",
+      "prefecture": "長野県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "freshwater-life",
         "fieldwork",
@@ -2787,7 +3155,9 @@
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2831,7 +3201,15 @@
       ],
       "reason": "大学以外にも、森を仕事にする学び方があります。木を育てる側と、木を使う側で学科が分かれています。",
       "id": "gifu-forest-academy",
-      "category": "school", "prefecture": "岐阜県", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "school",
+      "prefecture": "岐阜県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "forest-care",
@@ -2839,7 +3217,9 @@
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2877,7 +3257,15 @@
       ],
       "reason": "高校でも、学会で発表するところまで続けている部があります。進学より前に、どこまでできるかの一例です。",
       "id": "igusa-bio-club",
-      "category": "club", "prefecture": "東京都", "grades": ["h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "club",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "fieldwork",
         "biology",
@@ -2885,7 +3273,9 @@
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "ecology",
@@ -2924,7 +3314,18 @@
       "reason": "一度見に行くだけでなく、行事や友の会で続けて通えます。標本の見方を教わると、自分で拾ったものも扱えます。",
       "step": "行事の一覧から、参加できそうな観察会を1つ見る。",
       "id": "omnh",
-      "category": "place", "prefecture": "大阪府", "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "place",
+      "prefecture": "大阪府",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "insect-life",
         "plant-life",
@@ -2934,7 +3335,9 @@
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     {
       "domain": "information",
@@ -2979,7 +3382,18 @@
       "reason": "ゲームを作る手を止めずに、外へ出す場所です。作品を説明する形にまとめる練習にもなります。",
       "step": "過去の受賞作品を見て、どこまで作れば出せるか確かめる。",
       "id": "u22-procon",
-      "category": "continuing", "prefecture": null, "grades": ["j1", "j2", "j3", "h1", "h2", "h3"], "cost": "unknown", "deadline": null,
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "making-things",
         "research-challenge"
@@ -2988,7 +3402,9 @@
       "reviewAfter": "2027-06-01",
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     }
   ],
   "verbs": [
@@ -3069,7 +3485,11 @@
       "summary": "数・形・変化・確率のパターンを、論理を使って探る。",
       "example": "一見ばらばらな現象を、式や図で共通して表せる？",
       "method": "考える · 証明する",
-      "tags": ["数", "図形", "確率・統計"],
+      "tags": [
+        "数",
+        "図形",
+        "確率・統計"
+      ],
       "learning": "数や構造の性質を調べ、筋道を立てて一般化する。自然科学や情報科学を支える考え方も扱う。"
     },
     "physics": {
@@ -3078,7 +3498,11 @@
       "summary": "物体・光・音・電気・宇宙の現象を、実験と数式で説明する。",
       "example": "星や人工衛星は、なぜ落ちずに回り続ける？",
       "method": "測る · モデル化する",
-      "tags": ["力と運動", "光・音", "電気・宇宙"],
+      "tags": [
+        "力と運動",
+        "光・音",
+        "電気・宇宙"
+      ],
       "learning": "現象を測り、共通する法則を数式やモデルで表して予測する。"
     },
     "chemistry": {
@@ -3087,7 +3511,11 @@
       "summary": "身の回りの物質の性質と、反応による変化を原子や分子から考える。",
       "example": "色やにおい、硬さの違いは、分子の何が決めている？",
       "method": "実験する · 分析する",
-      "tags": ["物質", "化学反応", "原子・分子"],
+      "tags": [
+        "物質",
+        "化学反応",
+        "原子・分子"
+      ],
       "learning": "物質を作り、分け、測る実験から、その構造と変化の規則を考える。"
     },
     "biology": {
@@ -3096,7 +3524,11 @@
       "summary": "細胞・遺伝・進化から個体や生態系まで、生命を幅広く調べる。",
       "example": "生き物の形や性質は、どう受け継がれ変化する？",
       "method": "観察する · 実験する",
-      "tags": ["細胞", "遺伝", "進化"],
+      "tags": [
+        "細胞",
+        "遺伝",
+        "進化"
+      ],
       "learning": "生命に共通する仕組みと多様性を、観察・実験・データから考える。"
     },
     "earth-science": {
@@ -3105,7 +3537,11 @@
       "summary": "地層・火山・天気・海・惑星を、長い時間と大きな空間で捉える。",
       "example": "天気や地震、星の変化を予測するには何を観測する？",
       "method": "観測する · 読み解く",
-      "tags": ["地質", "気象", "天文"],
+      "tags": [
+        "地質",
+        "気象",
+        "天文"
+      ],
       "learning": "地球と宇宙の記録を観測し、過去の変化やこれから起こる現象を考える。"
     },
     "ecology": {

@@ -13,6 +13,7 @@ import {
   CATEGORIES, STALE_DAYS, freshnessOf, filterResources, coverage, coverageSentence
 } from './catalog.mjs';
 import {validateKnowledge} from './scripts/knowledge.mjs';
+import {PREFECTURES} from './regions.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, validateRecommendations,
         RECOMMENDATION_LIMIT} from './recommendations.mjs';
 import * as fieldModule from './field.mjs';
@@ -1131,4 +1132,41 @@ test('every real resource belongs to one of the seven known categories', () => {
   for (const resource of realResources) {
     assert.ok(CATEGORIES.some(c => c.id === resource.category), `${resource.id} has category ${resource.category}`);
   }
+});
+
+/* --- Build 24: イベントの必須項目と、掲載範囲の正直さ --- */
+
+test('an event says when it is and by when to apply, or says to check the official page - never a blank', () => {
+  const events = Object.entries(resources).filter(([, item]) => item.category === 'event');
+  assert.ok(events.length > 0, 'the data must carry events for this rule to mean anything');
+  for (const [id, item] of events) {
+    assert.ok(['single', 'listing'].includes(item.occurrence), `${id} must say whether it is one session or a listing`);
+    // キーごと無いと、画面が黙って空欄を出してしまう。null は「公式案内で確認」と言うための値。
+    for (const field of ['date', 'deadline', 'grades']) {
+      assert.ok(Object.hasOwn(item, field), `${id} is missing ${field}`);
+    }
+    if (item.occurrence === 'single') {
+      assert.match(item.date, /^\d{4}-\d{2}-\d{2}$/, `${id} is one session, so it must carry its date`);
+    } else {
+      assert.equal(item.date, null, `${id} lists many sessions, so it must not claim one date as the whole`);
+    }
+  }
+});
+
+test('a resource never states a cost two ways that disagree, and never claims a grade twice', () => {
+  for (const [id, item] of Object.entries(resources)) {
+    assert.equal(item.free, item.cost === 'free', `${id} says one thing in free and another in cost`);
+    assert.equal(new Set(item.grades).size, item.grades.length, `${id} repeats a grade`);
+    // 学年の絞り込みで選べるのは中1〜高3だけ。データが持てない学年を選択肢に出さないため。
+    for (const grade of item.grades) assert.match(grade, /^[jh][1-3]$/, `${id} carries a grade the filter cannot offer`);
+  }
+});
+
+test('every listed place names a real prefecture, and what is not tied to a place says so with null', () => {
+  for (const [id, item] of Object.entries(resources)) {
+    assert.ok(item.prefecture === null || PREFECTURES.includes(item.prefecture), `${id} names a place that is not a prefecture`);
+  }
+  const placed = Object.values(resources).filter(item => item.prefecture !== null);
+  assert.ok(placed.length > 0 && placed.length < Object.keys(resources).length,
+    'some listings are tied to a place and some are not; if all or none were, the filter would be pointless');
 });

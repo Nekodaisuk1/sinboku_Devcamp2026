@@ -1,0 +1,2445 @@
+[
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-06-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "shizuoka-food-summer-school",
+    "name": "静岡県立大学 食品サマースクール（実施例）",
+    "summary": "高校生が油脂、抗酸化力、香り、着色料、微生物などから一つを選び、食品実験を体験した。",
+    "reason": "料理の味や色を、感覚だけでなく分析・観察する食品科学へ接続できる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "ecology",
+      "engineering"
+    ],
+    "conceptIds": [
+      "microbe-life",
+      "making-things",
+      "research-challenge"
+    ],
+    "verbs": [
+      "observe",
+      "compare"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "event",
+    "kind": "高校生向け食品実験",
+    "url": "https://dfns.u-shizuoka-ken.ac.jp/dfsb/index.html",
+    "source": "静岡県立大学 食品栄養科学部 食品生命科学科",
+    "prefecture": "静岡県",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "高校生"
+      ],
+      [
+        "場所",
+        "静岡県立大学（会場詳細は各年度案内で確認）"
+      ],
+      [
+        "費用",
+        "2026年度の費用は公式ページで未確認"
+      ],
+      [
+        "日程",
+        "2026年8月23日の実施報告。来年も開催予定との記載あり"
+      ],
+      [
+        "申込",
+        "次年度案内を確認"
+      ]
+    ],
+    "step": "初夏に学科ページを開き、次回の募集と実験テーマを確認する。"
+  },
+  {
+    "online": false,
+    "free": true,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-07-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "free",
+    "id": "beppu-food-science-lectures",
+    "name": "別府大学「シリーズ体験講座 食品科学のすゝめ」（実施例）",
+    "summary": "高校生が発酵微生物の観察、香りの調合、味噌づくりなどを体験した公開講座。",
+    "reason": "料理から発酵・微生物・香りの科学へ、作ることと観察することを横断できる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "ecology",
+      "design"
+    ],
+    "conceptIds": [
+      "microbe-life",
+      "making-things"
+    ],
+    "verbs": [
+      "make",
+      "observe",
+      "compare"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "event",
+    "kind": "食品科学の公開講座",
+    "url": "https://www.beppu-u.ac.jp/event/%E3%80%90%E5%8F%82%E5%8A%A0%E8%80%85%E5%8B%9F%E9%9B%86%E3%80%91%E5%85%AC%E9%96%8B%E8%AC%9B%E5%BA%A7%E3%80%80%E3%80%8C%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%E4%BD%93%E9%A8%93%E8%AC%9B%E5%BA%A7-%E9%A3%9F/",
+    "source": "別府大学 食物栄養科学部 発酵食品学科",
+    "prefecture": "大分県",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "講座ごとに高校生または高校生・一般"
+      ],
+      [
+        "場所",
+        "別府大学36号館"
+      ],
+      [
+        "費用",
+        "2025年度は無料"
+      ],
+      [
+        "日程",
+        "2025年9月28日〜12月20日の実施例。募集終了"
+      ],
+      [
+        "申込",
+        "次回開催は公式ページで確認"
+      ]
+    ],
+    "step": "イベント一覧で次の食品科学講座が掲載されたか確認する。"
+  },
+  {
+    "online": true,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-06-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "hiroshima-health-science-online",
+    "name": "県立広島大学「高校生のための健康科学入門講座」（2026）",
+    "summary": "高校生が腸内細菌と食、運動と栄養をリアルタイム配信で学ぶ全2回の講座。",
+    "reason": "食べることを、微生物・人体・運動との関係から調べる入口になる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "ecology",
+      "information"
+    ],
+    "conceptIds": [
+      "microbe-life",
+      "biology",
+      "research-challenge"
+    ],
+    "verbs": [
+      "dig",
+      "compare"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "event",
+    "kind": "高校生向けオンライン講座",
+    "url": "https://www.pu-hiroshima.ac.jp/site/koukai-kouza/r808260902.html",
+    "source": "県立広島大学",
+    "prefecture": null,
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "高校生"
+      ],
+      [
+        "場所",
+        "リアルタイム配信"
+      ],
+      [
+        "費用",
+        "公式ページの確認範囲では未確認"
+      ],
+      [
+        "日程",
+        "2026年8月26日・9月2日。終了済み"
+      ],
+      [
+        "申込",
+        "次回開催は公開講座一覧で確認"
+      ]
+    ],
+    "step": "公開講座一覧で次年度の健康科学講座を確認する。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2026-10-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "nankyudai-food-development-camp",
+    "name": "南九州大学 食品開発キャンプ2026",
+    "summary": "高校生が食品加工機器とデジタル技術に触れ、大学生の支援で食品づくりを体験する2日間。",
+    "reason": "料理を「商品として開発する」視点へ広げ、食品科学・デザイン・情報を横断できる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "design",
+      "information",
+      "engineering"
+    ],
+    "conceptIds": [
+      "making-things",
+      "research-challenge",
+      "record-keeping"
+    ],
+    "verbs": [
+      "make",
+      "compare",
+      "tell"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "event",
+    "kind": "高校生向け食品開発体験",
+    "url": "https://www.nankyudai.ac.jp/annai/community-contribution-activities/kouza-syokuhin/foodcamp/",
+    "source": "南九州大学 健康栄養学部 食品開発科学科",
+    "prefecture": "宮崎県",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "食品開発に興味がある高校生"
+      ],
+      [
+        "場所",
+        "南九州大学 宮崎キャンパス"
+      ],
+      [
+        "費用",
+        "公式ページの確認範囲では未確認"
+      ],
+      [
+        "日程",
+        "2026年度の2日間。詳細日程は公式ページで再確認"
+      ],
+      [
+        "申込",
+        "2026年度の受付状況は公式ページで再確認"
+      ]
+    ],
+    "step": "開催日・定員・費用・受付状況を公式ページで確認する。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2026-10-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": "2026-09-30",
+    "cost": "unknown",
+    "id": "giahs-food-contest-2026",
+    "name": "第4回 ジーニアス農業遺産ふーどコンテスト",
+    "summary": "高校生が農業遺産地域の産品を使った食品・料理のアイデアを考え、調理・実食して応募する。",
+    "reason": "料理を地域の農業・自然・文化を伝える制作と発表へつなげられる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "environment",
+      "design",
+      "media"
+    ],
+    "conceptIds": [
+      "making-things",
+      "environment-living",
+      "record-keeping"
+    ],
+    "verbs": [
+      "make",
+      "tell",
+      "dig"
+    ],
+    "group": "continue",
+    "type": "resource",
+    "category": "continuing",
+    "kind": "高校生の料理アイデアコンテスト",
+    "url": "https://www.maff.go.jp/j/nousin/kantai/260615.html",
+    "source": "農林水産省",
+    "prefecture": null,
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "高校生"
+      ],
+      [
+        "場所",
+        "全国から応募。対象となる農業遺産地域・産品は要項で確認"
+      ],
+      [
+        "費用",
+        "応募費用は公式ページの確認範囲では未確認"
+      ],
+      [
+        "日程",
+        "募集期間は2026年7月1日〜9月30日"
+      ],
+      [
+        "申込",
+        "公式募集要項に従って応募"
+      ]
+    ],
+    "step": "募集要項を開き、自分が扱える農業遺産地域と産品を確認する。"
+  },
+  {
+    "online": true,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "tohoku-food-education-hub",
+    "name": "東北農政局「とうほく食育ひろば」",
+    "summary": "東北各県の食育活動、食品ロス、地産地消、学校や団体の取組事例をまとめて探せる。",
+    "reason": "料理から地域の農産物・流通・環境へ調べる範囲を広げられる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "environment",
+      "media"
+    ],
+    "conceptIds": [
+      "environment-living",
+      "record-keeping",
+      "research-challenge"
+    ],
+    "verbs": [
+      "dig",
+      "compare"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "material",
+    "kind": "地域の食育情報",
+    "url": "https://www.maff.go.jp/tohoku/syouan/syokuiku/",
+    "source": "農林水産省 東北農政局",
+    "prefecture": null,
+    "grades": [],
+    "conditions": [
+      [
+        "対象",
+        "対象年齢の指定なし"
+      ],
+      [
+        "場所",
+        "オンライン。掲載事例は東北6県"
+      ],
+      [
+        "費用",
+        "閲覧費用の記載なし"
+      ],
+      [
+        "日程",
+        "常設ページ"
+      ],
+      [
+        "申込",
+        "閲覧は申込不要"
+      ]
+    ],
+    "step": "自分の県の取組事例を一つ選び、主催団体のページまでたどる。"
+  },
+  {
+    "online": true,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "tohoku-farm-experience-map",
+    "name": "東北地域の農林漁業体験施設マップ",
+    "summary": "東北の農業・漁業・食品製造などの体験施設を県別・体験内容別に探せる公式一覧。",
+    "reason": "料理の材料が作られ加工される現場へ、地域ごとの体験先を探せる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "environment",
+      "ecology"
+    ],
+    "conceptIds": [
+      "environment-living",
+      "fieldwork",
+      "making-things"
+    ],
+    "verbs": [
+      "dig",
+      "observe"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "material",
+    "kind": "農林漁業体験先の一覧",
+    "url": "https://www.maff.go.jp/tohoku/syouan/syokuiku/taiken.html",
+    "source": "農林水産省 東北農政局",
+    "prefecture": null,
+    "grades": [],
+    "conditions": [
+      [
+        "対象",
+        "施設ごとに異なる"
+      ],
+      [
+        "場所",
+        "東北6県"
+      ],
+      [
+        "費用",
+        "施設ごとに確認"
+      ],
+      [
+        "日程",
+        "施設ごとに確認"
+      ],
+      [
+        "申込",
+        "一覧から各施設へ確認"
+      ]
+    ],
+    "step": "興味のある県と体験内容を選び、施設の公式案内で対象条件を確認する。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "愛知県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "chubu-food-nutrition-science",
+    "name": "中部大学 食品栄養科学科 食品栄養科学専攻",
+    "summary": "食品成分、加工、安全、分析、微生物、バイオを実験・実習と食品研究開発施設で学ぶ。",
+    "reason": "料理の味・加工・安全性を、化学と生物の実験で確かめる進学先になる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "ecology",
+      "engineering"
+    ],
+    "conceptIds": [
+      "microbe-life",
+      "biology",
+      "research-challenge"
+    ],
+    "kind": "大学・食品科学",
+    "url": "https://www.chubu.ac.jp/academics/biology/food-nutrition/study/",
+    "source": "中部大学",
+    "prefecture": "愛知県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "京都府"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kpu-food-culture-science",
+    "name": "京都府立大学 農学食科学部 和食文化科学科",
+    "summary": "和食文化を歴史・文化と食科学の両面から扱う正規課程。",
+    "reason": "料理を栄養だけに限定せず、地域文化・歴史・表現とともに学べる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "media",
+      "design"
+    ],
+    "conceptIds": [
+      "environment-living",
+      "record-keeping",
+      "research-challenge"
+    ],
+    "kind": "大学・和食文化",
+    "url": "https://www.kpu.ac.jp/guidance/disclosure/kyouikukatei/",
+    "source": "京都府立大学",
+    "prefecture": "京都府"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "和歌山県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kindai-food-safety-engineering",
+    "name": "近畿大学 生物理工学部 食品安全工学科",
+    "summary": "食品製造・加工、衛生管理、HACCP、食品安全を工学と生物の両面から学ぶ。",
+    "reason": "料理から「安全に作り届ける」技術と検査の分野へ進める。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "engineering",
+      "ecology"
+    ],
+    "conceptIds": [
+      "microbe-life",
+      "making-things",
+      "research-challenge"
+    ],
+    "kind": "大学・食品安全",
+    "url": "https://www.kindai.ac.jp/bost/department/food-safety/curriculum/",
+    "source": "近畿大学 生物理工学部",
+    "prefecture": "和歌山県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "福岡県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kyushu-food-chemistry-engineering",
+    "name": "九州大学 農学部 食糧化学工学分野",
+    "summary": "生物・化学・物理を基盤に、食品の機能性、安全性、加工特性、腸内環境を研究する。",
+    "reason": "食べものの疑問を、成分分析・加工・健康影響の研究へつなげられる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "ecology",
+      "engineering"
+    ],
+    "conceptIds": [
+      "microbe-life",
+      "biology",
+      "research-challenge"
+    ],
+    "kind": "大学・食科学",
+    "url": "https://www.kyushu-u.ac.jp/f/62226/14_nougaku_p.pdf",
+    "source": "九州大学",
+    "prefecture": "福岡県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "香川県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kagawa-food-science-course",
+    "name": "香川大学 農学部 食品科学領域",
+    "summary": "食品の機能性、安全性、嗜好性・加工特性を講義、実験、工場・研究所見学で学ぶ。",
+    "reason": "料理のおいしさと安全を、分析と加工の両方から学ぶ進路になる。",
+    "domain": "food",
+    "domains": [
+      "food",
+      "engineering",
+      "ecology"
+    ],
+    "conceptIds": [
+      "making-things",
+      "microbe-life",
+      "research-challenge"
+    ],
+    "kind": "大学・食品科学",
+    "url": "https://www.kagawa-u.ac.jp/files/9317/5213/4658/2026.pdf",
+    "source": "香川大学",
+    "prefecture": "香川県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-05-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "kobe-live-sound-lighting-2026",
+    "name": "神戸電子専門学校 ライブ音響・照明体験会（2026）",
+    "summary": "高校生がライブ会場でミキサー操作、マイク・スピーカーの設置、照明を体験する。",
+    "reason": "ギター演奏から、聴こえ方を作る音響・照明・舞台運営へ視野を広げられる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "engineering",
+      "design",
+      "media"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things"
+    ],
+    "verbs": [
+      "make",
+      "compare",
+      "observe"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "event",
+    "kind": "高校生向け音響体験",
+    "url": "https://www.kobedenshi.ac.jp/event/special-class/1462/",
+    "source": "神戸電子専門学校",
+    "prefecture": "兵庫県",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "高校生"
+      ],
+      [
+        "場所",
+        "神戸電子専門学校 ソニックホール"
+      ],
+      [
+        "費用",
+        "公式ページの確認範囲では未確認"
+      ],
+      [
+        "日程",
+        "2026年8月18日〜21日。終了済み"
+      ],
+      [
+        "申込",
+        "次回開催はイベント一覧で確認"
+      ]
+    ],
+    "step": "次回のBANDクリニックと音響体験会の日程を確認する。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-03-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "paid",
+    "id": "glc-student-guitar-competition-2026",
+    "name": "第51回GLC学生ギターコンクール",
+    "summary": "小学生から大学生までを学年別に分け、録音予選と会場での本選でクラシックギターを発表する。",
+    "reason": "ギター演奏を録音して聴き比べ、外部の舞台で発表する目標にできる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "media"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "record-keeping",
+      "research-challenge"
+    ],
+    "verbs": [
+      "compare",
+      "tell"
+    ],
+    "group": "continue",
+    "type": "resource",
+    "category": "continuing",
+    "kind": "学生ギターコンクール",
+    "url": "https://guitarists.or.jp/compe/glc/glc51/",
+    "source": "公益社団法人 日本ギター連盟",
+    "prefecture": "東京都",
+    "grades": [
+      "j1",
+      "j2",
+      "j3",
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "中学生部門・高校生部門あり"
+      ],
+      [
+        "場所",
+        "録音による第一次予選、本選はHakuju Hall（東京都）"
+      ],
+      [
+        "費用",
+        "参加料12,000円"
+      ],
+      [
+        "日程",
+        "2026年8月2日に第二次予選・本選。終了済み"
+      ],
+      [
+        "申込",
+        "2026年5月10日締切。次回要項を確認"
+      ]
+    ],
+    "step": "次回要項の課題曲と録音形式を確認する。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "大阪府"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "cat-guitar-craft-repair",
+    "name": "キャットミュージックカレッジ専門学校 ギタークラフト＆リペアコース",
+    "summary": "ギター・ベースの設計、図面、製作、修理、工場見学を実習中心で学ぶ。",
+    "reason": "弾く興味から、木材・構造・調整・修理というものづくりへ進める。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "engineering",
+      "design"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things"
+    ],
+    "kind": "専門学校・楽器製作修理",
+    "url": "https://www.cat.ac.jp/support/subject/engineer/index.html",
+    "source": "キャットミュージックカレッジ専門学校",
+    "prefecture": "大阪府"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "北海道"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "sapporo-otani-sound-creation",
+    "name": "札幌大谷大学 音楽学科 作曲・サウンドクリエイションコース",
+    "summary": "作曲・編曲、DAW、音響デザイン、録音、音楽心理、音楽ビジネスを横断して学ぶ。",
+    "reason": "ギターで曲を作る興味を、録音・編曲・音響デザインへ広げられる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "information",
+      "media",
+      "design"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "大学・作曲と音響",
+    "url": "https://www.sapporo-otani.ac.jp/department/music/curriculum",
+    "source": "札幌大谷大学",
+    "prefecture": "北海道"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "東京都"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "tokyo-music-business-technology",
+    "name": "東京音楽大学 ミュージックビジネス・テクノロジー専攻",
+    "summary": "音楽・音響、コンピュータ、コンテンツ制作、ビジネスを研究と社会実践で学ぶ。",
+    "reason": "演奏や作曲を、配信・ICT・企画運営まで含む音楽の仕事へ接続できる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "information",
+      "media"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "大学・音楽ICT",
+    "url": "https://www.tokyo-ondai.ac.jp/subject_education/music_business_technology",
+    "source": "東京音楽大学",
+    "prefecture": "東京都"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "東京都"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kunitachi-music-design",
+    "name": "国立音楽大学 音楽デザイン専修",
+    "summary": "コンピュータ、音響、創作を一体で学び、収音、音声処理、拡声、音場調整まで実践する。",
+    "reason": "ギターの音色への興味から、録音と音場を設計する技術へ進める。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "engineering",
+      "information",
+      "design"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things",
+      "research-challenge"
+    ],
+    "kind": "大学・音楽デザイン",
+    "url": "https://www.kunitachi.ac.jp/undergraduate/college/perform/computer.html",
+    "source": "国立音楽大学",
+    "prefecture": "東京都"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "愛知県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "chubu-instrument-service",
+    "name": "中部楽器技術専門学校 音楽サービス創造学科",
+    "summary": "楽器修理、電子楽器、舞台音響を学び、舞台・ギターリペアなどの専攻へ進む。",
+    "reason": "ギターを弾く・直す・舞台で鳴らすという複数の関わり方を一つの課程で比べられる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "engineering",
+      "design"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things"
+    ],
+    "kind": "専門学校・楽器技術",
+    "url": "https://chubugakki.ac.jp/subject/sougo/",
+    "source": "中部楽器技術専門学校",
+    "prefecture": "愛知県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "沖縄県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "okigei-musicology",
+    "name": "沖縄県立芸術大学 音楽文化専攻 音楽学コース",
+    "summary": "日本・西洋・民族音楽に加え、生活音や自然音まで研究対象にして音楽を多角的に学ぶ。",
+    "reason": "ギターや楽曲だけでなく、地域文化や環境の音を調べる学問へ広げられる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "media",
+      "environment"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "environment-living",
+      "research-challenge"
+    ],
+    "kind": "大学・音楽文化研究",
+    "url": "https://www.okigei.ac.jp/details/music/culture-musicology.html",
+    "source": "沖縄県立芸術大学",
+    "prefecture": "沖縄県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "沖縄県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "okigei-music-faculty",
+    "name": "沖縄県立芸術大学 音楽学部",
+    "summary": "西洋音楽、沖縄文化・音楽学、琉球古典音楽、琉球舞踊組踊を3専攻9コースで学ぶ。",
+    "reason": "演奏する興味を、地域固有の音楽・舞台・文化研究と比較できる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "media"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "record-keeping",
+      "research-challenge"
+    ],
+    "kind": "大学・音楽と琉球芸能",
+    "url": "https://www.okigei.ac.jp/details/music/music-index.html",
+    "source": "沖縄県立芸術大学",
+    "prefecture": "沖縄県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "沖縄県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "okinawa-laughpeace-sound",
+    "name": "沖縄ラフ＆ピース専門学校 音響テクノロジーコース",
+    "summary": "ライブやアニメーションの録音、音響機器、音声・音響情報処理を実務形式で学ぶ。",
+    "reason": "音楽からライブ・映像・アニメの音を支える技術へ接続できる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "information",
+      "media",
+      "engineering"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "専門学校・音響技術",
+    "url": "https://laughandpeace.ac.jp/course-sound",
+    "source": "沖縄ラフ＆ピース専門学校",
+    "prefecture": "沖縄県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "熊本県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "heisei-sound-design",
+    "name": "平成音楽大学 サウンドデザインコース",
+    "summary": "DTM、音響、ステージ転換など、曲を作る側と舞台を支える側の両方を学ぶ。",
+    "reason": "ギターや作曲から、デジタル制作と舞台音響を一緒に試せる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "information",
+      "media"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "making-things"
+    ],
+    "kind": "大学・サウンドデザイン",
+    "url": "https://www.heisei-music.ac.jp/sounddesign/",
+    "source": "平成音楽大学",
+    "prefecture": "熊本県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2026-11-02",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "ajba-school-band-competition-2026",
+    "name": "第74回全日本吹奏楽コンクール（中学生・高校生の部）",
+    "summary": "学校・地域団体で取り組んだ合奏を予選から全国大会まで発表し、響きや表現を審査する。",
+    "reason": "個人の演奏から、合奏のバランス・音色・舞台での発表へ視点を広げられる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "media"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "record-keeping"
+    ],
+    "verbs": [
+      "compare",
+      "tell"
+    ],
+    "group": "continue",
+    "type": "resource",
+    "category": "continuing",
+    "kind": "学校・団体の音楽コンクール",
+    "url": "https://www.ajba.or.jp/competition.html",
+    "source": "一般社団法人 全日本吹奏楽連盟",
+    "prefecture": null,
+    "grades": [
+      "j1",
+      "j2",
+      "j3",
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "中学生の部・高等学校の部。所属団体と予選を通して参加"
+      ],
+      [
+        "場所",
+        "2026年度全国大会は静岡県浜松市"
+      ],
+      [
+        "費用",
+        "参加費は所属団体・予選規定で確認"
+      ],
+      [
+        "日程",
+        "中学生2026年10月31日、高校生11月1日"
+      ],
+      [
+        "申込",
+        "個人申込ではなく所属団体・支部の規定を確認"
+      ]
+    ],
+    "step": "学校や地域の合奏団がどの支部予選へ参加するか確認する。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "福岡県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kyushu-acoustic-design",
+    "name": "九州大学 芸術工学部 音響設計コース（カリキュラム）",
+    "summary": "音文化、音響環境、聴覚・音響情報の3分野を科学とデザインの両面から学ぶ。",
+    "reason": "楽器の音への興味を、聴覚・信号処理・建物の響き・文化研究へ分岐できる。",
+    "domain": "sound",
+    "domains": [
+      "sound",
+      "engineering",
+      "information",
+      "design"
+    ],
+    "conceptIds": [
+      "sound-science",
+      "research-challenge"
+    ],
+    "kind": "大学・音響設計",
+    "url": "https://www.design.kyushu-u.ac.jp/schools/ad/",
+    "source": "九州大学 芸術工学部",
+    "prefecture": "福岡県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "広島県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "anabuki-cg-game",
+    "name": "穴吹デザイン専門学校 CG・ゲーム学科",
+    "summary": "3DCG、ゲーム、イラストを基礎から制作し、作品とポートフォリオへまとめる。",
+    "reason": "ゲームを遊ぶ興味から、絵・立体・動きのデザイン制作へ進める。",
+    "domain": "design",
+    "domains": [
+      "design",
+      "media",
+      "information"
+    ],
+    "conceptIds": [
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "専門学校・CGゲーム",
+    "url": "https://web.anabukih.ac.jp/course/cg/",
+    "source": "穴吹デザイン専門学校",
+    "prefecture": "広島県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "福岡県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "fukuoka-design-game-cg",
+    "name": "専門学校福岡デザイナー・アカデミー ゲーム・CG学科",
+    "summary": "3DCG、デッサン、Unityによるゲーム制作を実践中心で学ぶ。",
+    "reason": "ゲームの絵とプログラムを分けず、両方を試しながら進路を選べる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media"
+    ],
+    "conceptIds": [
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "専門学校・ゲームCG",
+    "url": "https://www.kdg.ac.jp/course/game-creator/",
+    "source": "専門学校福岡デザイナー・アカデミー",
+    "prefecture": "福岡県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "大阪府"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "oecu-game-social-design",
+    "name": "大阪電気通信大学 デジタルゲーム学科 ゲーム・社会デザイン専攻",
+    "summary": "ゲームの企画・開発・教育・社会活用を、制作と学際研究を通して学ぶ。",
+    "reason": "ゲーム制作を娯楽だけでなく、教育・社会課題・コミュニケーション設計へ広げられる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media"
+    ],
+    "conceptIds": [
+      "making-things",
+      "research-challenge",
+      "record-keeping"
+    ],
+    "kind": "大学・ゲーム社会デザイン",
+    "url": "https://www.osakac.ac.jp/about/policy/faculty/isa/gs/",
+    "source": "大阪電気通信大学",
+    "prefecture": "大阪府"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "京都府"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kcg-digital-game",
+    "name": "京都コンピュータ学院 デジタルゲーム学系",
+    "summary": "Unity、C#・C++、数学・物理、ゲーム企画、マップやキャラクター配置、チーム開発を学ぶ。",
+    "reason": "ゲームを、プログラム・ルール・演出・チーム制作に分解して学べる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media",
+      "engineering"
+    ],
+    "conceptIds": [
+      "making-things",
+      "research-challenge"
+    ],
+    "kind": "専門学校・ゲーム開発",
+    "url": "https://www.kcg.ac.jp/departments/game/",
+    "source": "京都コンピュータ学院",
+    "prefecture": "京都府"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "福岡県"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "kyusan-game-media-design",
+    "name": "九州産業大学造形短期大学部 ゲーム・メディアデザイン系",
+    "summary": "ゲームとメディアアートの基礎技法、映像表現、キャラクターデザインを作品制作で学ぶ。",
+    "reason": "ゲームのキャラクターや画面への興味から、映像・UI・メディア表現へ進める。",
+    "domain": "design",
+    "domains": [
+      "design",
+      "media",
+      "information"
+    ],
+    "conceptIds": [
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "短期大学・ゲームデザイン",
+    "url": "https://www.zokei.kyusan-u.ac.jp/course/game/",
+    "source": "九州産業大学造形短期大学部",
+    "prefecture": "福岡県"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "東京都"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "musabi-game-design",
+    "name": "武蔵野美術大学 デザイン情報学科「ゲームデザイン」",
+    "summary": "ゲームエンジンの基本操作を学び、独自のゲームコンテンツを設計する授業。",
+    "reason": "遊びのルールと画面表現を、デザインの課題として考える進路例になる。",
+    "domain": "design",
+    "domains": [
+      "design",
+      "information",
+      "media"
+    ],
+    "conceptIds": [
+      "making-things",
+      "research-challenge"
+    ],
+    "kind": "大学・ゲームデザイン授業",
+    "url": "https://dinfo.musabi.ac.jp/curriculum/gamedesign/",
+    "source": "武蔵野美術大学 造形学部 デザイン情報学科",
+    "prefecture": "東京都"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "東京都"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "takarazuka-game-area",
+    "name": "宝塚大学 東京メディア芸術学部 ゲーム分野",
+    "summary": "ゲーム企画、3DCG、サウンド、プログラミング、キャラクター、シナリオを横断して制作する。",
+    "reason": "ゲームの中の絵・音・物語・仕組みを複数分野として学べる。",
+    "domain": "media",
+    "domains": [
+      "media",
+      "design",
+      "information",
+      "sound"
+    ],
+    "conceptIds": [
+      "making-things",
+      "sound-science",
+      "record-keeping"
+    ],
+    "kind": "大学・ゲーム制作",
+    "url": "https://www.takara-univ.ac.jp/tokyo/academics/area/game/",
+    "source": "宝塚大学 東京メディア芸術学部",
+    "prefecture": "東京都"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "東京都"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "hal-tokyo-game-design",
+    "name": "HAL東京 ゲーム4年制学科 ゲームデザインコース",
+    "summary": "ゲーム企画、3Dキャラクター、スマートフォンゲーム、産学連携制作、作品発表を学ぶ。",
+    "reason": "ゲームを作り、作品として説明・発表する職業教育へ接続できる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media"
+    ],
+    "conceptIds": [
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "専門学校・ゲームデザイン",
+    "url": "https://www.hal.ac.jp/tokyo/course/game_design",
+    "source": "HAL東京",
+    "prefecture": "東京都"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "大阪府"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "hal-osaka-game-design",
+    "name": "HAL大阪 ゲーム4年制学科 ゲームデザインコース",
+    "summary": "ゲームデザイン、3D制作、Python・MEL、産学連携、卒業制作とプレゼンを学ぶ。",
+    "reason": "ゲームの企画と技術を制作物にまとめ、発表する進学先になる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media"
+    ],
+    "conceptIds": [
+      "making-things",
+      "record-keeping"
+    ],
+    "kind": "専門学校・ゲームデザイン",
+    "url": "https://www.hal.ac.jp/osaka/course/game_design",
+    "source": "HAL大阪",
+    "prefecture": "大阪府"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "school",
+    "category": "school",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "東京都"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "jec-game-production",
+    "name": "日本電子専門学校 ゲーム制作研究科",
+    "summary": "ゲームプログラム、ゲームCG、産学共同開発を含む制作カリキュラムで学ぶ。",
+    "reason": "ゲームを一人の趣味から、役割分担したチーム開発へ広げられる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media"
+    ],
+    "conceptIds": [
+      "making-things",
+      "research-challenge"
+    ],
+    "kind": "専門学校・ゲーム制作",
+    "url": "https://www.jec.ac.jp/course/game/cu/",
+    "source": "日本電子専門学校",
+    "prefecture": "東京都"
+  },
+  {
+    "online": true,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2026-12-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "game-creator-koshien-2026",
+    "name": "ゲームクリエイター甲子園2026",
+    "summary": "学生が制作途中からゲームを登録し、フィードバックやコミュニティ参加を経て作品を発表する。",
+    "reason": "ゲームを作る活動を、締切だけでなく継続的な改善と外部発表へつなげられる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media",
+      "sound"
+    ],
+    "conceptIds": [
+      "making-things",
+      "record-keeping",
+      "research-challenge"
+    ],
+    "verbs": [
+      "make",
+      "compare",
+      "tell"
+    ],
+    "group": "continue",
+    "type": "resource",
+    "category": "continuing",
+    "kind": "学生ゲームコンテスト",
+    "url": "https://game.creators-guild.com/gck2026-terms/",
+    "source": "株式会社ゲームクリエイターズギルド",
+    "prefecture": null,
+    "grades": [],
+    "conditions": [
+      [
+        "対象",
+        "学生。中高生を含むかは応募要項の在籍条件を再確認"
+      ],
+      [
+        "場所",
+        "オンライン登録・コミュニティ、発表会場は要項で確認"
+      ],
+      [
+        "費用",
+        "公式ページの確認範囲では未確認"
+      ],
+      [
+        "日程",
+        "2026年度開催"
+      ],
+      [
+        "申込",
+        "応募要項と権利条件を確認"
+      ]
+    ],
+    "step": "応募資格、締切、作品の権利条件を要項で確認する。"
+  },
+  {
+    "online": false,
+    "free": true,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-02-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "free",
+    "id": "ipa-security-camp-junior-2026",
+    "name": "セキュリティ・キャンプ2026 ジュニア（実施例）",
+    "summary": "小中学生がプログラミングと情報セキュリティを専門家から講義・演習で学ぶ選考制プログラム。",
+    "reason": "ゲームやプログラムを作る興味から、安全な仕組みとネットワークへ進める。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "engineering"
+    ],
+    "conceptIds": [
+      "making-things",
+      "research-challenge"
+    ],
+    "verbs": [
+      "dig",
+      "make"
+    ],
+    "group": "continue",
+    "type": "resource",
+    "category": "continuing",
+    "kind": "小中学生向けセキュリティ講座",
+    "url": "https://www.ipa.go.jp/jinzai/security-camp/junior.html",
+    "source": "独立行政法人 情報処理推進機構",
+    "prefecture": null,
+    "grades": [
+      "j1",
+      "j2",
+      "j3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "小中学生。選考あり"
+      ],
+      [
+        "場所",
+        "2026年度会場は公式ページで確認"
+      ],
+      [
+        "費用",
+        "参加費無料。交通条件等はFAQで確認"
+      ],
+      [
+        "日程",
+        "2026年度は受付・開催終了"
+      ],
+      [
+        "申込",
+        "エントリー後に応募課題を提出。18歳未満は参加決定時に保護者同意"
+      ]
+    ],
+    "step": "次年度ページが出たら応募課題と必要なPC条件を確認する。"
+  },
+  {
+    "online": false,
+    "free": true,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-03-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "free",
+    "id": "ipa-security-camp-national-2026",
+    "name": "セキュリティ・キャンプ2026 全国大会（実施例）",
+    "summary": "13〜22歳の学生等がIoT、Web、脅威解析、AI、OS・CPU開発を合宿形式で学ぶ選考制大会。",
+    "reason": "ゲーム開発から、Web・AI・ハードウェアを安全に作る情報科学へ発展できる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "engineering"
+    ],
+    "conceptIds": [
+      "making-things",
+      "research-challenge",
+      "record-keeping"
+    ],
+    "verbs": [
+      "dig",
+      "make"
+    ],
+    "group": "continue",
+    "type": "resource",
+    "category": "continuing",
+    "kind": "学生向けセキュリティ合宿",
+    "url": "https://www.ipa.go.jp/jinzai/security-camp/zenkoku.html",
+    "source": "独立行政法人 情報処理推進機構",
+    "prefecture": null,
+    "grades": [
+      "j1",
+      "j2",
+      "j3",
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "conditions": [
+      [
+        "対象",
+        "2026年4月1日時点13歳以上、2027年4月1日時点22歳以下等。選考あり"
+      ],
+      [
+        "場所",
+        "合宿会場は公式ページで確認"
+      ],
+      [
+        "費用",
+        "参加費無料。交通費等の条件はFAQで確認"
+      ],
+      [
+        "日程",
+        "2026年8月10日〜15日。終了済み"
+      ],
+      [
+        "申込",
+        "次年度の応募資格・課題を確認"
+      ]
+    ],
+    "step": "次年度の講義一覧から、作りたいものに近いクラスを探す。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": "2027-01-01",
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "id": "pcn-programmer-fair-2026",
+    "name": "PCNこどもプログラマーフェア2026 in TSURUGA（実施例）",
+    "summary": "子どもがゲームやロボットのプログラムを体験し、自作プログラム作品も展示できる催し。",
+    "reason": "家で作ったゲームを現地で見せ、ほかの作品と比べる発表の入口になる。",
+    "domain": "information",
+    "domains": [
+      "information",
+      "design",
+      "media",
+      "engineering"
+    ],
+    "conceptIds": [
+      "making-things",
+      "record-keeping"
+    ],
+    "verbs": [
+      "make",
+      "compare",
+      "tell"
+    ],
+    "group": "try",
+    "type": "resource",
+    "category": "event",
+    "kind": "子どものプログラム展示体験",
+    "url": "https://pcn.club/contest/kpfair02.html",
+    "source": "一般社団法人プログラミングクラブネットワーク",
+    "prefecture": "福井県",
+    "grades": [],
+    "conditions": [
+      [
+        "対象",
+        "子ども。中高生を含む年齢条件は公式ページで未確認"
+      ],
+      [
+        "場所",
+        "福井県敦賀市"
+      ],
+      [
+        "費用",
+        "公式ページの確認範囲では未確認"
+      ],
+      [
+        "日程",
+        "2026年度は終了済み"
+      ],
+      [
+        "申込",
+        "作品展示は事前連絡。次回条件を確認"
+      ]
+    ],
+    "step": "次回案内で対象年齢と展示申込の締切を確認する。"
+  },
+  {
+    "online": false,
+    "free": false,
+    "checkedOn": "2026-09-12",
+    "reviewAfter": null,
+    "reviewStatus": "draft",
+    "example": false,
+    "deadline": null,
+    "cost": "unknown",
+    "group": "study",
+    "type": "university",
+    "category": "university",
+    "grades": [
+      "h1",
+      "h2",
+      "h3"
+    ],
+    "verbs": [],
+    "conditions": [
+      [
+        "対象",
+        "正規課程の在学生。中高生が授業へ一般参加できる情報ではありません"
+      ],
+      [
+        "場所",
+        "京都府"
+      ],
+      [
+        "費用",
+        "学費・入試条件は公式の入試案内で確認"
+      ],
+      [
+        "日程",
+        "入試・オープンキャンパスの日程は公式案内で確認"
+      ],
+      [
+        "申込",
+        "進学候補としてカリキュラムを確認"
+      ]
+    ],
+    "id": "rcgs-game-research",
+    "name": "立命館大学ゲーム研究センター",
+    "summary": "伝統的な遊具からデジタルゲームまでを、文化・技術・保存の観点から総合的に研究する。",
+    "reason": "ゲームを作るだけでなく、歴史・文化・アーカイブの研究対象として見る道を示せる。",
+    "domain": "media",
+    "domains": [
+      "media",
+      "information",
+      "design"
+    ],
+    "conceptIds": [
+      "record-keeping",
+      "research-challenge"
+    ],
+    "kind": "大学研究機関・ゲーム研究",
+    "url": "https://www.rcgs.jp/?page_id=451",
+    "source": "立命館大学ゲーム研究センター",
+    "prefecture": "京都府"
+  }
+]
