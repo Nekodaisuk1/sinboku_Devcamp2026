@@ -1,7 +1,8 @@
 import {buildTimeline, nextDecision, GRADES, STANCE_LIMIT, gradeById} from './timeline.mjs';
-import {LOG_TEXT_LIMIT, addEntry, removeEntry, recentCount} from './log.mjs';
+import {LOG_TEXT_LIMIT, addEntry, removeEntry, recentCount, today} from './log.mjs';
 import {verbs, verbById, domains, topics, activitiesByTopic, activityById, domainsForVerb, resourcesForVerb, verbCoverage, resources, allActivities} from './verbs.mjs';
-import {searchCatalog, catalogIds} from './catalog.mjs';
+import {searchCatalog, catalogIds, CATEGORIES, filterResources, freshnessOf, coverage, coverageSentence} from './catalog.mjs';
+import {PREFECTURES} from './regions.mjs';
 import {routesForDomain, hasRoutes, routeDomains, ROUTES_CHECKED_ON} from './routes.mjs';
 import {renderRoutes} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
@@ -9,6 +10,8 @@ import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, re
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
         PLACEMENT_LIMIT, LABEL_LIMIT} from './field.mjs';
 import {renderField, renderFieldList, curve} from './field-ui.mjs';
+import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
+        RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const $ = id => document.getElementById(id);
@@ -23,7 +26,10 @@ const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker:
             // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
             fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null,
             // 取り込む前の下書き。確認画面を通るまで state には入れない。
-            draft: null};
+            draft: null,
+            // 掲載情報の絞り込み。既定はどれも「絞らない」。本人が絞ったときだけ絞る。
+            picks: {category: null, online: false, cost: null, grade: null, when: null},
+            picksOpen: false, coverageOpen: false, shareLink: ''};
 let persist = false;
 let storageNote = '';
 let toastTimer;
@@ -89,6 +95,7 @@ function route() {
   const [name, argument] = location.hash.replace(/^#/, '').split('/');
   if (name === 'find') return {page: 'find', verb: verbById(argument) ? argument : null};
   if (name === 'routes' && hasRoutes(argument)) return {page: 'routes', domain: argument};
+  if (name === 'recommend') return {page: 'recommend'};
   return {page: 'now'};
 }
 
@@ -127,6 +134,26 @@ function consumeAddHash() {
   }
   try {
     startLinkDraft(url, title);
+  } catch (error) {
+    notify(error.message);
+  }
+  return true;
+}
+
+/** 家族から届いた共有リンクを受信箱へ入れる。野原へは本人が選ぶまで置かない。 */
+function consumeRecommendationHash() {
+  const raw = location.hash.replace(/^#/, '');
+  if (!raw.startsWith('inbox?')) return false;
+  const encoded = new URLSearchParams(raw.slice(6)).get('d') ?? '';
+  history.replaceState(null, '', '#now');
+  try {
+    const payload = decodeRecommendation(encoded, catalog);
+    const result = receiveRecommendation(payload, state.recommendations, catalog, {
+      id: newRecommendationId(), receivedOn: today()
+    });
+    state.recommendations = result.items;
+    save();
+    notify(result.added ? '家族からのおすすめが届きました。野原に置くか、あとで見るかを選べます。' : 'このおすすめは、すでに届いています。');
   } catch (error) {
     notify(error.message);
   }
@@ -576,6 +603,7 @@ function nowPage() {
       </div><p class="grade-note">分岐点まであと何か月かを出すためだけに使います。この端末の中だけです。</p>` : ''}
     </section>
 
+    ${recommendationInboxMarkup()}
     ${contextMarkup(next, grade, week)}
 
     ${ui.listView
@@ -596,8 +624,72 @@ function nowPage() {
     ${convergenceMarkup()}
 
     ${storageSection()}
+    <section class="family-entry" aria-labelledby="family-entry-title">
+      <p class="eyebrow">家族と見つける</p>
+      <h2 id="family-entry-title">おすすめを送ってもらう</h2>
+      <p>家族が作ったリンクから、この受信箱へ1件ずつ届きます。野原に置くかは自分で決められます。</p>
+      <a class="secondary inline-action" href="#recommend">家族用の送り方を開く</a>
+    </section>
     ${pickerMarkup()}
     ${draftMarkup()}`;
+}
+
+function recommendationCard(item) {
+  let host = '';
+  try { host = new URL(item.url).hostname; } catch { host = item.url; }
+  const tags = [item.topic ? topics[item.topic]?.label : null, item.verb ? verbById(item.verb)?.label : null].filter(Boolean);
+  return `<li class="recommend-card${item.status === 'later' ? ' is-later' : ''}">
+    <p class="recommend-from">家族から · ${escape(item.receivedOn)}</p>
+    <h3>${escape(item.title)}</h3>
+    ${item.note ? `<p class="recommend-note">「${escape(item.note)}」</p>` : ''}
+    ${tags.length ? `<p class="recommend-tags">${tags.map(tag => `<span>${escape(tag)}</span>`).join('')}</p>` : ''}
+    <a class="recommend-url" href="${escape(item.url)}" target="_blank" rel="noopener noreferrer nofollow">${escape(host)}を開く</a>
+    <div class="recommend-actions">
+      <button class="primary small" data-recommend-place="${escape(item.id)}">野原に置く</button>
+      ${item.status === 'new' ? `<button class="ghost small" data-recommend-later="${escape(item.id)}">あとで見る</button>` : ''}
+      <button class="text-button" data-recommend-dismiss="${escape(item.id)}">受信箱から消す</button>
+    </div>
+  </li>`;
+}
+
+function recommendationInboxMarkup() {
+  const items = state.recommendations ?? [];
+  if (!items.length) return '';
+  const fresh = items.filter(item => item.status === 'new');
+  const later = items.filter(item => item.status === 'later');
+  return `<section class="recommend-inbox" aria-labelledby="recommend-inbox-title">
+    <p class="eyebrow">届いたもの ${fresh.length ? `<strong>${fresh.length}</strong>` : ''}</p>
+    <h2 id="recommend-inbox-title">家族からのおすすめ</h2>
+    <p class="panel-hint">リンク先の内容はこのアプリでは確認していません。開くか、野原へ置くかは自分で選べます。</p>
+    ${fresh.length ? `<ul class="recommend-list">${fresh.map(recommendationCard).join('')}</ul>` : '<p class="recommend-empty">新しく届いたものはありません。</p>'}
+    ${later.length ? `<details class="recommend-later"><summary>あとで見る（${later.length}件）</summary><ul class="recommend-list">${later.map(recommendationCard).join('')}</ul></details>` : ''}
+  </section>`;
+}
+
+function recommendPage() {
+  return `<section class="recommend-maker page-head">
+    <a class="back" href="#now">← 時間の野原へ</a>
+    <p class="eyebrow">家族用</p>
+    <h1>1件だけ、おすすめを渡す</h1>
+    <p class="lead">気になったページと一言をリンクにします。受け取った本人が、野原に置くかを決めます。</p>
+    <form data-recommend-form class="recommend-form">
+      <label>おすすめの名前 <input name="title" type="text" maxlength="${RECOMMENDATION_TITLE_LIMIT}" required placeholder="例：海の研究を体験できるイベント"></label>
+      <label>ページのURL <input name="url" type="url" inputmode="url" maxlength="${RECOMMENDATION_URL_LIMIT}" required placeholder="https://"></label>
+      <label>一言（なくても大丈夫） <textarea name="note" maxlength="${RECOMMENDATION_NOTE_LIMIT}" rows="3" placeholder="例：前に話していたことと近そう"></textarea></label>
+      <div class="recommend-form-row">
+        <label>何について <select name="topic"><option value="">選ばない</option>${Object.entries(topics).map(([id, topic]) => `<option value="${escape(id)}">${escape(topic.label)}</option>`).join('')}</select></label>
+        <label>どんな関わり方 <select name="verb"><option value="">選ばない</option>${verbs.map(verb => `<option value="${escape(verb.id)}">${escape(verb.label)}</option>`).join('')}</select></label>
+      </div>
+      <button class="primary" type="submit">渡すリンクを作る</button>
+    </form>
+    ${ui.shareLink ? `<div class="share-result" tabindex="-1" id="share-result">
+      <h2>このリンクを本人へ送る</h2>
+      <textarea readonly rows="4">${escape(ui.shareLink)}</textarea>
+      <button class="secondary" data-copy-share>リンクをコピー</button>
+      <p>このリンクには上の1件だけが入っています。本人の記録や野原は家族側には見えません。</p>
+    </div>` : ''}
+    <aside class="recommend-boundary"><strong>共有されるもの</strong><span>名前・URL・一言・選んだタグ</span><strong>共有されないもの</strong><span>本人の野原・記録・学年・保存内容</span></aside>
+  </section>`;
 }
 
 /* ---------- 探す（動詞から） ---------- */
@@ -614,14 +706,19 @@ function activityMarkup(activity) {
 
 function resourceMarkup(item) {
   const placed = state.placements.some(placement => placement.ref === item.id);
-  return `<li class="resource">
-    <p class="resource-kind">${escape(item.kind)}</p>
+  // 古い情報を隠さず、消さず、そう言う。通信しないので、言えるのは日付から分かることだけ。
+  const fresh = freshnessOf(item, today());
+  const category = CATEGORIES.find(entry => entry.id === item.category);
+  return `<li class="resource${fresh.state === 'ok' ? '' : ' resource-aged'}">
+    <p class="resource-kind">${category ? `<b class="resource-category">${escape(category.label)}</b> ` : ''}${escape(item.kind)}${item.prefecture ? ` · ${escape(item.prefecture)}` : ''}${item.online ? ' · オンライン' : ''}</p>
     <h4>${escape(item.name)}</h4>
+    ${fresh.state === 'ok' ? '' : `<p class="resource-freshness">${escape(fresh.note)}</p>`}
     <p>${escape(item.summary)}</p>
     <details><summary>条件と、なぜここに出るのか</summary>
       <p class="resource-reason">${escape(item.reason)}</p>
       <dl>${item.conditions.map(([key, value]) => `<dt>${escape(key)}</dt><dd>${escape(value)}</dd>`).join('')}</dl>
-      <p class="resource-source">出典 ${escape(item.source)}（確認 ${escape(item.checkedOn)}）</p>
+      <p class="resource-source">出典 ${escape(item.source)}（確認 ${escape(item.checkedOn)}）${item.date ? ` · 開催 ${escape(item.date)}` : ''}${item.deadline ? ` · 申込期限 ${escape(item.deadline)}` : ''}</p>
+      <p class="resource-source">対象 ${item.grades?.length ? item.grades.map(id => escape(gradeById(id)?.label ?? id)).join('・') : '公式案内で確認'} · 費用 ${escape({free: '無料と確認', paid: '有料', unknown: '公式案内で確認'}[item.cost] ?? '公式案内で確認')}</p>
     </details>
     <div class="resource-actions">
       <a class="secondary" href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">公式情報を見る ↗<small>別のタブで開きます</small></a>
@@ -706,6 +803,99 @@ function resultsMarkup() {
     : '<p class="empty-note">見つかりませんでした。掲載していないものを、それらしく作ることはしません。</p>'}`;
 }
 
+/* ---------- 掲載情報をしぼる（Build 24） ---------- */
+
+const resourceList = () => Object.entries(resources).map(([id, item]) => ({id, ...item}));
+
+/**
+ * いま効いている絞り込み。都道府県だけは画面の一時状態ではなく、
+ * 本人が設定したもの（state.prefecture）をそのまま使う。設定していなければ絞らない。
+ */
+function activePicks() {
+  return {...ui.picks, prefecture: state.prefecture};
+}
+
+const PICK_LABELS = {
+  category: id => CATEGORIES.find(item => item.id === id)?.label ?? id,
+  prefecture: value => value,
+  online: () => 'オンライン',
+  cost: () => '無料と確認できたもの',
+  grade: id => gradeById(id)?.label ?? id,
+  when: value => value === 'upcoming' ? 'これからのもの' : '終わったもの'
+};
+
+function pickChips(name, options, current) {
+  return `<div class="pick-row" role="group" aria-label="${escape(name)}">
+    ${options.map(([value, label]) => `<button class="lane-chip${current === value ? ' on' : ''}" data-pick-filter="${escape(name)}" data-pick-value="${escape(String(value))}" aria-pressed="${current === value}">${escape(label)}</button>`).join('')}
+  </div>`;
+}
+
+/** 掲載範囲と、いま何件に絞れているかを必ず言う。全国を網羅しているように見せない。 */
+function listingsMarkup() {
+  const all = resourceList();
+  const picks = activePicks();
+  const now = today();
+  const found = filterResources(all, picks, now);
+  const chosen = Object.entries(picks).filter(([, value]) => value !== null && value !== false);
+  const stats = coverage(all);
+  const thin = stats.byDomain.filter(item => item.thin);
+  const here = picks.prefecture
+    ? stats.byPrefecture.find(item => item.prefecture === picks.prefecture)?.count ?? 0
+    : null;
+
+  return `<section class="listings">
+    <h2>掲載情報をしぼる</h2>
+    <p class="coverage-line">${escape(coverageSentence(all))}</p>
+
+    <button class="ghost" data-picks-open aria-expanded="${ui.picksOpen}">${ui.picksOpen ? 'しぼりこみを閉じる' : 'しぼりこみを開く'}</button>
+
+    ${ui.picksOpen ? `<div class="picks">
+      <p class="panel-label">どんな種類？</p>
+      ${pickChips('category', [['', 'すべて'], ...CATEGORIES.map(item => [item.id, item.label])], picks.category ?? '')}
+
+      <p class="panel-label">住んでいるところ（任意）</p>
+      <div class="pick-row">
+        <select data-prefecture aria-label="都道府県">
+          <option value=""${state.prefecture ? '' : ' selected'}>選ばない</option>
+          ${PREFECTURES.map(name => `<option value="${escape(name)}"${state.prefecture === name ? ' selected' : ''}>${escape(name)}</option>`).join('')}
+        </select>
+        <button class="lane-chip${picks.online ? ' on' : ''}" data-pick-filter="online" data-pick-value="${picks.online ? 'false' : 'true'}" aria-pressed="${picks.online}">オンラインだけ</button>
+      </div>
+      <p class="panel-hint">位置情報は取りません。学校名も市区町村も聞きません。選んだ県のものと、場所に縛られないものだけが残ります。${here === null ? '' : `いま選んでいる${escape(picks.prefecture)}の掲載は${here}件です。`}</p>
+
+      <p class="panel-label">費用</p>
+      ${pickChips('cost', [['', '指定しない'], ['free', '無料と確認できたものだけ']], picks.cost ?? '')}
+      <p class="panel-hint">「無料」と言えるのは、公式の案内でそう確認できたものだけです。分からないものは、ここでは残しません。</p>
+
+      <p class="panel-label">対象の学年</p>
+      ${pickChips('grade', [['', '指定しない'], ...GRADES.map(item => [item.id, item.label])], picks.grade ?? '')}
+      <p class="panel-hint">対象が書かれていないものも残します。書かれていない＝対象外、ではありません。</p>
+
+      <p class="panel-label">開催の時期</p>
+      ${pickChips('when', [['', '指定しない'], ['upcoming', 'これから'], ['past', '終わったもの']], picks.when ?? '')}
+    </div>` : ''}
+
+    ${chosen.length ? `<p class="picks-active">いま絞っているもの：${chosen.map(([name, value]) => `<button class="lane-chip on" data-pick-filter="${escape(name)}" data-pick-value="" aria-label="${escape(PICK_LABELS[name](value))}をやめる">${escape(PICK_LABELS[name](value))} ✕</button>`).join('')}</p>` : ''}
+
+    <p class="result-count">${found.length}件 / 全${all.length}件</p>
+    ${found.length
+      ? `<ul class="resource-list">${found.map(resourceMarkup).join('')}</ul>`
+      : '<p class="empty-note">この条件に当てはまる掲載はありません。載せていないものを、それらしく作ることはしません。条件をゆるめるか、「探す」で動詞から見てください。</p>'}
+
+    <button class="ghost" data-coverage-open aria-expanded="${ui.coverageOpen}">${ui.coverageOpen ? '掲載の偏りを閉じる' : '掲載の偏りを見る'}</button>
+    ${ui.coverageOpen ? `<div class="coverage">
+      <h3>どこに載っていて、どこに載っていないか</h3>
+      <p class="panel-label">種類ごと</p>
+      <ul class="coverage-list">${stats.byCategory.map(item => `<li><span>${escape(item.label)}</span><b>${item.count}件</b></li>`).join('')}</ul>
+      <p class="panel-label">場所ごと</p>
+      <ul class="coverage-list">${stats.byPrefecture.map(item => `<li><span>${escape(item.prefecture ?? 'どこからでも')}</span><b>${item.count}件</b></li>`).join('')}</ul>
+      <p class="panel-label">学問ごと</p>
+      <ul class="coverage-list">${stats.byDomain.map(item => `<li><span>${escape(item.name)}</span><b>${item.count}件</b>${item.thin ? '<em>掲載が少ない</em>' : ''}</li>`).join('')}</ul>
+      ${thin.length ? `<p class="panel-hint">${thin.map(item => escape(item.name)).join('・')}は掲載が薄い領域です。少ないのは、その道が細いからではなく、まだ調べきれていないからです。</p>` : ''}
+    </div>` : ''}
+  </section>`;
+}
+
 function findPage(verbId) {
   return `
     <section class="page-head">
@@ -717,13 +907,15 @@ function findPage(verbId) {
       <label for="search-input">掲載範囲のなかを探す</label>
       <div class="search-row">
         <input id="search-input" name="query" type="search" value="${escape(ui.query)}" placeholder="海、つくる、発酵、ギター" autocomplete="off">
-        <select name="filter" aria-label="絞り込み">
+        <select name="filter" aria-label="検索結果の絞り込み">
           ${[['all', 'すべて'], ['home', '家でできる'], ['activity', 'やってみる'], ['study', '学校・大学']]
             .map(([value, label]) => `<option value="${value}"${ui.filter === value ? ' selected' : ''}>${label}</option>`).join('')}
         </select>
       </div>
     </form>
     ${ui.query.trim() ? `<section class="results">${resultsMarkup()}</section>` : ''}
+
+    ${verbId ? '' : listingsMarkup()}
 
     ${verbId ? verbDetail(verbId) : `<section class="verb-section">
       <h2>いま、どれをやっている？</h2>
@@ -777,9 +969,10 @@ function render() {
   const main = $('main-content');
   main.innerHTML = current.page === 'find' ? findPage(current.verb)
     : current.page === 'routes' ? routesPage(current.domain)
+    : current.page === 'recommend' ? recommendPage()
     : nowPage();
   main.dataset.page = current.page;
-  const tab = current.page === 'now' ? 'now' : 'find';
+  const tab = current.page === 'now' ? 'now' : ['find', 'routes'].includes(current.page) ? 'find' : null;
   for (const element of document.querySelectorAll('.tab')) {
     element.classList.toggle('active', element.dataset.tab === tab);
     element.setAttribute('aria-current', element.dataset.tab === tab ? 'page' : 'false');
@@ -829,14 +1022,14 @@ function render() {
 
 /* ---------- 野原に置く ---------- */
 
-function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null}) {
-  if (state.placements.length >= PLACEMENT_LIMIT) return notify(`野原に置けるのは${PLACEMENT_LIMIT}件までです。`);
-  if (ref && state.placements.some(placement => placement.ref === ref && placement.lane === lane)) return notify('同じ段に、もう置いてあります。');
-  if (url && state.placements.some(placement => placement.url === url)) return notify('このページは、もう野原にあります。');
+function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null, source = null, note = ''}) {
+  if (state.placements.length >= PLACEMENT_LIMIT) { notify(`野原に置けるのは${PLACEMENT_LIMIT}件までです。`); return false; }
+  if (ref && state.placements.some(placement => placement.ref === ref && placement.lane === lane)) { notify('同じ段に、もう置いてあります。'); return false; }
+  if (url && state.placements.some(placement => placement.url === url)) { notify('このページは、もう野原にあります。'); return false; }
   const placement = {
     id: newPlacementId(), lane, x: freeX(state.placements, lane),
-    label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note: '',
-    topic, url, title, photo
+    label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note,
+    topic, url, title, photo, source: source ?? (['custom', 'link', 'photo'].includes(kind) ? 'self' : 'catalog')
   };
   const before = convergences(state.placements).length;
   state.placements = [...state.placements, placement];
@@ -852,6 +1045,7 @@ function place({kind, ref, label, verb = null, lane = 'now', topic = null, url =
   } else {
     notify(`「${placement.label}」を置きました。${persist ? '' : ' 次回も残すなら、右上で保存をオンに。'}`);
   }
+  return true;
 }
 
 /* ---------- 操作 ---------- */
@@ -881,10 +1075,53 @@ document.addEventListener('click', event => {
   if (!target) return;
 
   if (target.id === 'storage-toggle') {setPersist(!persist); return render();}
+  if (target.hasAttribute('data-copy-share')) {
+    if (!ui.shareLink) return;
+    navigator.clipboard.writeText(ui.shareLink)
+      .then(() => notify('リンクをコピーしました。'))
+      .catch(error => notify(`コピーできませんでした（${error.name}）。リンクを選んでコピーしてください。`));
+    return;
+  }
+  if (target.dataset.recommendPlace) {
+    const item = state.recommendations.find(entry => entry.id === target.dataset.recommendPlace);
+    if (!item) return notify('このおすすめは受信箱にありません。');
+    const placed = place({kind: 'link', ref: null, label: item.title, title: item.title, url: item.url,
+                          topic: item.topic, verb: item.verb, lane: 'now', source: 'family', note: item.note});
+    if (placed) {
+      state.recommendations = state.recommendations.filter(entry => entry.id !== item.id);
+      save();
+      render();
+    }
+    return;
+  }
+  if (target.dataset.recommendLater) {
+    state.recommendations = state.recommendations.map(item => item.id === target.dataset.recommendLater ? {...item, status: 'later'} : item);
+    save();
+    notify('「あとで見る」に移しました。');
+    return render();
+  }
+  if (target.dataset.recommendDismiss) {
+    state.recommendations = state.recommendations.filter(item => item.id !== target.dataset.recommendDismiss);
+    save();
+    notify('受信箱から消しました。');
+    return render();
+  }
   if (target.hasAttribute('data-deselect')) {ui.selected = null; ui.routeKind = null; return render();}
   if (target.dataset.nodeOpen) {ui.selected = target.dataset.nodeOpen; ui.routeKind = null; ui.listView = false; return render();}
   if (target.hasAttribute('data-list-view')) {ui.listView = !ui.listView; return render();}
   if (target.dataset.fieldView) {ui.fieldView = target.dataset.fieldView; return render();}
+  if (target.hasAttribute('data-picks-open')) {ui.picksOpen = !ui.picksOpen; return render();}
+  if (target.hasAttribute('data-coverage-open')) {ui.coverageOpen = !ui.coverageOpen; return render();}
+  if (target.dataset.pickFilter) {
+    const name = target.dataset.pickFilter;
+    const raw = target.dataset.pickValue;
+    // 都道府県は本人の設定そのものなので、外すときは設定を消す。
+    if (name === 'prefecture') {state.prefecture = raw || null; save(); return render();}
+    // 空文字は「指定しない」。絞り込みを外すのと、外れていることは同じ状態にする。
+    const value = raw === '' ? (name === 'online' ? false : null) : name === 'online' ? raw === 'true' : raw;
+    ui.picks = {...ui.picks, [name]: value};
+    return render();
+  }
   if (target.dataset.listSort) {ui.listSort = target.dataset.listSort; return render();}
   if (target.hasAttribute('data-about')) {ui.about = !ui.about; return render();}
   if (target.hasAttribute('data-grade-open')) {ui.gradePicker = !ui.gradePicker; return render();}
@@ -1028,6 +1265,22 @@ function expandLane(id, from = 'field') {
 document.addEventListener('submit', event => {
   const form = event.target;
   if (form.hasAttribute('data-search')) return event.preventDefault();
+  if (form.hasAttribute('data-recommend-form')) {
+    event.preventDefault();
+    try {
+      const encoded = encodeRecommendation({
+        title: form.elements.title.value.trim(), url: form.elements.url.value.trim(),
+        note: form.elements.note.value.trim(), topic: form.elements.topic.value || null,
+        verb: form.elements.verb.value || null
+      }, catalog);
+      ui.shareLink = `${location.origin}${location.pathname}#inbox?d=${encoded}`;
+      render();
+      $('share-result')?.focus();
+    } catch (error) {
+      notify(error.message);
+    }
+    return;
+  }
   if (form.dataset.stanceForm) {
     event.preventDefault();
     const decision = laneById(form.dataset.stanceForm).decision;
@@ -1080,6 +1333,13 @@ document.addEventListener('submit', event => {
 });
 
 document.addEventListener('change', event => {
+  if (event.target.hasAttribute('data-prefecture')) {
+    // 位置情報からは決して決めない。ここで本人が選んだときだけ入る。
+    state.prefecture = event.target.value || null;
+    ui.picks = {...ui.picks, prefecture: null};
+    save();
+    return render();
+  }
   if (event.target.hasAttribute('data-photo-input')) {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -1185,6 +1445,7 @@ window.addEventListener('hashchange', () => {
   ui.picker = null;
   // ブックマークレットから届いた取り込み要求は、ここで下書きに変える。
   consumeAddHash();
+  consumeRecommendationHash();
   render();
   $('main-content').focus();
   window.scrollTo(0, 0);
@@ -1193,4 +1454,5 @@ window.addEventListener('hashchange', () => {
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 restore();
 consumeAddHash();
+consumeRecommendationHash();
 render();

@@ -1,10 +1,14 @@
 import {readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
+import {PREFECTURES} from '../regions.mjs';
 const fail=message=>{throw new Error(`Knowledge: ${message}`);};
 const text=(value,label,max=1500)=>{if(typeof value!=='string' || !value.trim() || value.length>max || /[<>\u0000-\u0008]/.test(value)) fail(label);};
 const id=value=>{if(typeof value!=='string' || !/^[a-z][a-z0-9-]{0,49}$/.test(value)) fail(`invalid id ${value}`);};
 const unique=(values,label)=>{if(new Set(values).size!==values.length) fail(`duplicate ${label}`);};
 const date=value=>typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && new Date(value).toISOString().slice(0,10)===value;
+const resourceCategories=new Set(['material','place','event','continuing','club','school','university']);
+const gradeIds=new Set(['j1','j2','j3','h1','h2','h3']);
+const costs=new Set(['free','paid','unknown']);
 
 export function validateKnowledge(data) {
   if(data?.version!==2 || !Array.isArray(data.concepts) || !Array.isArray(data.resources) || !Array.isArray(data.verbs) || !data.directions || !data.topics || !data.domains) fail('invalid envelope');
@@ -84,6 +88,13 @@ export function validateKnowledge(data) {
     if(resource.group!=='study' && !resource.verbs.length) fail(`resource ${resource.id} needs at least one verb`);
     for(const key of ['host','child']) if(resource[key] && !resources.has(resource[key])) fail(`unknown ${key}`);
     if(resource.type==='event' && !date(resource.date)) fail('event requires date');
+    if(!resourceCategories.has(resource.category)) fail(`unknown category on ${resource.id}`);
+    if(resource.prefecture!==null && !PREFECTURES.includes(resource.prefecture)) fail(`unknown prefecture on ${resource.id}`);
+    if(!Array.isArray(resource.grades) || resource.grades.some(value=>!gradeIds.has(value))) fail(`unknown grade on ${resource.id}`);
+    if(!costs.has(resource.cost)) fail(`unknown cost on ${resource.id}`);
+    if(resource.deadline!==null && !date(resource.deadline)) fail(`invalid deadline on ${resource.id}`);
+    if(resource.deadline && resource.date && resource.deadline>resource.date) fail(`deadline after event on ${resource.id}`);
+    if(resource.free===true && resource.cost!=='free') fail(`free resource ${resource.id} must use cost free`);
   }
   return data;
 }

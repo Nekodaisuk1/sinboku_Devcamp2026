@@ -1,6 +1,8 @@
 import {validateStances, validateGrade} from './timeline.mjs';
 import {validateLog} from './log.mjs';
 import {validatePlacements} from './field.mjs';
+import {validatePrefecture} from './regions.mjs';
+import {validateRecommendations} from './recommendations.mjs';
 
 export const STORAGE_KEY = 'shimboku.hub.v2';
 // Build 18 までの保存形式。読み替えずに残す。黙って捨てたり上書きしたりしない。
@@ -11,16 +13,18 @@ export const MARK_LIMIT = 200;
 export const STATE_BYTES = 4 * 1024 * 1024;
 
 export function emptyState() {
-  return {grade: null, stances: {}, log: [], placements: [], marks: [], heldRoutes: [], verb: null, expanded: false};
+  return {grade: null, prefecture: null, stances: {}, log: [], placements: [], recommendations: [], marks: [], heldRoutes: [], verb: null, expanded: false};
 }
 
 export function encodeState(state) {
   const json = JSON.stringify({
     version: 2,
     grade: state.grade ?? null,
+    prefecture: state.prefecture ?? null,
     stances: state.stances,
     log: state.log,
     placements: state.placements,
+    recommendations: state.recommendations ?? [],
     marks: [...state.marks],
     heldRoutes: [...state.heldRoutes],
     verb: state.verb ?? null,
@@ -50,8 +54,10 @@ export function decodeState(raw, catalog) {
   const placements = validatePlacements(data.placements, catalog);
   return {
     grade: validateGrade(data.grade),
+    prefecture: validatePrefecture(data.prefecture),
     stances: validateStances(data.stances),
     placements,
+    recommendations: validateRecommendations(data.recommendations, catalog),
     log: validateLog(data.log, {verbIds: catalog.verbs, activityIds: catalog.activities, placementIds: new Set(placements.map(item => item.id))}),
     marks: [...new Set(marks)],
     heldRoutes: [...new Set(heldRoutes)],
