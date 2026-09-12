@@ -788,6 +788,24 @@ test('links into a clustered node are rerouted to the cluster instead of disappe
   assert.ok(rerouted, 'at least one line now ends at the cluster chip that replaced its endpoint');
 });
 
+test('starred school nodes stay visible when their lane is folded', () => {
+  assert.equal(typeof fieldModule.markedSchoolNodeIds, 'function');
+  const schools = Array.from({length: 6}, (_, index) => ({
+    id: `route-school-${index}`,
+    lane: 'faculty',
+    x: 0.5,
+    label: `School ${index}`,
+    kind: 'route',
+    marked: index === 5
+  }));
+  const keep = new Set(fieldModule.markedSchoolNodeIds(schools));
+  const view = layout({extraNodes: schools, width: 360, keep});
+
+  assert.ok(view.aliases.size > 0, 'the fixture must fold at least one school');
+  assert.ok(view.nodes.some(node => node.id === 'route-school-5'));
+  assert.equal(view.aliases.has('route-school-5'), false);
+});
+
 test('expanding a lane lays out one node per row so no two labels can overlap', () => {
   const placements = Array.from({length: 6}, (_, index) => put(`p${index}`, null, 0.5, 'now', 'custom'));
   const width = 360;

@@ -10,7 +10,7 @@ import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from
 import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
         PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, buildExternalInformationDraft, placementForResource, setDomainConnection, resetDomainConnections,
-        withoutDismissedRouteSchools} from './field.mjs';
+        withoutDismissedRouteSchools, markedSchoolNodeIds} from './field.mjs';
 import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
@@ -225,7 +225,8 @@ function fieldView() {
   // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
   // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
   const openSchools = extraNodes.filter(node => node.kind === 'school-option').map(node => node.id);
-  const keep = new Set([...linkedSet(scope.placements, focus), focus, ui.selected, ui.expandedSchoolId, ui.moving, ...openSchools].filter(Boolean));
+  const starredSchools = markedSchoolNodeIds(extraNodes);
+  const keep = new Set([...linkedSet(scope.placements, focus), focus, ui.selected, ui.expandedSchoolId, ui.moving, ...openSchools, ...starredSchools].filter(Boolean));
   const view = layout({placements: scope.placements, extraNodes, width: ui.fieldWidth, expandedLanes: ui.expandedLanes, keep});
   return {...view, scope};
 }

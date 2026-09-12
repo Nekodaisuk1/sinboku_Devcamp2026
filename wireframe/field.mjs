@@ -522,6 +522,10 @@ export function previewBox({label, x, lane}, view) {
   return {left, w, y, h: NODE_HEIGHT};
 }
 
+export function markedSchoolNodeIds(nodes = []) {
+  return nodes.filter(node => node.marked).map(node => node.id);
+}
+
 /**
  * 野原ぜんぶの配置を出す。幅は実際の表示幅をそのまま使い、文字を縮小しない。
  * 段の高さは中身で決まるので、置くほど野原が広がる。
