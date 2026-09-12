@@ -4,7 +4,7 @@ import {verbs, verbById, domains, topics, activitiesByTopic, activityById, domai
 import {searchCatalog, catalogIds, CATEGORIES, filterResources, freshnessOf, coverage, coverageSentence} from './catalog.mjs';
 import {PREFECTURES} from './regions.mjs';
 import {routesForDomain, hasRoutes, routeDomains, ROUTES_CHECKED_ON} from './routes.mjs';
-import {renderRoutes} from './routes-ui.mjs';
+import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
 import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
@@ -169,7 +169,7 @@ function fieldView() {
   const anchor = selected.startsWith('domain-')
     ? revealWorld(scope.placements).domains.find(domain => `domain-${domain.id}` === selected)?.x ?? 0.5
     : 0.5;
-  const extra = selected.startsWith('domain-') && ui.routeKind ? routePath(selected.slice(7), ui.routeKind, anchor) : {nodes: [], links: []};
+  const extra = selected.startsWith('domain-') ? routePath(selected.slice(7), ui.routeKind, anchor) : {nodes: [], links: []};
   const extraNodes = extra.nodes.map(node => ({...node, links: extra.links.filter(link => link.from === node.id)}));
   // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
   // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
@@ -366,6 +366,7 @@ function domainPanel(domainId) {
   const world = revealWorld(state.placements).domains.find(item => item.id === domainId);
   const from = (world?.from ?? []).map(id => state.placements.find(placement => placement.id === id)?.label).filter(Boolean);
   const routes = hasRoutes(domainId) ? routesForDomain(domainId, domain) : [];
+  const selectedRoute = routes.find(item => item.kind === ui.routeKind) ?? null;
   return `<section class="panel panel-domain">
     <button class="panel-close" data-deselect>× 閉じる</button>
     <p class="panel-kind">置いたものから現れた学問</p>
@@ -374,11 +375,21 @@ function domainPanel(domainId) {
     <p class="panel-example">${escape(domain.example)}</p>
     ${from.length ? `<p class="panel-reach">${from.map(label => `「${escape(label)}」`).join('と')}から線が届いています。</p>` : ''}
 
-    ${routes.length ? `<div class="panel-block">
-      <p class="panel-label">ここへの道は${routes.length}本。1本ずつ、野原に引けます。</p>
-      <div class="route-chips">${routes.map(item => `<button class="route-chip${ui.routeKind === item.kind ? ' on' : ''}" data-route-kind="${escape(item.kind)}" aria-pressed="${ui.routeKind === item.kind}">${escape(item.kindName)}<small>数学 ${escape(item.math.label)}</small></button>`).join('')}</div>
-      ${ui.routeKind ? `<p class="panel-hint">${escape(routes.find(item => item.kind === ui.routeKind)?.why ?? '')}</p>` : ''}
-      <a class="secondary" href="#routes/${escape(domainId)}">4本を並べて読む →</a>
+    ${routes.length ? `<div class="panel-block route-compare-panel">
+      <p class="panel-label">ここへの道は${routes.length}本。${selectedRoute ? '選んだ1本を野原に表示しています。' : '決める前に、すべて野原へ表示しています。'}</p>
+      ${selectedRoute ? '<button class="text-button route-show-all" data-route-all>すべての経路をもう一度比べる</button>' : ''}
+      ${renderUniversityCandidates(routes)}
+      <div class="route-choice-grid">${routes.map(item => {
+        return `<article class="route-choice${ui.routeKind === item.kind ? ' on' : ''}">
+          <button data-route-kind="${escape(item.kind)}" aria-pressed="${ui.routeKind === item.kind}">
+            <strong>${escape(item.kindName)}</strong>
+            <span>${escape(item.kindSummary)}</span>
+            <small>数学 ${escape(item.math.label)}</small>
+          </button>
+          <p>${escape(item.why)}</p>
+        </article>`;
+      }).join('')}</div>
+      <a class="secondary route-entry" href="#routes/${escape(domainId)}">${routes.length}本の特徴を表と個別ページで比べる →</a>
     </div>` : '<p class="empty-note">この学問の経路は、まだ用意できていません。</p>'}
   </section>`;
 }
@@ -1186,6 +1197,7 @@ document.addEventListener('click', event => {
     return render();
   }
   if (target.dataset.routeKind) {ui.routeKind = ui.routeKind === target.dataset.routeKind ? null : target.dataset.routeKind; return render();}
+  if (target.hasAttribute('data-route-all')) {ui.routeKind = null; return render();}
   if (target.dataset.verbSection) {ui.verbSection = target.dataset.verbSection; return render();}
 
   if (target.dataset.stanceEdit) {ui.editing = target.dataset.stanceEdit; return render();}

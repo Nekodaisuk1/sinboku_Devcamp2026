@@ -10,6 +10,25 @@ const stageLabels = {
   now: 'いま'
 };
 
+const universityCandidateMarkup = (candidate, className) => `<li class="${className}">
+  <span>${escape(candidate.route.kindName)}</span>
+  <a href="${escape(candidate.step.link.url)}" target="_blank" rel="noopener noreferrer">${escape(candidate.step.title)} ↗</a>
+</li>`;
+
+/** 大学・学部候補は経路をまたいだ1グループにし、最初の4件より先だけを任意展開にする。 */
+export function renderUniversityCandidates(routes, limit = 4) {
+  const candidates = routes.map(route => ({route, step: route.steps.find(step => step.stage === 'university' && step.link)})).filter(item => item.step);
+  if (!candidates.length) return '';
+  const lead = candidates.slice(0, limit);
+  const rest = candidates.slice(limit);
+  return `<section class="route-university-group" aria-labelledby="route-university-title">
+    <h3 id="route-university-title">大学・学部候補 <span>${candidates.length}件</span></h3>
+    <p>経路ごとの候補をまとめて表示しています。大学名から公式ページを開けます。</p>
+    <ul>${lead.map(candidate => universityCandidateMarkup(candidate, 'candidate-primary')).join('')}</ul>
+    ${rest.length ? `<details><summary>ほか${rest.length}件を広げる</summary><ul>${rest.map(candidate => universityCandidateMarkup(candidate, 'candidate-more')).join('')}</ul></details>` : ''}
+  </section>`;
+}
+
 function stepMarkup(step) {
   const point = step.decision ? decisionPoints[step.decision] : null;
   return `<li class="route-step route-step-${step.stage}">
@@ -26,6 +45,7 @@ function stepMarkup(step) {
 }
 
 function routeMarkup(route, saved) {
+  const university = route.steps.find(step => step.stage === 'university');
   return `<article class="route-card" id="route-${escape(route.id)}">
     <header class="route-head">
       <p class="route-kind">経路${route.order}</p>
@@ -34,6 +54,7 @@ function routeMarkup(route, saved) {
       <p class="route-why">${escape(route.why)}</p>
       <p class="route-math"><span>必要な数学</span><strong>${escape(route.math.label)}</strong><small>${escape(route.math.summary)}</small></p>
     </header>
+    ${university?.link ? `<a class="route-detail" href="${escape(university.link.url)}" target="_blank" rel="noopener noreferrer">この経路の大学・学部を公式ページで見る：${escape(university.title)} ↗</a>` : ''}
     <ol class="route-steps">${route.steps.map(stepMarkup).join('')}</ol>
     <footer class="route-foot">
       <button class="text-button" data-route-math="${escape(route.id)}">数学の中身をもう少し見る</button>
@@ -45,6 +66,8 @@ function routeMarkup(route, saved) {
 
 function comparisonMarkup(routes) {
   const rows = [
+    ['経路の特徴', route => route.kindSummary],
+    ['この道で扱うこと', route => route.why],
     ['必要な数学', route => route.math.label],
     ['高校の段階で決まること', route => route.steps.find(step => step.stage === 'course').title],
     ['高校で選ぶもの', route => route.steps.find(step => step.stage === 'highschool').title],
@@ -80,6 +103,7 @@ export function renderRoutes({domainId, domain, saved, checkedOn}) {
       ${spread.varies ? `<p class="route-ceiling"><span>数学の天井は、経路によって違う</span><strong>${escape(spread.lowest.label)} 〜 ${escape(spread.highest.label)}</strong><small>${escape(spread.lowest.summary)}／${escape(spread.highest.summary)}　同じ学問でも、扱う対象によって要求が変わります。</small></p>` : ''}
     </section>
     ${comparisonMarkup(routes)}
+    ${renderUniversityCandidates(routes)}
     <div class="route-list">${routes.map(route => routeMarkup(route, saved)).join('')}</div>
     ${timelineMarkup()}
     <p class="route-disclaimer">経路の組み立てと、必要な数学の目安は本アプリの編集です。大学・学部・高専の情報は各公式サイト（確認 ${escape(checkedOn)}）にもとづきます。特定の高校からの進学実績を示すものではありません。学科の有無や入試科目は、必ず最新の募集要項で確認してください。</p>`;

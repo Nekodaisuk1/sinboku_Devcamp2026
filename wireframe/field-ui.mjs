@@ -119,7 +119,7 @@ export function renderField(view, {selected = null, dragging = null, highlight =
     })
     .sort((a, b) => a.tier - b.tier);
 
-  return `<svg class="field" viewBox="0 0 ${view.width} ${view.height}" width="${view.width}" height="${view.height}"
+  return `<svg class="field" viewBox="0 0 ${view.width} ${view.height}" preserveAspectRatio="xMidYMin meet"
       role="group" aria-label="時間の野原。縦は今から7年先まで、置いたものから線が伸びます。">
     <g class="lanes">${view.lanes.map(lane => laneMarkup(lane, view.width, next)).join('')}</g>
     <g class="links" aria-hidden="true">${linkOrder.map(({link, from, to, lit}) =>
