@@ -3,6 +3,7 @@ import {validateLog} from './log.mjs';
 import {validatePlacements} from './field.mjs';
 import {validatePrefecture} from './regions.mjs';
 import {validateRecommendations} from './recommendations.mjs';
+import {validateSchoolMarks, validateSchoolDismissals, validateSchoolViews} from './school-records.mjs';
 
 export const STORAGE_KEY = 'shimboku.hub.v2';
 // Build 18 までの保存形式。読み替えずに残す。黙って捨てたり上書きしたりしない。
@@ -13,7 +14,7 @@ export const MARK_LIMIT = 200;
 export const STATE_BYTES = 4 * 1024 * 1024;
 
 export function emptyState() {
-  return {grade: null, prefecture: null, stances: {}, log: [], placements: [], recommendations: [], marks: [], heldRoutes: [], verb: null, expanded: false};
+  return {grade: null, prefecture: null, stances: {}, log: [], placements: [], recommendations: [], marks: [], heldRoutes: [], schoolMarks: [], schoolDismissals: [], schoolViews: [], verb: null, expanded: false};
 }
 
 export function encodeState(state) {
@@ -27,6 +28,9 @@ export function encodeState(state) {
     recommendations: state.recommendations ?? [],
     marks: [...state.marks],
     heldRoutes: [...state.heldRoutes],
+    schoolMarks: [...(state.schoolMarks ?? [])],
+    schoolDismissals: state.schoolDismissals ?? [],
+    schoolViews: state.schoolViews ?? [],
     verb: state.verb ?? null,
     expanded: state.expanded === true
   });
@@ -61,6 +65,9 @@ export function decodeState(raw, catalog) {
     log: validateLog(data.log, {verbIds: catalog.verbs, activityIds: catalog.activities, placementIds: new Set(placements.map(item => item.id))}),
     marks: [...new Set(marks)],
     heldRoutes: [...new Set(heldRoutes)],
+    schoolMarks: validateSchoolMarks(data.schoolMarks ?? [], catalog),
+    schoolDismissals: validateSchoolDismissals(data.schoolDismissals ?? [], catalog),
+    schoolViews: validateSchoolViews(data.schoolViews ?? [], catalog),
     verb,
     expanded: data.expanded === true
   };

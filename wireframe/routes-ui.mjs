@@ -1,4 +1,5 @@
 import {routesForDomain, deferralTimeline, mathSpread, decisionPoints} from './routes.mjs';
+import {schoolId, SCHOOL_REASON_LIMIT} from './school-records.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 
@@ -10,28 +11,55 @@ const stageLabels = {
   now: 'いま'
 };
 
-const universityCandidateMarkup = (candidate, className) => `<li class="${className}">
+function reviewActions(candidate, {marked, dismissing}) {
+  const id = candidate.schoolId;
+  return `<div class="school-review-actions">
+    <button class="school-mark${marked.has(id) ? ' is-marked' : ''}" data-school-mark="${escape(id)}" aria-pressed="${marked.has(id)}">${marked.has(id) ? '★ よかった' : '☆ よかった印'}</button>
+    <button class="text-button warn" data-school-dismiss="${escape(id)}">候補から外す</button>
+  </div>
+  ${dismissing === id ? `<form class="school-dismiss-form" data-school-dismiss-form="${escape(id)}">
+    <label>外す理由 <input name="reason" maxlength="${SCHOOL_REASON_LIMIT}" required placeholder="例：希望する実習が少なかった"></label>
+    <button class="primary small" type="submit">理由を残して外す</button>
+    <button class="text-button" type="button" data-school-dismiss-cancel>やめる</button>
+  </form>` : ''}`;
+}
+
+const universityCandidateMarkup = (candidate, className, options) => `<li class="${className}${options.marked.has(candidate.schoolId) ? ' is-marked' : ''}">
   <span>${escape(candidate.route.kindName)}</span>
-  <a href="${escape(candidate.step.link.url)}" target="_blank" rel="noopener noreferrer">${escape(candidate.step.title)} ↗</a>
+  <a href="${escape(candidate.step.link.url)}" target="_blank" rel="noopener noreferrer" data-school-open="${escape(candidate.schoolId)}">${escape(candidate.step.title)} ↗</a>
+  ${reviewActions(candidate, options)}
 </li>`;
 
 /** 大学・学部候補は経路をまたいだ1グループにし、最初の4件より先だけを任意展開にする。 */
-export function renderUniversityCandidates(routes, limit = 4) {
-  const candidates = routes.map(route => ({route, step: route.steps.find(step => step.stage === 'university' && step.link)})).filter(item => item.step);
+export function renderUniversityCandidates(routes, limit = 4, {domainId = '', marked = new Set(), dismissed = new Set(), dismissing = null} = {}) {
+  const candidates = routes.map(route => ({route, step: route.steps.find(step => step.stage === 'university' && step.link)}))
+    .filter(item => item.step)
+    .map(item => ({...item, schoolId: schoolId(item.step.link.url, item.step.title), domainId}))
+    .filter(item => !dismissed.has(item.schoolId));
   if (!candidates.length) return '';
   const lead = candidates.slice(0, limit);
   const rest = candidates.slice(limit);
   return `<section class="route-university-group" aria-labelledby="route-university-title">
     <h3 id="route-university-title">大学・学部候補 <span>${candidates.length}件</span></h3>
     <p>進路ルートごとの候補をまとめて表示しています。大学名から公式ページを開けます。</p>
-    <ul>${lead.map(candidate => universityCandidateMarkup(candidate, 'candidate-primary')).join('')}</ul>
-    ${rest.length ? `<details><summary>ほか${rest.length}件を広げる</summary><ul>${rest.map(candidate => universityCandidateMarkup(candidate, 'candidate-more')).join('')}</ul></details>` : ''}
+    <ul>${lead.map(candidate => universityCandidateMarkup(candidate, 'candidate-primary', {marked, dismissing})).join('')}</ul>
+    ${rest.length ? `<details><summary>ほか${rest.length}件を広げる</summary><ul>${rest.map(candidate => universityCandidateMarkup(candidate, 'candidate-more', {marked, dismissing})).join('')}</ul></details>` : ''}
   </section>`;
 }
 
-function stepMarkup(step) {
+function stepMarkup(step, route, options) {
   const point = step.decision ? decisionPoints[step.decision] : null;
-  return `<li class="route-step route-step-${step.stage}">
+  const school = ['university', 'highschool'].includes(step.stage) && step.link
+    ? {schoolId: schoolId(step.link.url, step.title), step}
+    : null;
+  const dismissed = school && options.dismissed.has(school.schoolId);
+  if (dismissed) {
+    return `<li class="route-step route-step-${step.stage} is-dismissed">
+      <div class="route-step-mark" aria-hidden="true"></div>
+      <div class="route-step-body"><p class="route-stage">${escape(stageLabels[step.stage])}</p><p>この学校候補は外しています。理由は「検討記録」で確認できます。</p></div>
+    </li>`;
+  }
+  return `<li class="route-step route-step-${step.stage}${school && options.marked.has(school.schoolId) ? ' is-marked' : ''}">
     <div class="route-step-mark" aria-hidden="true"></div>
     <div class="route-step-body">
       <p class="route-stage">${escape(stageLabels[step.stage])}</p>
@@ -39,13 +67,15 @@ function stepMarkup(step) {
       <p class="route-step-detail">${escape(step.detail)}</p>
       ${step.note ? `<p class="route-step-note">${escape(step.note)}</p>` : ''}
       ${point ? `<p class="route-defer"><span>決める時期の目安</span><strong>${escape(point.defer)}</strong></p><details class="route-defer-detail"><summary>${escape(point.name)}とは</summary><p>${escape(point.detail)}</p></details>` : ''}
-      ${step.link ? `<a class="route-source" href="${escape(step.link.url)}" target="_blank" rel="noopener noreferrer">${escape(step.link.name)} ↗</a><small>出典 ${escape(step.link.source)}</small>` : ''}
+      ${step.link ? `<a class="route-source" href="${escape(step.link.url)}" target="_blank" rel="noopener noreferrer"${school ? ` data-school-open="${escape(school.schoolId)}"` : ''}>${escape(step.link.name)} ↗</a><small>出典 ${escape(step.link.source)}</small>` : ''}
+      ${school ? reviewActions(school, {marked: options.marked, dismissing: options.dismissing}) : ''}
     </div>
   </li>`;
 }
 
-function routeMarkup(route, saved) {
+function routeMarkup(route, saved, options) {
   const university = route.steps.find(step => step.stage === 'university');
+  const universityId = university?.link ? schoolId(university.link.url, university.title) : null;
   return `<article class="route-card" id="route-${escape(route.id)}">
     <header class="route-head">
       <p class="route-kind">ルート${route.order}</p>
@@ -54,8 +84,8 @@ function routeMarkup(route, saved) {
       <p class="route-why">${escape(route.why)}</p>
       <p class="route-math"><span>必要な数学</span><strong>${escape(route.math.label)}</strong><small>${escape(route.math.summary)}</small></p>
     </header>
-    ${university?.link ? `<a class="route-detail" href="${escape(university.link.url)}" target="_blank" rel="noopener noreferrer">このルートの大学・学部を公式ページで見る：${escape(university.title)} ↗</a>` : ''}
-    <ol class="route-steps">${route.steps.map(stepMarkup).join('')}</ol>
+    ${university?.link ? `<a class="route-detail" href="${escape(university.link.url)}" target="_blank" rel="noopener noreferrer" data-school-open="${escape(universityId)}">このルートの大学・学部を公式ページで見る：${escape(university.title)} ↗</a>` : ''}
+    <ol class="route-steps">${route.steps.map(step => stepMarkup(step, route, options)).join('')}</ol>
     <footer class="route-foot">
       <button class="text-button" data-route-math="${escape(route.id)}">数学の中身をもう少し見る</button>
       <button class="secondary" data-route-hold="${escape(route.id)}" aria-pressed="${saved.has(route.id)}">${saved.has(route.id) ? '✓ 見返すルートにした' : 'あとで見返すルートにする'}</button>
@@ -90,7 +120,7 @@ function timelineMarkup() {
   </section>`;
 }
 
-export function renderRoutes({domainId, domain, saved, checkedOn}) {
+export function renderRoutes({domainId, domain, saved, checkedOn, schoolMarks = new Set(), dismissedSchools = new Set(), dismissingSchool = null}) {
   const routes = routesForDomain(domainId, domain);
   if (!routes.length) {
     return `<section class="route-empty"><h2>この学問の進路ルートは、まだ用意できていません</h2><p>掲載している学問から選び直してください。掲載範囲の外であることを、この画面では隠しません。</p></section>`;
@@ -103,8 +133,8 @@ export function renderRoutes({domainId, domain, saved, checkedOn}) {
       ${spread.varies ? `<p class="route-ceiling"><span>必要な数学の範囲は、ルートによって違う</span><strong>${escape(spread.lowest.label)} 〜 ${escape(spread.highest.label)}</strong><small>${escape(spread.lowest.summary)}／${escape(spread.highest.summary)}　同じ学問でも、扱う対象によって要求が変わります。</small></p>` : ''}
     </section>
     ${comparisonMarkup(routes)}
-    ${renderUniversityCandidates(routes)}
-    <div class="route-list">${routes.map(route => routeMarkup(route, saved)).join('')}</div>
+    ${renderUniversityCandidates(routes, 4, {domainId, marked: schoolMarks, dismissed: dismissedSchools, dismissing: dismissingSchool})}
+    <div class="route-list">${routes.map(route => routeMarkup(route, saved, {marked: schoolMarks, dismissed: dismissedSchools, dismissing: dismissingSchool})).join('')}</div>
     ${timelineMarkup()}
     <p class="route-disclaimer">進路ルートの組み立てと、必要な数学の目安は本アプリの編集です。大学・学部・高専の情報は各公式サイト（確認 ${escape(checkedOn)}）にもとづきます。特定の高校からの進学実績を示すものではありません。学科の有無や入試科目は、必ず最新の募集要項で確認してください。</p>`;
 }

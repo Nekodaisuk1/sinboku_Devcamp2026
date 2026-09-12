@@ -16,6 +16,7 @@ const files = new Map([
   ['/field.mjs', ['field.mjs', 'text/javascript; charset=utf-8']],
   ['/regions.mjs', ['regions.mjs', 'text/javascript; charset=utf-8']],
   ['/recommendations.mjs', ['recommendations.mjs', 'text/javascript; charset=utf-8']],
+  ['/school-records.mjs', ['school-records.mjs', 'text/javascript; charset=utf-8']],
   ['/map-share.mjs', ['map-share.mjs', 'text/javascript; charset=utf-8']],
   ['/field-ui.mjs', ['field-ui.mjs', 'text/javascript; charset=utf-8']],
   ['/catalog.mjs', ['catalog.mjs', 'text/javascript; charset=utf-8']],

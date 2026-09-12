@@ -18,8 +18,16 @@ import {encodeRecommendation, decodeRecommendation, receiveRecommendation, valid
         RECOMMENDATION_LIMIT} from './recommendations.mjs';
 import * as fieldModule from './field.mjs';
 import {universityCandidates, universityCandidatesForDomain, EDUCATION_CHECKED_ON} from './education.mjs';
+import {schoolId, dismissSchool, recordSchoolView, toggleSchoolMark, formatSchoolViewTime, SCHOOL_RECORD_LIMIT} from './school-records.mjs';
 
-const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => routesForDomain(id, {name: id}).map(route => route.id)))};
+const routeRecords = routeDomains().flatMap(domainId => routesForDomain(domainId, {name: domainId}).map(route => ({domainId, route})));
+const catalog = {
+  ...catalogIds(),
+  routes: new Set(routeRecords.map(({route}) => route.id)),
+  schools: new Set(routeRecords.flatMap(({route}) => route.steps
+    .filter(step => ['university', 'highschool'].includes(step.stage) && step.link)
+    .map(step => schoolId(step.link.url, step.title))))
+};
 
 test('a shared map round-trips graph nodes without private records or photo data', () => {
   const placements = [
@@ -344,6 +352,51 @@ test('an empty state is valid, so a first visit never has to record anything', (
   assert.deepEqual(restored.log, []);
 });
 
+test('school decisions and browsing history have separate durable records', () => {
+  const state = emptyState();
+  assert.deepEqual(state.schoolMarks, []);
+  assert.deepEqual(state.schoolDismissals, []);
+  assert.deepEqual(state.schoolViews, []);
+});
+
+test('school decisions and history survive saving, while older state gets empty records', () => {
+  const id = [...catalog.schools][0];
+  const school = {schoolId: id, label: 'Example School', stage: id.endsWith('-university') ? 'university' : 'highschool', domain: 'media', url: 'https://example.edu/'};
+  const state = {
+    ...emptyState(),
+    schoolMarks: [id],
+    schoolDismissals: [{...school, reason: '希望と違った', date: '2026-09-12'}],
+    schoolViews: [{...school, viewedAt: '2026-09-12T03:00:00.000Z'}]
+  };
+  assert.deepEqual(decodeState(encodeState(state), catalog), state);
+  const old = JSON.parse(encodeState(emptyState()));
+  delete old.schoolMarks;
+  delete old.schoolDismissals;
+  delete old.schoolViews;
+  const restored = decodeState(JSON.stringify(old), catalog);
+  assert.deepEqual([restored.schoolMarks, restored.schoolDismissals, restored.schoolViews], [[], [], []]);
+});
+
+test('school marks toggle, while dismissing a school requires a reason', () => {
+  assert.deepEqual(toggleSchoolMark([], 'route-media-general-university'), ['route-media-general-university']);
+  assert.deepEqual(toggleSchoolMark(['route-media-general-university'], 'route-media-general-university'), []);
+  const school = {schoolId: 'route-media-general-university', label: 'Example University', stage: 'university', domain: 'media', url: 'https://example.edu/'};
+  assert.throws(() => dismissSchool([], school, {reason: '  ', date: '2026-09-12'}), /理由/);
+  assert.equal(dismissSchool([], school, {reason: '実習内容が希望と違った', date: '2026-09-12'})[0].reason, '実習内容が希望と違った');
+});
+
+test('opening the same school again moves it to the top instead of flooding history', () => {
+  const first = {schoolId: 'route-media-general-university', label: 'Example University', stage: 'university', domain: 'media', url: 'https://example.edu/'};
+  const second = {...first, schoolId: 'route-media-specialized-university', label: 'Second University', url: 'https://second.example.edu/'};
+  let history = recordSchoolView([], first, '2026-09-12T01:00:00.000Z');
+  history = recordSchoolView(history, second, '2026-09-12T02:00:00.000Z');
+  history = recordSchoolView(history, first, '2026-09-12T03:00:00.000Z');
+  assert.deepEqual(history.map(item => item.schoolId), [first.schoolId, second.schoolId]);
+  assert.equal(history[0].viewedAt, '2026-09-12T03:00:00.000Z');
+  assert.ok(history.length <= SCHOOL_RECORD_LIMIT);
+  assert.match(formatSchoolViewTime('2026-09-12T06:36:00.000Z'), /15:36/);
+});
+
 /* --- データの検査 --- */
 
 test('knowledge data rejects broken links, cycles, duplicates and invalid publication dates', async () => {
@@ -594,6 +647,20 @@ test('selecting a route node from another field switches the route focus', () =>
     }),
     {selected: 'route-biology-general-course', routeDomain: 'biology'}
   );
+});
+
+test('dismissing a school removes its node and reconnects the remaining route', () => {
+  assert.equal(typeof fieldModule.withoutDismissedRouteSchools, 'function');
+  const path = {
+    nodes: [{id: 'domain-media'}, {id: 'route-media-general-university', schoolId: 'school-example'}, {id: 'route-media-general-course'}],
+    links: [
+      {from: 'route-media-general-university', to: 'domain-media', kind: 'route'},
+      {from: 'route-media-general-course', to: 'route-media-general-university', kind: 'route'}
+    ]
+  };
+  const result = fieldModule.withoutDismissedRouteSchools(path, new Set(['school-example']));
+  assert.deepEqual(result.nodes.map(node => node.id), ['domain-media', 'route-media-general-course']);
+  assert.deepEqual(result.links, [{from: 'route-media-general-course', to: 'domain-media', kind: 'route'}]);
 });
 
 test('selecting a node for editing does not collapse an open route graph', () => {

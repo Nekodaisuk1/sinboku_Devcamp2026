@@ -379,7 +379,7 @@ a.secondary small{display:block;color:var(--muted);font-size:11px;font-weight:40
 .storage-warning{margin-top:8px;background:var(--now-soft);color:#7d3323;border-radius:9px;padding:9px 11px;font-size:13px}
 
 /* ---- タブ・トースト ---- */
-.tabbar{position:fixed;bottom:max(10px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 24px));display:grid;grid-template-columns:1fr 1fr;background:rgba(255,253,247,.94);border:1px solid rgba(32,48,38,.12);border-radius:24px;z-index:10;padding:5px;box-shadow:0 12px 32px rgba(32,48,38,.16);backdrop-filter:blur(16px)}
+.tabbar{position:fixed;bottom:max(10px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 24px));display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,253,247,.94);border:1px solid rgba(32,48,38,.12);border-radius:24px;z-index:10;padding:5px;box-shadow:0 12px 32px rgba(32,48,38,.16);backdrop-filter:blur(16px)}
 .tab{display:grid;place-items:center;gap:1px;padding:7px 8px 8px;text-decoration:none;color:var(--muted);font-size:11px;border-radius:19px}
 .tab .tab-icon{display:grid;place-items:center;width:26px;height:22px;font-size:19px;line-height:1}
 .tab>span:last-child{font-size:11px}
@@ -389,8 +389,8 @@ a.secondary small{display:block;color:var(--muted);font-size:11px;font-weight:40
 
 @media (min-width:760px){
   :root{font-size:16px}
-  .tabbar{grid-template-columns:1fr 1fr}
-  .tab{padding:7px 26px 8px}
+  .tabbar{grid-template-columns:repeat(4,1fr)}
+  .tab{padding:7px 8px 8px}
   .verb-list{grid-template-columns:repeat(2,1fr)}
   .field-wrap{margin-left:0;margin-right:0;border-radius:14px;border:1px solid var(--line)}
   .activity-list,.resource-list,.domain-list{grid-template-columns:repeat(2,1fr)}
@@ -430,6 +430,7 @@ a.secondary small{display:block;color:var(--muted);font-size:11px;font-weight:40
 .tutor-choice{background:var(--sun);color:var(--forest)}
 .node .node-body{filter:drop-shadow(0 4px 5px rgba(32,48,38,.1))}
 .node-domain .node-body{fill:#dff4e7;stroke:#85d5a7}.node-placement .node-body{fill:#fffdf7;stroke:#b9d9c5}
+.node-school-marked .node-body{fill:#fff4c9;stroke:#d29a2d;stroke-width:2}
 .link{stroke:#9ac6a8}.link-route,.link.is-lit{stroke:#278962}
 input,select,textarea{color:var(--forest)}
 
@@ -484,6 +485,16 @@ input,select,textarea{color:var(--forest)}
 .family-entry{border-style:dashed;background:var(--soft)}
 .family-entry p:not(.eyebrow){font-size:13px;color:var(--muted);margin:5px 0 12px}
 .inline-action{display:inline-flex;text-decoration:none}
+.record-page{max-width:900px;margin:0 auto 100px}
+.record-board{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;margin:16px 0;box-shadow:0 6px 20px rgba(32,48,38,.06)}
+.record-board h2{font-size:18px;margin-bottom:10px}
+.record-board>p{font-size:13px;color:var(--muted)}
+.record-board ul,.record-board ol{display:grid;gap:8px;list-style:none;padding:0}
+.record-board li{display:grid;grid-template-columns:auto 1fr auto;gap:7px 12px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--ground)}
+.record-board li>span,.record-board time{font-size:11px;color:var(--muted)}
+.record-board li>p{grid-column:2/-1;font-size:13px}
+.record-board a{font-weight:700}
+@media (max-width:600px){.record-board li{grid-template-columns:1fr}.record-board li>p{grid-column:auto}}
 .recommend-maker{max-width:720px;margin:16px auto 90px}
 .recommend-form{display:grid;gap:14px;margin-top:22px}
 .recommend-form label{display:grid;gap:5px;font-size:13px;font-weight:700}

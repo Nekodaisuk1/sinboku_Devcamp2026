@@ -400,6 +400,27 @@ export function routePath(domainId, kindId, anchorX, {expandedSchoolId = null} =
   };
 }
 
+/** 外した学校ノードを消し、その前後のルートは直接つないで道筋を保つ。 */
+export function withoutDismissedRouteSchools(path, dismissed = new Set()) {
+  let nodes = [...path.nodes];
+  let links = [...path.links];
+  for (const schoolKey of dismissed) {
+    const ids = nodes.filter(node => (node.schoolId ?? node.id) === schoolKey).map(node => node.id);
+    for (const id of ids) {
+      const towardNow = links.filter(link => link.to === id);
+      const towardField = links.filter(link => link.from === id);
+      const bridges = towardNow.flatMap(child => towardField.map(parent => ({
+        from: child.from,
+        to: parent.to,
+        kind: child.kind
+      })));
+      nodes = nodes.filter(node => node.id !== id);
+      links = [...links.filter(link => link.from !== id && link.to !== id), ...bridges];
+    }
+  }
+  return {...path, nodes, links};
+}
+
 /** 中間ノードを選んだら、そのノードが属する学問へルートの起点も移す。 */
 export function selectFieldNode({currentSelected = null, clickedId, clickedDomain = null, routeDomain = null}) {
   if (clickedId.startsWith('route-') || clickedId.startsWith('school-option-')) {
