@@ -1,3 +1,4 @@
+import {encodeMapShare, decodeMapShare} from './map-share.mjs';
 import {buildTimeline, nextDecision, GRADES, STANCE_LIMIT, gradeById} from './timeline.mjs';
 import {LOG_TEXT_LIMIT, addEntry, removeEntry, recentCount, today} from './log.mjs';
 import {verbs, verbById, domains, topics, activitiesByTopic, activityById, domainsForVerb, resourcesForVerb, verbCoverage, resources, allActivities} from './verbs.mjs';
@@ -31,7 +32,7 @@ const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker:
             draft: null,
             // 掲載情報の絞り込み。既定はどれも「絞らない」。本人が絞ったときだけ絞る。
             picks: {category: null, online: false, cost: null, grade: null, when: null},
-            picksOpen: false, coverageOpen: false, shareLink: ''};
+            picksOpen: false, coverageOpen: false, shareLink: '', mapShareLink: '', sharedMap: false};
 let persist = false;
 let storageNote = '';
 let toastTimer;
@@ -147,6 +148,24 @@ function consumeRecommendationHash() {
     state.recommendations = result.items;
     save();
     notify(result.added ? '家族からのおすすめが届きました。進路マップに追加するか、あとで見るかを選べます。' : 'このおすすめは、すでに届いています。');
+  } catch (error) {
+    notify(error.message);
+  }
+  return true;
+}
+
+/** 共有URLのグラフは一時表示だけにし、この端末に保存済みのマップは上書きしない。 */
+function consumeSharedMapHash() {
+  const raw = location.hash.replace(/^#/, '');
+  if (!raw.startsWith('shared?')) return false;
+  const encoded = new URLSearchParams(raw.slice(7)).get('d') ?? '';
+  history.replaceState(null, '', '#now');
+  try {
+    const placements = decodeMapShare(encoded, catalog);
+    state = {...emptyState(), placements};
+    persist = false;
+    ui.sharedMap = true;
+    notify('共有された進路マップを表示しています。この端末の保存内容は変更していません。');
   } catch (error) {
     notify(error.message);
   }
@@ -602,7 +621,15 @@ function nowPage() {
         <button class="grade-open" data-grade-open>${grade ? `いま ${escape(grade.label)}` : 'いま何年生？'}</button>
         <button class="primary" data-open-picker="topic">＋ 項目を追加</button>
         <button class="ghost" data-list-view aria-pressed="${ui.listView}">${ui.listView ? 'マップで見る' : '一覧で読む'}</button>
+        ${state.placements.length ? '<button class="ghost" data-share-map>このマップを共有</button>' : ''}
       </div>
+      ${ui.sharedMap ? `<aside class="shared-map-notice"><b>共有されたマップを表示中</b><span>この端末に保存している自分のマップは変更していません。</span><button class="text-button" data-return-own-map>自分のマップに戻る</button></aside>` : ''}
+      ${ui.mapShareLink ? `<section class="map-share-result" tabindex="-1" id="map-share-result">
+        <h2>共有リンクができました</h2>
+        <textarea readonly rows="4" aria-label="進路マップの共有リンク">${escape(ui.mapShareLink)}</textarea>
+        <button class="secondary" data-copy-map-share>リンクをコピー</button>
+        <p>共有されるもの：ノード名・接続・時期・配置・外部URL。共有されないもの：写真・行動記録・学年・考えのメモ・受信箱。</p>
+      </section>` : ''}
       ${fieldViewMarkup()}
       ${ui.about ? '<p class="field-about">縦軸は時間です。追加した項目と関連する学問を線で結びます。異なる興味が同じ学問につながることもあります。</p>' : ''}
       ${ui.gradePicker ? `<div class="grade-choices">
@@ -1135,6 +1162,25 @@ document.addEventListener('click', event => {
   if (!target) return;
 
   if (target.id === 'storage-toggle') {setPersist(!persist); return render();}
+  if (target.hasAttribute('data-share-map')) {
+    try {
+      const encoded = encodeMapShare(state.placements, catalog);
+      ui.mapShareLink = `${location.origin}${location.pathname}#shared?d=${encoded}`;
+      render();
+      $('map-share-result')?.focus();
+    } catch (error) {
+      notify(error.message);
+    }
+    return;
+  }
+  if (target.hasAttribute('data-copy-map-share')) {
+    if (!ui.mapShareLink) return;
+    navigator.clipboard.writeText(ui.mapShareLink)
+      .then(() => notify('マップの共有リンクをコピーしました。'))
+      .catch(error => notify(`コピーできませんでした（${error.name}）。リンクを選んでコピーしてください。`));
+    return;
+  }
+  if (target.hasAttribute('data-return-own-map')) return location.reload();
   if (target.hasAttribute('data-copy-share')) {
     if (!ui.shareLink) return;
     navigator.clipboard.writeText(ui.shareLink)
@@ -1566,6 +1612,7 @@ window.addEventListener('hashchange', () => {
   // ブックマークレットから届いた取り込み要求は、ここで下書きに変える。
   consumeAddHash();
   consumeRecommendationHash();
+  consumeSharedMapHash();
   render();
   $('main-content').focus();
   window.scrollTo(0, 0);
@@ -1575,4 +1622,5 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 restore();
 consumeAddHash();
 consumeRecommendationHash();
+consumeSharedMapHash();
 render();

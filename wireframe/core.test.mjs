@@ -15,6 +15,7 @@ import {validateKnowledge} from './scripts/knowledge.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, validateRecommendations,
         RECOMMENDATION_LIMIT} from './recommendations.mjs';
 import * as fieldModule from './field.mjs';
+import {universityCandidates, universityCandidatesForDomain, EDUCATION_CHECKED_ON} from './education.mjs';
 
 const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => routesForDomain(id, {name: id}).map(route => route.id)))};
 
@@ -499,6 +500,46 @@ test('all routes can be compared on the field before one is chosen', () => {
     const university = comparison.nodes.find(node => node.route === route.kind && node.lane === 'faculty');
     assert.ok(university?.link?.url, `${route.id} keeps its official university page on the field`);
   }
+});
+
+test('clicking a university or high-school step fans out similar schools around it', () => {
+  for (const stage of ['university', 'highschool']) {
+    const base = routePath('media', 'general', 0.5);
+    const selected = base.nodes.find(node => node.stage === stage);
+    assert.ok(selected, `${stage} route node is missing`);
+
+    const expanded = routePath('media', 'general', 0.5, {expandedSchoolId: selected.id});
+    const alternatives = expanded.nodes.filter(node => node.kind === 'school-option');
+    assert.ok(alternatives.length >= 2, `${stage} should offer multiple alternatives`);
+    assert.ok(alternatives.every(node => node.lane === selected.lane));
+    assert.ok(alternatives.every(node => node.activity && node.link?.url));
+    assert.equal(new Set(alternatives.map(node => node.link.url)).size, alternatives.length);
+    assert.ok(expanded.links.every(link => link.kind !== 'school-option' || link.to === selected.id));
+  }
+});
+
+test('an ordinary click on a university or high-school node toggles its surrounding schools', () => {
+  assert.equal(typeof fieldModule.schoolExpansionAfterClick, 'function');
+  const university = routePath('media', 'general', 0.5).nodes.find(node => node.stage === 'university');
+  assert.equal(fieldModule.schoolExpansionAfterClick(university, null), university.id);
+  assert.equal(fieldModule.schoolExpansionAfterClick(university, university.id), null);
+  assert.equal(fieldModule.schoolExpansionAfterClick({...university, stage: 'course'}, null), null);
+});
+
+test('every field offers four or five checked university alternatives', () => {
+  for (const domainId of Object.keys(domains)) {
+    const candidates = universityCandidatesForDomain(domainId);
+    assert.ok(candidates.length >= 4 && candidates.length <= 5, `${domainId} has ${candidates.length} universities`);
+    assert.ok(candidates.every(item => item.checkedOn === EDUCATION_CHECKED_ON));
+    assert.ok(candidates.every(item => /^https:\/\//.test(item.url) && item.activity.length > 12));
+  }
+  assert.equal(new Set(universityCandidates.map(item => item.id)).size, universityCandidates.length);
+});
+
+test('a general science field without detailed routes still exposes clickable university and high-school steps', () => {
+  const path = routePath('physics', null, 0.5);
+  assert.ok(path.nodes.some(node => node.stage === 'university' && node.link?.url));
+  assert.ok(path.nodes.some(node => node.stage === 'highschool' && node.link?.url));
 });
 
 test('selecting an intermediate route node keeps its route visible', () => {
