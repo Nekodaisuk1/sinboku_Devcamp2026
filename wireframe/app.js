@@ -8,8 +8,8 @@ import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
 import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
-        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan} from './field.mjs';
-import {renderField, renderFieldList, renderInterestBuilder, curve} from './field-ui.mjs';
+        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, placementForResource, setDomainConnection, resetDomainConnections} from './field.mjs';
+import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
 
@@ -25,6 +25,7 @@ const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker:
             verbSection: 'activities', fieldWidth: 360, fieldScroll: null,
             // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
             fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null,
+            connectionEditorOpenFor: null,
             // 取り込む前の下書き。確認画面を通るまで state には入れない。
             draft: null,
             // 掲載情報の絞り込み。既定はどれも「絞らない」。本人が絞ったときだけ絞る。
@@ -245,22 +246,6 @@ function highlightFor(view) {
   return lit;
 }
 
-function tutorialMarkup() {
-  const count = state.placements.length;
-  if (count === 0) {
-    return `<section class="tutor tutor-start" aria-label="進路マップの使い方">
-      <p class="tutor-step">はじめかた</p>
-      <h2>好きなものを、ひとつ追加する</h2>
-      <p>選ぶと、関連する学問が線で表示されます。</p>
-      <div class="tutor-choices">
-        ${Object.entries(topics).map(([id, topic]) => `<button class="tutor-choice" data-quick-topic="${escape(id)}">${escape(topic.label)}</button>`).join('')}
-        <button class="tutor-choice write" data-open-picker="custom">自分で書く</button>
-      </div>
-    </section>`;
-  }
-  return '';
-}
-
 function contextMarkup(next, grade, week) {
   const placement = state.placements.at(-1);
   const timing = next.when && next.when.months >= 0
@@ -325,12 +310,23 @@ function placementPanel(placement) {
     <button class="panel-close" data-deselect>× 閉じる</button>
     <p class="panel-kind">${escape(origin.label)} · ${escape(lane.title)}</p>
     <h2>${escape(placement.label)}</h2>
+    <form class="placement-name-form" data-rename-placement="${escape(placement.id)}">
+      <label for="placement-name">項目名</label>
+      <div><input id="placement-name" name="label" type="text" maxlength="${LABEL_LIMIT}" value="${escape(placement.label)}" required><button class="secondary" type="submit">名前を変更</button></div>
+    </form>
     ${origin.caution ? `<p class="placement-caution">${escape(origin.caution)}。${placement.url ? 'リンク先を開くかどうかは、自分で決めてください。' : ''}</p>` : ''}
     ${placement.photo ? `<img class="photo-preview" src="${escape(placement.photo)}" alt="「${escape(placement.label)}」として置いた写真">` : ''}
     ${placement.url ? `<a class="secondary" href="${escape(placement.url)}" target="_blank" rel="noopener noreferrer nofollow">このページを開く ↗<small class="confirm-url">${escape(placement.url)}</small></a>` : ''}
     ${reach.length
       ? `<p class="panel-reach">関連する学問：<b>${reach.map(escape).join('・')}</b></p>`
       : '<p class="panel-reach muted">関連する学問はまだありません。下でタグを選ぶと表示されます。</p>'}
+
+    ${renderConnectionEditor({
+      domains,
+      connected: new Set(reachOf(placement)),
+      customized: Array.isArray(placement.domains),
+      open: ui.connectionEditorOpenFor === placement.id
+    })}
 
     ${own ? `<div class="panel-block">
       <p class="panel-label">何について？</p>
@@ -617,6 +613,7 @@ function nowPage() {
     ${renderInterestBuilder({
       topics,
       verbs,
+      domains,
       placedRefs: new Set(state.placements.filter(placement => placement.kind === 'topic').map(placement => placement.ref)),
       open: state.placements.length === 0
     })}
@@ -631,7 +628,6 @@ function nowPage() {
          ${scopeMarkup(view.scope)}`
       : `<div class="field-stage">
            <div class="field-wrap" id="field-wrap">${renderField(view, {selected: ui.selected, highlight: highlightFor(view), next: next.decision})}</div>
-           ${tutorialMarkup()}
          </div>
          ${expandedMarkup(view)}
          ${scopeMarkup(view.scope)}
@@ -1046,7 +1042,7 @@ function place({kind, ref, label, verb = null, lane = 'now', topic = null, url =
   const placement = {
     id: newPlacementId(), lane, x: freeX(state.placements, lane),
     label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note,
-    topic, url, title, photo, source: source ?? (['custom', 'link', 'photo'].includes(kind) ? 'self' : 'catalog')
+    topic, url, title, photo, domains: null, source: source ?? (['custom', 'link', 'photo'].includes(kind) ? 'self' : 'catalog')
   };
   const before = convergences(state.placements).length;
   state.placements = [...state.placements, placement];
@@ -1087,7 +1083,7 @@ function placeInterestPlan(plan) {
     const placement = {
       id: newPlacementId(), lane: 'now', x: freeX(placements, 'now'),
       label: item.label, kind: item.kind, ref: item.ref, verb: item.verb, note: '',
-      topic: item.topic, url: null, title: null, photo: null, source: item.source
+      topic: item.topic, url: null, title: null, photo: null, domains: item.domains ?? null, source: item.source
     };
     placements.push(placement);
     return placement;
@@ -1205,7 +1201,8 @@ document.addEventListener('click', event => {
     return;
   }
   if (target.dataset.placeResource) {
-    place({kind: 'resource', ref: target.dataset.placeResource, label: resources[target.dataset.placeResource].name});
+    const resourceId = target.dataset.placeResource;
+    place(placementForResource(resourceId, resources[resourceId]));
     location.hash = '#now';
     return;
   }
@@ -1225,6 +1222,13 @@ document.addEventListener('click', event => {
     state.placements = state.placements.map(placement =>
       placement.id === ui.selected ? {...placement, verb: placement.verb === target.dataset.setVerb ? null : target.dataset.setVerb} : placement);
     save();
+    return render();
+  }
+  if (target.hasAttribute('data-reset-connections')) {
+    state.placements = state.placements.map(placement =>
+      placement.id === ui.selected ? resetDomainConnections(placement) : placement);
+    save();
+    notify('提示された接続に戻しました。');
     return render();
   }
   if (target.dataset.moveLane) {
@@ -1323,6 +1327,17 @@ function expandLane(id, from = 'field') {
 document.addEventListener('submit', event => {
   const form = event.target;
   if (form.hasAttribute('data-search')) return event.preventDefault();
+  if (form.dataset.renamePlacement) {
+    event.preventDefault();
+    const label = form.elements.label.value.trim().slice(0, LABEL_LIMIT);
+    if (!label) return notify('項目名を入力してください。');
+    state.placements = state.placements.map(placement =>
+      placement.id === form.dataset.renamePlacement ? {...placement, label} : placement);
+    save();
+    render();
+    notify('項目名を変更しました。');
+    return;
+  }
   if (form.hasAttribute('data-interest-builder')) {
     event.preventDefault();
     const data = new FormData(form);
@@ -1330,6 +1345,7 @@ document.addEventListener('submit', event => {
       const plan = buildInterestPlan({
         topicIds: data.getAll('topics'),
         customLabel: data.get('customLabel'),
+        domainIds: data.getAll('domainIds'),
         verbId: data.get('verbId') || null
       });
       placeInterestPlan(plan);
@@ -1406,6 +1422,16 @@ document.addEventListener('submit', event => {
 });
 
 document.addEventListener('change', event => {
+  if (event.target.hasAttribute('data-domain-connection')) {
+    const id = event.target.dataset.domainConnection;
+    ui.connectionEditorOpenFor = ui.selected;
+    state.placements = state.placements.map(placement =>
+      placement.id === ui.selected ? setDomainConnection(placement, id, event.target.checked) : placement);
+    save();
+    render();
+    notify(event.target.checked ? '接続を追加しました。' : '接続を外しました。');
+    return;
+  }
   if (event.target.hasAttribute('data-prefecture')) {
     // 位置情報からは決して決めない。ここで本人が選んだときだけ入る。
     state.prefecture = event.target.value || null;

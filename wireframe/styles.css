@@ -103,6 +103,8 @@ a.secondary small{display:block;color:var(--muted);font-size:11px;font-weight:40
 .interest-custom{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
 .interest-custom legend,.interest-custom .interest-hint{grid-column:1/-1}
 .interest-custom label{display:grid;gap:4px;font-size:13px;font-weight:700}
+.interest-genres{grid-column:1/-1}
+.interest-genres>p:first-child{font-size:13px;font-weight:700;margin:0 0 4px}
 .interest-custom input,.interest-custom select{width:100%;min-height:42px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);font:inherit}
 .interest-builder button[type=submit]{justify-self:start}
 
@@ -195,6 +197,19 @@ a.secondary small{display:block;color:var(--muted);font-size:11px;font-weight:40
 .confirm-url{overflow-wrap:anywhere;color:var(--muted);font-size:12px}
 .panel h2{font-size:21px;margin:2px 0 8px}
 .panel p{font-size:14px}
+.placement-name-form{display:grid;gap:3px;margin:4px 32px 8px 0}
+.placement-name-form label{font-size:11px;color:var(--muted)}
+.placement-name-form div{display:flex;gap:8px}
+.placement-name-form input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--ground);font:inherit;font-size:18px;font-weight:700}
+.placement-name-form button{white-space:nowrap}
+.connection-editor{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.connection-editor summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:8px 11px;cursor:pointer;font-weight:700}
+.connection-editor summary small{font-size:10px;color:var(--muted);font-weight:500}
+.connection-editor-body{border-top:1px solid var(--line);padding:11px}
+.connection-editor-body>p{color:var(--muted);font-size:12px;margin-bottom:8px}
+.connection-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.connection-choices label{display:flex;align-items:center;gap:7px;min-height:38px;padding:6px 8px;background:var(--paper);border:1px solid var(--line);border-radius:9px;cursor:pointer;font-size:12px}
+.connection-choices label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .panel-example{font-style:italic;color:var(--muted);margin-top:6px}
 .panel-defer{color:var(--now);font-weight:600}
 .panel-reach{margin-top:10px;background:var(--soft);border-radius:9px;padding:9px 11px;font-size:13px}
@@ -388,6 +403,9 @@ a.secondary small{display:block;color:var(--muted);font-size:11px;font-weight:40
   .interest-builder summary small{text-align:left}
   .interest-choices,.interest-custom{grid-template-columns:1fr}
   .interest-custom legend,.interest-custom .interest-hint{grid-column:auto}
+  .placement-name-form div{align-items:stretch;flex-direction:column}
+  .placement-name-form button{align-self:flex-start}
+  .connection-choices{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:no-preference){
   .rung-body,.verb-list a,.context-item,.activity,.resource,.tab{transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background-color .15s ease}
