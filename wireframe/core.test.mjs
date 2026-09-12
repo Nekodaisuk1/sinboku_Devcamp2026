@@ -584,6 +584,18 @@ test('selecting an intermediate route node keeps its route visible', () => {
   );
 });
 
+test('selecting a route node from another field switches the route focus', () => {
+  assert.deepEqual(
+    fieldModule.selectFieldNode({
+      currentSelected: 'route-media-general-course',
+      clickedId: 'route-biology-general-course',
+      clickedDomain: 'biology',
+      routeDomain: 'media'
+    }),
+    {selected: 'route-biology-general-course', routeDomain: 'biology'}
+  );
+});
+
 test('selecting a node for editing does not collapse an open route graph', () => {
   assert.deepEqual(
     fieldModule.selectFieldNode({
@@ -613,11 +625,14 @@ test('selecting a node for editing does not collapse an open route graph', () =>
   );
 });
 
-test('inspecting another node preserves the highlighted route context', () => {
+test('clicking another node moves the highlight to that node', () => {
   assert.equal(typeof fieldModule.highlightAfterClick, 'function');
   assert.equal(fieldModule.highlightAfterClick(null, 'topic-1'), 'topic-1');
-  assert.equal(fieldModule.highlightAfterClick('topic-1', 'route-media-general-course'), 'topic-1');
-  assert.equal(fieldModule.highlightAfterClick('topic-1', 'topic-2'), 'topic-1');
+  assert.equal(
+    fieldModule.highlightAfterClick('topic-1', 'route-media-general-course'),
+    'route-media-general-course',
+  );
+  assert.equal(fieldModule.highlightAfterClick('topic-1', 'topic-2'), 'topic-2');
 });
 
 test('dropping a node reads its lane from the vertical position, and never leaves the field', () => {

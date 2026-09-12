@@ -1163,13 +1163,20 @@ document.addEventListener('click', event => {
   const svgNode = event.target.closest('[data-node]');
   if (svgNode) {
     const clickedId = svgNode.dataset.node;
+    const clickedNode = lastView?.byId.get(clickedId);
     ui.highlighted = highlightAfterClick(ui.highlighted, clickedId);
-    ui.expandedSchoolId = schoolExpansionAfterClick(lastView?.byId.get(clickedId), ui.expandedSchoolId);
+    ui.expandedSchoolId = schoolExpansionAfterClick(clickedNode, ui.expandedSchoolId);
     const routeNode = clickedId.startsWith('route-') || clickedId.startsWith('school-option-');
-    const next = selectFieldNode({currentSelected: ui.selected, clickedId, routeDomain: ui.routeDomain});
+    const previousRouteDomain = ui.routeDomain;
+    const next = selectFieldNode({
+      currentSelected: ui.selected,
+      clickedId,
+      clickedDomain: clickedNode?.domain,
+      routeDomain: ui.routeDomain
+    });
     ui.selected = next.selected;
     ui.routeDomain = next.routeDomain;
-    if (!routeNode) ui.routeKind = null;
+    if (!routeNode || next.routeDomain !== previousRouteDomain) ui.routeKind = null;
     if (ui.moving !== ui.selected) ui.moving = null;
     return render();
   }
@@ -1243,10 +1250,16 @@ document.addEventListener('click', event => {
     return render();
   }
   if (target.dataset.nodeOpen) {
+    const clickedNode = lastView?.byId.get(target.dataset.nodeOpen);
     if (!target.dataset.nodeOpen.startsWith('lane-')) {
       ui.highlighted = highlightAfterClick(ui.highlighted, target.dataset.nodeOpen);
     }
-    const next = selectFieldNode({currentSelected: ui.selected, clickedId: target.dataset.nodeOpen, routeDomain: ui.routeDomain});
+    const next = selectFieldNode({
+      currentSelected: ui.selected,
+      clickedId: target.dataset.nodeOpen,
+      clickedDomain: clickedNode?.domain,
+      routeDomain: ui.routeDomain
+    });
     ui.selected = next.selected;
     ui.routeDomain = next.routeDomain;
     ui.routeKind = null;

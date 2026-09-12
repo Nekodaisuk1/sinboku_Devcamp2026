@@ -400,10 +400,10 @@ export function routePath(domainId, kindId, anchorX, {expandedSchoolId = null} =
   };
 }
 
-/** 中間ノードを選んでも、ルートを描く起点の学問は維持する。 */
-export function selectFieldNode({currentSelected = null, clickedId, routeDomain = null}) {
+/** 中間ノードを選んだら、そのノードが属する学問へルートの起点も移す。 */
+export function selectFieldNode({currentSelected = null, clickedId, clickedDomain = null, routeDomain = null}) {
   if (clickedId.startsWith('route-') || clickedId.startsWith('school-option-')) {
-    return {selected: clickedId, routeDomain};
+    return {selected: clickedId, routeDomain: clickedDomain ?? routeDomain};
   }
   const selected = currentSelected === clickedId ? null : clickedId;
   return {
@@ -412,9 +412,9 @@ export function selectFieldNode({currentSelected = null, clickedId, routeDomain 
   };
 }
 
-/** 詳細表示の対象が変わっても、本人が見ている接続の起点は明示的に外すまで維持する。 */
-export function highlightAfterClick(currentHighlight, clickedId) {
-  return currentHighlight || clickedId;
+/** ノードを選び直したら、表示中のグラフを保ったまま接続の起点もそのノードへ移す。 */
+export function highlightAfterClick(_currentHighlight, clickedId) {
+  return clickedId;
 }
 
 /** 大学・高校は追加の操作部品を挟まず、ノードそのもののクリックで候補を開閉する。 */
