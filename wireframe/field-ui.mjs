@@ -3,7 +3,7 @@ import {convergenceSentence, sourceOf, contentOf} from './field.mjs';
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 
 /** 本人が複数の興味を明示して、まとめて進路マップの起点にするフォーム。 */
-export function renderInterestBuilder({topics, verbs, placedRefs = new Set(), open = false}) {
+export function renderInterestBuilder({topics, verbs, domains, placedRefs = new Set(), open = false}) {
   const topicChoices = Object.entries(topics).map(([id, topic]) => {
     const placed = placedRefs.has(id);
     return `<label class="interest-choice${placed ? ' is-placed' : ''}">
@@ -24,19 +24,38 @@ export function renderInterestBuilder({topics, verbs, placedRefs = new Set(), op
       </fieldset>
       <fieldset class="interest-custom">
         <legend>ほかに興味があれば追加</legend>
-        <label>興味の名前
+        <label>興味があること
           <input name="customLabel" type="text" maxlength="40" placeholder="例：天体観測" autocomplete="off">
         </label>
-        <label>その興味との関わり方
-          <select name="verbId">
-            <option value="">関わり方を選ぶ</option>
-            ${verbs.map(verb => `<option value="${escape(verb.id)}">${escape(verb.label)}</option>`).join('')}
-          </select>
-        </label>
-        <p class="interest-hint">自由に書いた興味は、選んだ関わり方だけを手がかりに学問へつなぎます。</p>
+        <div class="interest-genres" role="group" aria-labelledby="interest-genres-label">
+          <p id="interest-genres-label">関係があるジャンル</p>
+          <p class="interest-hint">近いものを複数選べます。数学・物理・化学・生物・地学など、広い理系の話から選べます。</p>
+          <div class="interest-choices">${Object.entries(domains).map(([id, domain]) => `<label class="interest-choice">
+            <input type="checkbox" name="domainIds" value="${escape(id)}">
+            <span>${escape(domain.name)}</span>
+          </label>`).join('')}</div>
+        </div>
       </fieldset>
       <button class="primary" type="submit">この内容でマップを作る</button>
     </form>
+  </details>`;
+}
+
+/** 置いた項目と学問の接続を、本人が1本ずつ追加・解除するための編集欄。 */
+export function renderConnectionEditor({domains, connected = new Set(), customized = false, open = false}) {
+  return `<details class="connection-editor"${open ? ' open' : ''}>
+    <summary>
+      <span>接続を編集</span>
+      <small>${customized ? '自分で編集した接続' : '提示された接続'}</small>
+    </summary>
+    <div class="connection-editor-body">
+      <p>この項目から線をつなぐ学問を選べます。チェックを外すと線も消えます。</p>
+      <div class="connection-choices">${Object.entries(domains).map(([id, domain]) => `<label>
+        <input type="checkbox" data-domain-connection="${escape(id)}"${connected.has(id) ? ' checked' : ''}>
+        <span>${escape(domain.name)}</span>
+      </label>`).join('')}</div>
+      ${customized ? '<button class="text-button" type="button" data-reset-connections>提示された接続に戻す</button>' : ''}
+    </div>
   </details>`;
 }
 

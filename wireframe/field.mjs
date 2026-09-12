@@ -25,12 +25,25 @@ export const PLACEMENT_LIMIT = 60;
 export const LABEL_LIMIT = 40;
 export const INTEREST_PLAN_LIMIT = 5;
 
+/** 学校検索の掲載情報は、教育段階そのものを表す位置へ置く。 */
+export function laneForResource(resource) {
+  if (resource?.category === 'school') return 'highschool';
+  if (resource?.category === 'university') return 'faculty';
+  return 'now';
+}
+
+/** 検索結果のIDを保ったまま、マップへ渡す置きものに変換する。 */
+export function placementForResource(resourceId, resource) {
+  return {kind: 'resource', ref: resourceId, label: resource.name, lane: laneForResource(resource)};
+}
+
 /**
  * 最初に本人が選んだ興味を、進路マップへ追加できる形にそろえる。
  * 名前から興味や学問を推測せず、チェックした項目と明示した関わり方だけを使う。
  */
-export function buildInterestPlan({topicIds = [], customLabel = '', verbId = null} = {}) {
+export function buildInterestPlan({topicIds = [], customLabel = '', domainIds = [], verbId = null} = {}) {
   if (!Array.isArray(topicIds)) throw new Error('Interests must be a list');
+  if (!Array.isArray(domainIds)) throw new Error('Domains must be a list');
   const uniqueTopicIds = [...new Set(topicIds.map(id => String(id)))];
   for (const id of uniqueTopicIds) {
     if (!knowledge.topics[id]) throw new Error(`Unknown topic: ${id}`);
@@ -38,16 +51,20 @@ export function buildInterestPlan({topicIds = [], customLabel = '', verbId = nul
 
   const label = String(customLabel ?? '').trim();
   if (label.length > LABEL_LIMIT) throw new Error(`興味の名前は${LABEL_LIMIT}文字までです。`);
+  const uniqueDomainIds = [...new Set(domainIds.map(id => String(id)))];
+  for (const id of uniqueDomainIds) {
+    if (!knowledge.domains[id]) throw new Error(`Unknown domain: ${id}`);
+  }
   const verb = verbId ? verbById(String(verbId)) : null;
-  if (label && !verb) throw new Error('自由に書いた興味には、関わり方を選んでください。');
+  if (label && !uniqueDomainIds.length && !verb) throw new Error('自由に書いた興味には、関係があるジャンルを選んでください。');
 
   const plan = uniqueTopicIds.map(id => ({
     kind: 'topic', ref: id, label: knowledge.topics[id].label, verb: null,
     topic: null, source: 'catalog'
   }));
   if (label) plan.push({
-    kind: 'custom', ref: null, label, verb: verb.id,
-    topic: null, source: 'self'
+    kind: 'custom', ref: null, label, verb: verb?.id ?? null,
+    topic: null, domains: uniqueDomainIds.length ? uniqueDomainIds : null, source: 'self'
   });
   if (plan.length > INTEREST_PLAN_LIMIT) {
     throw new Error(`最初に選べる興味は${INTEREST_PLAN_LIMIT}件までです。`);
@@ -117,7 +134,7 @@ export function describeSource(placement) {
  * 自分で足したもの（自由入力・リンク・写真）→ 本人が選んだタグを続けている領域。
  * 掲載情報 → その情報が属する領域。つながりが分からないものは、線を作らない。
  */
-export function reachOf(placement) {
+export function suggestedReachOf(placement) {
   if (placement.kind === 'topic') return knowledge.topics[placement.ref]?.ids ?? [];
   if (placement.kind === 'resource') return knowledge.resources[placement.ref]?.domains ?? [];
   if (placement.kind === 'activity') return domainsForActivity(placement.ref);
@@ -135,6 +152,26 @@ export function reachOf(placement) {
     return topicDomains ?? verbDomains ?? [];
   }
   return [];
+}
+
+/** 本人が接続を編集していればその内容を使い、未編集なら提示された接続を使う。 */
+export function reachOf(placement) {
+  return Array.isArray(placement.domains) ? placement.domains : suggestedReachOf(placement);
+}
+
+/** 1本の接続を追加・解除し、この時点から本人が編集した接続として保持する。 */
+export function setDomainConnection(placement, domainId, connected) {
+  if (!Object.hasOwn(knowledge.domains, domainId)) throw new Error(`Unknown domain: ${domainId}`);
+  const current = Array.isArray(placement.domains) ? placement.domains : suggestedReachOf(placement);
+  const next = connected
+    ? [...new Set([...current, domainId])]
+    : current.filter(id => id !== domainId);
+  return {...placement, domains: next};
+}
+
+/** 本人の接続編集を外し、データから提示された接続へ戻す。 */
+export function resetDomainConnections(placement) {
+  return {...placement, domains: null};
 }
 
 /**
@@ -534,6 +571,14 @@ export function validatePlacements(value, catalog) {
     const note = item.note ?? '';
     if (typeof note !== 'string' || note.length > 140) throw new Error('Invalid placement note');
 
+    // null は提示された接続を使う状態。配列は本人が明示的に編集した接続で、空配列も有効。
+    const customDomains = item.domains ?? null;
+    if (customDomains !== null) {
+      if (!Array.isArray(customDomains) || customDomains.length > catalog.domains.size) throw new Error('Invalid placement domains');
+      if (new Set(customDomains).size !== customDomains.length) throw new Error('Duplicate placement domain');
+      if (!customDomains.every(id => typeof id === 'string' && catalog.domains.has(id))) throw new Error('Unknown domain on placement');
+    }
+
     // 「何について」のタグ。catalog 由来のものは、既にそれ自身が何についてかを名乗っている。
     const topic = item.topic ?? null;
     if (topic !== null) {
@@ -577,7 +622,7 @@ export function validatePlacements(value, catalog) {
     if (rawSource !== null && !['catalog', 'self', 'family'].includes(rawSource)) throw new Error('Unknown placement source');
     const source = rawSource ?? (SELF_KINDS.includes(item.kind) ? 'self' : 'catalog');
 
-    return {id: item.id, lane: item.lane, x: item.x, label: item.label.trim(), kind: item.kind, ref, verb, note, topic, url, title, photo, source};
+    return {id: item.id, lane: item.lane, x: item.x, label: item.label.trim(), kind: item.kind, ref, verb, note, topic, url, title, photo, domains: customDomains, source};
   });
   if (placements.filter(placement => placement.photo !== null).length > PHOTO_LIMIT) throw new Error('Too many photos');
   return placements;

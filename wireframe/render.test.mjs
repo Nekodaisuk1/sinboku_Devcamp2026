@@ -15,15 +15,44 @@ test('the map offers an explicit multi-interest creation form', () => {
   const html = fieldUiModule.renderInterestBuilder({
     topics: {games: {label: 'ゲーム'}, music: {label: 'ギター・音楽'}},
     verbs: [{id: 'make', label: 'つくる'}],
+    domains: {
+      mathematics: {name: '数学'}, physics: {name: '物理学'}, chemistry: {name: '化学'},
+      biology: {name: '生物学'}, 'earth-science': {name: '地球科学'}
+    },
     placedRefs: new Set(['games']),
     open: true
   });
   assert.match(html, /自分の興味からマップを作る/);
   assert.match(html, /type="checkbox"[^>]+name="topics"/);
   assert.match(html, /name="customLabel"/);
-  assert.match(html, /name="verbId"/);
+  assert.match(html, /興味があること/);
+  assert.match(html, /関係があるジャンル/);
+  assert.match(html, /name="domainIds"/);
+  assert.match(html, /数学/);
+  assert.match(html, /物理学/);
+  assert.match(html, /化学/);
+  assert.match(html, /生物学/);
+  assert.match(html, /地球科学/);
   assert.match(html, /この内容でマップを作る/);
   assert.match(html, /value="games"[^>]+disabled/);
+});
+
+test('the connection editor exposes every field and can restore suggestions', () => {
+  assert.equal(typeof fieldUiModule.renderConnectionEditor, 'function');
+  const html = fieldUiModule.renderConnectionEditor({
+    domains: {
+      information: {name: '情報科学'},
+      media: {name: '映像・ゲーム表現'}
+    },
+    connected: new Set(['information']),
+    customized: true,
+    open: true
+  });
+  assert.match(html, /class="connection-editor" open/);
+  assert.match(html, /接続を編集/);
+  assert.match(html, /data-domain-connection="information"[^>]+checked/);
+  assert.match(html, /data-domain-connection="media"/);
+  assert.match(html, /提示された接続に戻す/);
 });
 
 test('app chrome matches the Shimboku visual identity', async () => {

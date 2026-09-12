@@ -31,7 +31,38 @@ test('an interest plan contains only the interests the user explicitly chose', (
     ['custom', null, '天体観測', 'observe']
   ]);
   assert.throws(() => fieldModule.buildInterestPlan({topicIds: ['unknown']}), /Unknown topic/);
-  assert.throws(() => fieldModule.buildInterestPlan({customLabel: '天体観測'}), /関わり方/);
+  assert.throws(() => fieldModule.buildInterestPlan({customLabel: '天体観測'}), /ジャンル/);
+});
+
+test('a custom interest stores its explicitly selected science genres separately', () => {
+  const plan = fieldModule.buildInterestPlan({
+    customLabel: '天体観測',
+    domainIds: ['physics', 'earth-science', 'physics']
+  });
+  assert.deepEqual(plan, [{
+    kind: 'custom', ref: null, label: '天体観測', verb: null,
+    topic: null, domains: ['physics', 'earth-science'], source: 'self'
+  }]);
+  assert.throws(
+    () => fieldModule.buildInterestPlan({customLabel: '天体観測'}),
+    /ジャンル/
+  );
+  assert.throws(
+    () => fieldModule.buildInterestPlan({customLabel: '天体観測', domainIds: ['unknown']}),
+    /Unknown domain/
+  );
+});
+
+test('school search results land on the matching education stage', () => {
+  assert.equal(typeof fieldModule.laneForResource, 'function');
+  assert.equal(fieldModule.laneForResource({category: 'school'}), 'highschool');
+  assert.equal(fieldModule.laneForResource({category: 'university'}), 'faculty');
+  assert.equal(fieldModule.laneForResource({category: 'event'}), 'now');
+  assert.equal(typeof fieldModule.placementForResource, 'function');
+  assert.deepEqual(
+    fieldModule.placementForResource('kaiyo-life', {name: '東京海洋大学 海洋生命科学部', category: 'university'}),
+    {kind: 'resource', ref: 'kaiyo-life', label: '東京海洋大学 海洋生命科学部', lane: 'faculty'}
+  );
 });
 
 /* --- Build 14 から引き継いだ経路の要件。再構成で壊れていないことを確かめる --- */
@@ -300,7 +331,9 @@ test('knowledge data rejects a verb that is too thin to be an entry point', asyn
 });
 
 test('fields, interests and resources are defined in data rather than in the screen code', () => {
-  assert.equal(Object.keys(domains).length, 8);
+  for (const id of ['mathematics', 'physics', 'chemistry', 'biology', 'earth-science']) {
+    assert.ok(domains[id], `${id} is missing from the general science fields`);
+  }
   assert.ok(Object.keys(topics).length >= 4);
   assert.ok(Object.keys(resources).length >= 40, `only ${Object.keys(resources).length} resources are published`);
   for (const [id, topic] of Object.entries(topics)) {
@@ -338,8 +371,29 @@ import {
 const put = (id, ref, x, lane = 'now', kind = 'topic', extra = {}) => ({
   id, lane, x, label: id, kind, ref, verb: null, note: '',
   topic: null, url: null, title: null, photo: null,
+  domains: null,
   source: SELF_KINDS.includes(kind) ? 'self' : 'catalog',
   ...extra
+});
+
+test('manual connections replace suggested connections and survive saving', () => {
+  assert.equal(typeof fieldModule.setDomainConnection, 'function');
+  assert.equal(typeof fieldModule.resetDomainConnections, 'function');
+  const suggested = put('editable', 'games', 0.5);
+  assert.deepEqual(reachOf(suggested), ['information', 'media', 'design']);
+
+  const removed = fieldModule.setDomainConnection(suggested, 'media', false);
+  assert.deepEqual(reachOf(removed), ['information', 'design']);
+  const added = fieldModule.setDomainConnection(removed, 'ecology', true);
+  assert.deepEqual(reachOf(added), ['information', 'design', 'ecology']);
+
+  const restored = decodeState(encodeState({...emptyState(), placements: [added]}), catalog).placements[0];
+  assert.deepEqual(restored.domains, ['information', 'design', 'ecology']);
+  assert.deepEqual(reachOf(restored), ['information', 'design', 'ecology']);
+  assert.equal(fieldModule.resetDomainConnections(restored).domains, null);
+  assert.deepEqual(reachOf(fieldModule.resetDomainConnections(restored)), ['information', 'media', 'design']);
+  assert.throws(() => fieldModule.setDomainConnection(suggested, 'unknown', true), /Unknown domain/);
+  assert.throws(() => validatePlacements([{...suggested, domains: ['unknown']}], catalog), /Unknown domain/);
 });
 
 test('the field places time on the vertical axis only, from the future down to today', () => {
@@ -448,11 +502,11 @@ test('placements survive saving and reject unknown lanes, references and positio
     put('a', 'games', 0.25),
     {
       id: 'b', lane: 'highschool', x: 1, label: activity.title, kind: 'activity', ref: activity.id, verb: null, note: '',
-      topic: null, url: null, title: null, photo: null, source: 'catalog'
+      topic: null, url: null, title: null, photo: null, domains: null, source: 'catalog'
     },
     {
       id: 'c', lane: 'lab', x: 0, label: resources[resource].name, kind: 'resource', ref: resource, verb: verbs[0].id, note: 'メモ',
-      topic: null, url: null, title: null, photo: null, source: 'catalog'
+      topic: null, url: null, title: null, photo: null, domains: null, source: 'catalog'
     }
   ];
   const state = {...emptyState(), placements};
