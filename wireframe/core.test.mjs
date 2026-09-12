@@ -579,7 +579,7 @@ test('listGroups never drops a placement across the three sorts, and domain sort
   const loose = domainGroups.find(group => group.id === 'loose');
   assert.ok(loose, 'the unconnected written entry needs somewhere to appear');
   assert.deepEqual(loose.items.map(item => item.id), ['c']);
-  assert.ok(domainGroups.some(group => group.note === '合流'), 'a converged field says so in its note');
+  assert.ok(domainGroups.some(group => group.note === '複数の項目に共通'), 'a converged field says so in plain language');
 });
 
 test('selecting a placement keeps its fields out of the cluster, so the line can be followed to the end', () => {

@@ -37,13 +37,13 @@ export const PHOTO_BYTES = 160 * 1024; // 1枚あたりの上限。dataURL の�
 // 20件も置くと野原が読めなくなるので、表示側の絞り込みと並べ替えの選択肢をここで定義する。
 // 保存データには一切影響しない「見せ方」だけの語彙。
 export const FIELD_VIEWS = [
-  {id: 'all', label: '全体を見る', hint: '置いたものを全部'},
+  {id: 'all', label: '全体を見る', hint: '追加した項目を全部'},
   {id: 'selected', label: '選んだものだけ', hint: '選んだものと、つながっている先だけ'},
-  {id: 'recent', label: '最近置いたもの', hint: 'あとから置いた5件'}
+  {id: 'recent', label: '最近追加したもの', hint: 'あとから追加した5件'}
 ];
 
 export const LIST_SORTS = [
-  {id: 'lane', label: '時間の段'},
+  {id: 'lane', label: '時期順'},
   {id: 'added', label: '追加順'},
   {id: 'domain', label: 'つながる学問'}
 ];
@@ -184,7 +184,7 @@ export function linkedSet(placements, selected) {
 export function visibleFor(placements, {view = 'all', selected = null} = {}) {
   if (view === 'recent') {
     const shown = placements.slice(-RECENT_COUNT);
-    return {placements: shown, hidden: placements.length - shown.length, note: '最近置いた5件だけを出しています。'};
+    return {placements: shown, hidden: placements.length - shown.length, note: '最近追加した5件だけを表示しています。'};
   }
   if (view === 'selected') {
     const focus = linkedSet(placements, selected);
@@ -195,8 +195,8 @@ export function visibleFor(placements, {view = 'all', selected = null} = {}) {
     const shown = placements.filter(placement => focus.has(placement.id));
     // 学問を選んだときと置きものを選んだときでは、残るものが違う。同じ文で済ませない。
     const note = selected.startsWith('domain-')
-      ? 'この学問に届いているものだけです。'
-      : '選んだものと、その線が届く学問だけです。同じ学問に届いている他のものは、学問のほうを選ぶと出ます。';
+      ? 'この学問につながっている項目だけです。'
+      : '選んだ項目と、そこにつながる学問だけです。同じ学問につながる他の項目は、学問のほうを選ぶと表示されます。';
     return {placements: shown, hidden: placements.length - shown.length, note};
   }
   return {placements, hidden: 0, note: null};
@@ -426,7 +426,7 @@ export function listGroups(placements, sort = 'lane') {
     return [{
       id: 'added',
       title: '追加順',
-      note: '先に置いたものが上',
+      note: '先に追加したものが上',
       items: placements.map(placement => ({id: placement.id, label: placement.label, kind: 'placement', sub: '', converged: false}))
     }];
   }
@@ -441,7 +441,7 @@ export function listGroups(placements, sort = 'lane') {
       return {
         id: `domain-${domain.id}`,
         title: domain.name,
-        note: domain.converged ? '合流' : '',
+        note: domain.converged ? '複数の項目に共通' : '',
         items: domain.from.map(id => ({
           id,
           label: byId.get(id)?.label ?? id,
