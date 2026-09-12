@@ -1,3 +1,4 @@
+import {encodeMapShare, decodeMapShare} from './map-share.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -15,8 +16,32 @@ import {validateKnowledge} from './scripts/knowledge.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, validateRecommendations,
         RECOMMENDATION_LIMIT} from './recommendations.mjs';
 import * as fieldModule from './field.mjs';
+import {universityCandidates, universityCandidatesForDomain, EDUCATION_CHECKED_ON} from './education.mjs';
 
 const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => routesForDomain(id, {name: id}).map(route => route.id)))};
+
+test('a shared map round-trips graph nodes without private records or photo data', () => {
+  const placements = [
+    {id: 'topic-1', lane: 'now', x: 0.2, label: topics.games.label, kind: 'topic', ref: 'games', verb: null, note: '', topic: null, url: null, title: null, photo: null, domains: null, source: 'catalog'},
+    {id: 'outside-1', lane: 'faculty', x: 0.7, label: 'ゲーム制作イベント', kind: 'link', ref: null, verb: null, note: 'private memo', topic: null, url: 'https://example.org/event', title: 'ゲーム制作イベント', photo: null, domains: ['media', 'information'], source: 'self'},
+    {id: 'photo-1', lane: 'now', x: 0.5, label: '作った模型', kind: 'photo', ref: null, verb: null, note: '', topic: null, url: null, title: '作った模型', photo: 'data:image/jpeg;base64,YQ==', domains: ['design'], source: 'self'}
+  ];
+  const encoded = encodeMapShare(placements, catalog);
+  assert.ok(encoded.length <= 6000);
+  assert.ok(!encoded.includes('private memo'));
+  const decoded = decodeMapShare(encoded, catalog);
+  assert.deepEqual(decoded.map(item => [item.id, item.kind, item.label, item.lane, item.domains]), [
+    ['topic-1', 'topic', topics.games.label, 'now', null],
+    ['outside-1', 'link', 'ゲーム制作イベント', 'faculty', ['media', 'information']],
+    ['photo-1', 'custom', '作った模型', 'now', ['design']]
+  ]);
+  assert.ok(decoded.every(item => item.note === '' && item.photo === null));
+});
+
+test('a shared map rejects malformed and oversized payloads instead of partially loading them', () => {
+  assert.throws(() => decodeMapShare('not-a-map', catalog), /共有リンク/);
+  assert.throws(() => decodeMapShare('a'.repeat(6001), catalog), /長すぎ/);
+});
 
 test('an interest plan contains only the interests the user explicitly chose', () => {
   assert.equal(typeof fieldModule.buildInterestPlan, 'function');
@@ -51,6 +76,20 @@ test('a custom interest stores its explicitly selected science genres separately
     () => fieldModule.buildInterestPlan({customLabel: '天体観測', domainIds: ['unknown']}),
     /Unknown domain/
   );
+});
+
+test('external information keeps the genres chosen by the student', () => {
+  const draft = fieldModule.buildExternalInformationDraft({
+    url: 'https://example.org/game-design',
+    title: 'ゲームデザインの記事',
+    domainIds: ['media', 'information', 'media'],
+    lane: 'now'
+  });
+  assert.equal(draft.kind, 'link');
+  assert.deepEqual(draft.domains, ['media', 'information']);
+  assert.deepEqual(fieldModule.reachOf({...draft, id: 'outside', x: 0.5, label: draft.title}), ['media', 'information']);
+  assert.throws(() => fieldModule.buildExternalInformationDraft({url: 'javascript:alert(1)'}), /http/);
+  assert.throws(() => fieldModule.buildExternalInformationDraft({url: 'https://example.org', domainIds: ['not-a-domain']}), /Unknown domain/);
 });
 
 test('school search results land on the matching education stage', () => {
@@ -485,6 +524,92 @@ test('all routes can be compared on the field before one is chosen', () => {
     const university = comparison.nodes.find(node => node.route === route.kind && node.lane === 'faculty');
     assert.ok(university?.link?.url, `${route.id} keeps its official university page on the field`);
   }
+});
+
+test('clicking a university or high-school step fans out similar schools around it', () => {
+  for (const stage of ['university', 'highschool']) {
+    const base = routePath('media', 'general', 0.5);
+    const selected = base.nodes.find(node => node.stage === stage);
+    assert.ok(selected, `${stage} route node is missing`);
+
+    const expanded = routePath('media', 'general', 0.5, {expandedSchoolId: selected.id});
+    const alternatives = expanded.nodes.filter(node => node.kind === 'school-option');
+    assert.ok(alternatives.length >= 2, `${stage} should offer multiple alternatives`);
+    assert.ok(alternatives.every(node => node.lane === selected.lane));
+    assert.ok(alternatives.every(node => node.activity && node.link?.url));
+    assert.equal(new Set(alternatives.map(node => node.link.url)).size, alternatives.length);
+    assert.ok(expanded.links.every(link => link.kind !== 'school-option' || link.to === selected.id));
+  }
+});
+
+test('an ordinary click on a university or high-school node toggles its surrounding schools', () => {
+  assert.equal(typeof fieldModule.schoolExpansionAfterClick, 'function');
+  const university = routePath('media', 'general', 0.5).nodes.find(node => node.stage === 'university');
+  assert.equal(fieldModule.schoolExpansionAfterClick(university, null), university.id);
+  assert.equal(fieldModule.schoolExpansionAfterClick(university, university.id), null);
+  assert.equal(fieldModule.schoolExpansionAfterClick({...university, stage: 'course'}, null), null);
+});
+
+test('every field offers four or five checked university alternatives', () => {
+  for (const domainId of Object.keys(domains)) {
+    const candidates = universityCandidatesForDomain(domainId);
+    assert.ok(candidates.length >= 4 && candidates.length <= 5, `${domainId} has ${candidates.length} universities`);
+    assert.ok(candidates.every(item => item.checkedOn === EDUCATION_CHECKED_ON));
+    assert.ok(candidates.every(item => /^https:\/\//.test(item.url) && item.activity.length > 12));
+  }
+  assert.equal(new Set(universityCandidates.map(item => item.id)).size, universityCandidates.length);
+});
+
+test('a general science field without detailed routes still exposes clickable university and high-school steps', () => {
+  const path = routePath('physics', null, 0.5);
+  assert.ok(path.nodes.some(node => node.stage === 'university' && node.link?.url));
+  assert.ok(path.nodes.some(node => node.stage === 'highschool' && node.link?.url));
+});
+
+test('selecting an intermediate route node keeps its route visible', () => {
+  assert.equal(typeof fieldModule.selectFieldNode, 'function');
+  const clickedId = 'route-media-general-course';
+  const next = fieldModule.selectFieldNode({
+    currentSelected: 'domain-media',
+    clickedId,
+    routeDomain: 'media'
+  });
+  assert.deepEqual(next, {selected: clickedId, routeDomain: 'media'});
+  assert.ok(routePath(next.routeDomain, null, 0.5).nodes.some(node => node.id === clickedId));
+  assert.deepEqual(
+    fieldModule.selectFieldNode({...next, currentSelected: clickedId, clickedId}),
+    next,
+    'clicking the route node again must not collapse the route'
+  );
+});
+
+test('selecting a node for editing does not collapse an open route graph', () => {
+  assert.deepEqual(
+    fieldModule.selectFieldNode({
+      currentSelected: 'route-media-general-course',
+      clickedId: 'placement-1',
+      routeDomain: 'media'
+    }),
+    {selected: 'placement-1', routeDomain: 'media'}
+  );
+  assert.deepEqual(
+    fieldModule.selectFieldNode({
+      currentSelected: 'domain-media',
+      clickedId: 'domain-media',
+      routeDomain: 'media'
+    }),
+    {selected: null, routeDomain: 'media'},
+    'closing domain details must leave the graph visible'
+  );
+  assert.deepEqual(
+    fieldModule.selectFieldNode({
+      currentSelected: 'placement-1',
+      clickedId: 'domain-information',
+      routeDomain: 'media'
+    }),
+    {selected: 'domain-information', routeDomain: 'information'},
+    'choosing another domain must switch the open graph'
+  );
 });
 
 test('dropping a node reads its lane from the vertical position, and never leaves the field', () => {

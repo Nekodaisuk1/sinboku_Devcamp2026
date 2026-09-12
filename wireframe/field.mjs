@@ -1,7 +1,8 @@
 import {decisionPoints} from './routes.mjs';
-import {routesForDomain, hasRoutes} from './routes.mjs';
+import {routesForDomain, hasRoutes, routeDomains} from './routes.mjs';
 import knowledge from './knowledge-data.mjs';
 import {verbById, domainsForActivity} from './verbs.mjs';
+import {universityCandidatesForDomain} from './education.mjs';
 
 /**
  * 時間の野原。縦軸は時間だけが決め、横軸は本人が自由に置く。
@@ -81,6 +82,28 @@ export const URL_LIMIT = 400;
 export const TITLE_LIMIT = 80;
 export const PHOTO_LIMIT = 12; // 端末保存に収めるための上限（枚数）
 export const PHOTO_BYTES = 160 * 1024; // 1枚あたりの上限。dataURL の文字数で判定する
+
+/** 外部で見つけた情報を、本人が選んだジャンルと一緒に確認用の下書きへそろえる。 */
+export function buildExternalInformationDraft({url, title = '', domainIds = [], lane = 'now'} = {}) {
+  let parsed;
+  try {
+    parsed = new URL(String(url ?? ''));
+  } catch {
+    throw new Error('これはページのアドレスとして読み取れませんでした。');
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('置けるのは http と https のページだけです。');
+  if (String(url).length > URL_LIMIT) throw new Error(`アドレスが長すぎます（${URL_LIMIT}文字まで）。`);
+  if (!LANE_IDS.includes(lane)) throw new Error('Unknown lane');
+  if (!Array.isArray(domainIds)) throw new Error('Domains must be a list');
+  const uniqueDomainIds = [...new Set(domainIds.map(id => String(id)))];
+  for (const id of uniqueDomainIds) {
+    if (!knowledge.domains[id]) throw new Error(`Unknown domain: ${id}`);
+  }
+  return {
+    kind: 'link', url: String(url), title: (String(title).trim() || parsed.hostname).slice(0, LABEL_LIMIT),
+    photo: null, topic: null, verb: null, domains: uniqueDomainIds, lane
+  };
+}
 
 // 20件も置くと野原が読めなくなるので、表示側の絞り込みと並べ替えの選択肢をここで定義する。
 // 保存データには一切影響しない「見せ方」だけの語彙。
@@ -279,7 +302,8 @@ function pathForRoute(route, domainId, x) {
     const lane = stages[step.stage];
     if (!lane) continue;
     const id = `route-${route.id}-${step.stage}`;
-    nodes.push({id, lane, label: step.title, kind: 'route', route: route.kind, detail: step.detail, link: step.link ?? null, x});
+    nodes.push({id, lane, label: step.title, kind: 'route', route: route.kind, stage: step.stage,
+      domain: domainId, detail: step.detail, link: step.link ?? null, x});
     links.push({from: id, to: previous, kind: 'route'});
     previous = id;
   }
@@ -290,8 +314,71 @@ function pathForRoute(route, domainId, x) {
  * 学問を選んだとき、そこへ至る経路を中間の段に出す。
  * kindId がない間は決める前の比較として全経路を横に並べ、選ばれたら1本に絞る。
  */
-export function routePath(domainId, kindId, anchorX) {
-  if (!hasRoutes(domainId)) return {nodes: [], links: [], routes: []};
+function highSchoolCandidates(domainId, excludeUrl) {
+  const found = [];
+  const seen = new Set([excludeUrl].filter(Boolean));
+  const orderedDomains = [domainId, ...routeDomains().filter(id => id !== domainId)];
+  for (const candidateDomain of orderedDomains) {
+    for (const route of routesForDomain(candidateDomain, knowledge.domains[candidateDomain])) {
+      const step = route.steps.find(item => item.stage === 'highschool');
+      if (!step?.link?.url || seen.has(step.link.url)) continue;
+      seen.add(step.link.url);
+      found.push({id: `${candidateDomain}-${route.kind}`, name: step.link.name ?? step.title,
+        activity: step.title, link: step.link});
+      if (found.length === 4) return found;
+    }
+  }
+  return found;
+}
+
+function expandedSchoolNodes(selected, domainId) {
+  if (!selected || !['university', 'highschool'].includes(selected.stage)) return {nodes: [], links: []};
+  const candidates = selected.stage === 'university'
+    ? universityCandidatesForDomain(domainId, {limit: 4, excludeUrl: selected.link?.url}).map(item => ({
+        id: item.id, name: item.name, activity: item.activity,
+        link: {name: item.name, url: item.url, source: item.source}
+      }))
+    : highSchoolCandidates(domainId, selected.link?.url);
+  const offsets = [-0.34, -0.17, 0.17, 0.34];
+  const nodes = candidates.map((candidate, index) => ({
+    id: `school-option-${selected.stage}-${candidate.id}`,
+    lane: selected.lane, label: candidate.name, kind: 'school-option', stage: selected.stage,
+    domain: domainId, activity: candidate.activity, detail: candidate.activity, link: candidate.link,
+    x: Math.max(0.08, Math.min(0.92, selected.x + offsets[index]))
+  }));
+  return {nodes, links: nodes.map(node => ({from: node.id, to: selected.id, kind: 'school-option'}))};
+}
+
+export function routePath(domainId, kindId, anchorX, {expandedSchoolId = null} = {}) {
+  if (!knowledge.domains[domainId]) return {nodes: [], links: [], routes: []};
+  if (!hasRoutes(domainId)) {
+    const lead = universityCandidatesForDomain(domainId, {limit: 1})[0];
+    if (!lead) return {nodes: [], links: [], routes: []};
+    const university = {
+      id: `route-${domainId}-general-university`, lane: 'faculty', label: lead.name,
+      kind: 'route', route: 'general', stage: 'university', domain: domainId,
+      detail: lead.activity, link: {name: lead.name, url: lead.url, source: lead.source}, x: anchorX
+    };
+    const highschool = {
+      id: `route-${domainId}-general-highschool`, lane: 'highschool',
+      label: '理科・数学と探究活動を続けられる高校', kind: 'route', route: 'general',
+      stage: 'highschool', domain: domainId,
+      detail: `${knowledge.domains[domainId].name}に近い授業・部活動・課題研究があるかを学校案内で確認する。`,
+      link: {name: '都立高校の入試・学科を調べる', url: 'https://www.kyoiku.metro.tokyo.lg.jp/admission/high_school/', source: '東京都教育委員会'},
+      x: anchorX
+    };
+    const baseNodes = [university, highschool];
+    const expanded = expandedSchoolNodes(baseNodes.find(node => node.id === expandedSchoolId), domainId);
+    return {
+      nodes: [...baseNodes, ...expanded.nodes],
+      links: [
+        {from: university.id, to: `domain-${domainId}`, kind: 'route'},
+        {from: highschool.id, to: university.id, kind: 'route'},
+        ...expanded.links
+      ],
+      routes: [], route: null
+    };
+  }
   const routes = routesForDomain(domainId, knowledge.domains[domainId]);
   const chosen = kindId ? routes.find(item => item.kind === kindId) : null;
   if (kindId && !chosen) return {nodes: [], links: [], routes: []};
@@ -303,12 +390,33 @@ export function routePath(domainId, kindId, anchorX) {
       : 0.12 + index * (0.76 / (visible.length - 1));
     return pathForRoute(route, domainId, x);
   });
+  const pathNodes = paths.flatMap(path => path.nodes);
+  const expanded = expandedSchoolNodes(pathNodes.find(node => node.id === expandedSchoolId), domainId);
   return {
-    nodes: paths.flatMap(path => path.nodes),
-    links: paths.flatMap(path => path.links),
+    nodes: [...pathNodes, ...expanded.nodes],
+    links: [...paths.flatMap(path => path.links), ...expanded.links],
     routes: visible,
     route: chosen ?? null
   };
+}
+
+/** 中間ノードを選んでも、ルートを描く起点の学問は維持する。 */
+export function selectFieldNode({currentSelected = null, clickedId, routeDomain = null}) {
+  if (clickedId.startsWith('route-') || clickedId.startsWith('school-option-')) {
+    return {selected: clickedId, routeDomain};
+  }
+  const selected = currentSelected === clickedId ? null : clickedId;
+  return {
+    selected,
+    routeDomain: clickedId.startsWith('domain-') ? clickedId.slice(7) : routeDomain
+  };
+}
+
+/** 大学・高校は追加の操作部品を挟まず、ノードそのもののクリックで候補を開閉する。 */
+export function schoolExpansionAfterClick(node, currentExpandedId = null) {
+  if (node?.kind === 'school-option') return currentExpandedId;
+  if (node?.kind !== 'route' || !['university', 'highschool'].includes(node.stage)) return null;
+  return currentExpandedId === node.id ? null : node.id;
 }
 
 /* ---------- 並べ方：縦は時間、横は置いた場所。重なる分だけ段が厚くなる ---------- */

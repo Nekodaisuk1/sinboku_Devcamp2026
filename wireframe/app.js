@@ -1,3 +1,4 @@
+import {encodeMapShare, decodeMapShare} from './map-share.mjs';
 import {buildTimeline, nextDecision, GRADES, STANCE_LIMIT, gradeById} from './timeline.mjs';
 import {LOG_TEXT_LIMIT, addEntry, removeEntry, recentCount, today} from './log.mjs';
 import {verbs, verbById, domains, topics, activitiesByTopic, activityById, domainsForVerb, resourcesForVerb, verbCoverage, resources, allActivities} from './verbs.mjs';
@@ -8,10 +9,11 @@ import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
 import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
-        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, placementForResource, setDomainConnection, resetDomainConnections} from './field.mjs';
+        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, buildExternalInformationDraft, placementForResource, setDomainConnection, resetDomainConnections} from './field.mjs';
 import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
+import {selectFieldNode} from './field.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const $ = id => document.getElementById(id);
@@ -21,7 +23,7 @@ const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => r
 let state = emptyState();
 // 画面の一時的な状態。保存の対象にしない。
 const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker: false, legacy: false,
-            selected: null, routeKind: null, listView: false, about: false, picker: null,
+            selected: null, routeDomain: null, routeKind: null, listView: false, about: false, picker: null,
             verbSection: 'activities', fieldWidth: 360, fieldScroll: null,
             // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
             fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null,
@@ -30,7 +32,7 @@ const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker:
             draft: null,
             // 掲載情報の絞り込み。既定はどれも「絞らない」。本人が絞ったときだけ絞る。
             picks: {category: null, online: false, cost: null, grade: null, when: null},
-            picksOpen: false, coverageOpen: false, shareLink: ''};
+            picksOpen: false, coverageOpen: false, shareLink: '', mapShareLink: '', sharedMap: false};
 let persist = false;
 let storageNote = '';
 let toastTimer;
@@ -108,16 +110,7 @@ function route() {
  * 何についての話かも推測しない。開くかどうかも、タグを付けるかも、本人が決める。
  */
 function startLinkDraft(url, title = '') {
-  let parsed;
-  try {
-    parsed = new URL(url);
-  } catch {
-    throw new Error('これはページのアドレスとして読み取れませんでした。');
-  }
-  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('置けるのは http と https のページだけです。');
-  if (url.length > URL_LIMIT) throw new Error(`アドレスが長すぎます（${URL_LIMIT}文字まで）。`);
-  ui.draft = {kind: 'link', url, title: (title || parsed.hostname).slice(0, LABEL_LIMIT),
-              photo: null, topic: null, verb: null, lane: ui.picker?.lane ?? 'now'};
+  ui.draft = buildExternalInformationDraft({url, title, lane: ui.picker?.lane ?? 'now'});
   ui.picker = null;
 }
 
@@ -161,16 +154,34 @@ function consumeRecommendationHash() {
   return true;
 }
 
+/** 共有URLのグラフは一時表示だけにし、この端末に保存済みのマップは上書きしない。 */
+function consumeSharedMapHash() {
+  const raw = location.hash.replace(/^#/, '');
+  if (!raw.startsWith('shared?')) return false;
+  const encoded = new URLSearchParams(raw.slice(7)).get('d') ?? '';
+  history.replaceState(null, '', '#now');
+  try {
+    const placements = decodeMapShare(encoded, catalog);
+    state = {...emptyState(), placements};
+    persist = false;
+    ui.sharedMap = true;
+    notify('共有された進路マップを表示しています。この端末の保存内容は変更していません。');
+  } catch (error) {
+    notify(error.message);
+  }
+  return true;
+}
+
 /* ---------- 野原 ---------- */
 
 function fieldView() {
   // 絞り込みは「描くものを減らす」だけ。保存された置きものには手を触れない。
   const scope = visibleFor(state.placements, {view: ui.fieldView, selected: ui.selected});
-  const selected = ui.selected ?? '';
-  const anchor = selected.startsWith('domain-')
-    ? revealWorld(scope.placements).domains.find(domain => `domain-${domain.id}` === selected)?.x ?? 0.5
+  const routeDomain = ui.routeDomain;
+  const anchor = routeDomain
+    ? revealWorld(scope.placements).domains.find(domain => domain.id === routeDomain)?.x ?? 0.5
     : 0.5;
-  const extra = selected.startsWith('domain-') ? routePath(selected.slice(7), ui.routeKind, anchor) : {nodes: [], links: []};
+  const extra = routeDomain ? routePath(routeDomain, ui.routeKind, anchor) : {nodes: [], links: []};
   const extraNodes = extra.nodes.map(node => ({...node, links: extra.links.filter(link => link.from === node.id)}));
   // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
   // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
@@ -491,7 +502,7 @@ async function shrinkPhoto(file) {
 
 /** いまの選び方だと、どこへ線が伸びるのかを先に言う。置いてから驚かせない。 */
 function draftReachNote(draft) {
-  const reach = reachOf({kind: draft.kind, ref: null, topic: draft.topic, verb: draft.verb})
+  const reach = reachOf({kind: draft.kind, ref: null, topic: draft.topic, verb: draft.verb, domains: draft.domains})
     .map(id => domains[id]?.name).filter(Boolean);
   if (!reach.length) return 'いまのままだと、関連する学問はありません。タグはあとから選ぶこともできます。';
   return `関連する学問：${reach.join('・')}`;
@@ -518,6 +529,12 @@ function draftMarkup() {
 
       <p class="panel-label">どんなふうに関わる？</p>
       <div class="verb-row">${verbs.map(verb => `<button type="button" class="verb-chip small${draft.verb === verb.id ? ' on' : ''}" data-draft-verb="${escape(verb.id)}" aria-pressed="${draft.verb === verb.id}">${escape(verb.icon)} ${escape(verb.label)}</button>`).join('')}</div>
+
+      ${draft.kind === 'link' ? `<fieldset class="external-genres">
+        <legend>つなぐジャンル（1つ以上）</legend>
+        <p class="panel-hint">この情報と関係があると思うジャンルを選んでください。複数選べます。</p>
+        <div class="lane-row">${Object.entries(domains).map(([id, domain]) => `<button type="button" class="lane-chip${draft.domains.includes(id) ? ' on' : ''}" data-draft-domain="${escape(id)}" aria-pressed="${draft.domains.includes(id)}">${escape(domain.name)}</button>`).join('')}</div>
+      </fieldset>` : ''}
 
       <p class="panel-label">いつやりたい？</p>
       <div class="lane-row">${LANES.map(item => `<button type="button" class="lane-chip${draft.lane === item.id ? ' on' : ''}" data-draft-lane="${escape(item.id)}" aria-pressed="${draft.lane === item.id}">${escape(item.id === 'now' ? 'いま' : item.horizon)}</button>`).join('')}</div>
@@ -561,10 +578,10 @@ function pickerMarkup() {
             </form>
 
             <form class="pick-link" data-pick-link>
-              <label for="pick-url">見つけたページを追加</label>
+              <label for="pick-url">外部情報をジャンルにつなぐ</label>
               <input id="pick-url" name="url" type="url" inputmode="url" maxlength="${URL_LIMIT}" placeholder="https://" autocomplete="off" required>
               <button class="secondary" type="submit">確認する</button>
-              <p class="panel-hint">貼り付けても、すぐには追加しません。先に確認画面が出ます。リンク先の中身は確認しません。</p>
+              <p class="panel-hint">記事、イベント、学校などのURLを入れ、次の画面で関係するジャンルを選びます。リンク先の中身はこのアプリでは確認しません。</p>
             </form>
 
             <div class="pick-photo">
@@ -601,7 +618,16 @@ function nowPage() {
         <button class="grade-open" data-grade-open>${grade ? `いま ${escape(grade.label)}` : 'いま何年生？'}</button>
         <button class="primary" data-open-picker="topic">＋ 項目を追加</button>
         <button class="ghost" data-list-view aria-pressed="${ui.listView}">${ui.listView ? 'マップで見る' : '一覧で読む'}</button>
+        ${ui.routeDomain ? '<button class="ghost" data-close-route>ルート表示を閉じる</button>' : ''}
+        ${state.placements.length ? '<button class="ghost" data-share-map>このマップを共有</button>' : ''}
       </div>
+      ${ui.sharedMap ? `<aside class="shared-map-notice"><b>共有されたマップを表示中</b><span>この端末に保存している自分のマップは変更していません。</span><button class="text-button" data-return-own-map>自分のマップに戻る</button></aside>` : ''}
+      ${ui.mapShareLink ? `<section class="map-share-result" tabindex="-1" id="map-share-result">
+        <h2>共有リンクができました</h2>
+        <textarea readonly rows="4" aria-label="進路マップの共有リンク">${escape(ui.mapShareLink)}</textarea>
+        <button class="secondary" data-copy-map-share>リンクをコピー</button>
+        <p>共有されるもの：ノード名・接続・時期・配置・外部URL。共有されないもの：写真・行動記録・学年・考えのメモ・受信箱。</p>
+      </section>` : ''}
       ${fieldViewMarkup()}
       ${ui.about ? '<p class="field-about">縦軸は時間です。追加した項目と関連する学問を線で結びます。異なる興味が同じ学問につながることもあります。</p>' : ''}
       ${ui.gradePicker ? `<div class="grade-choices">
@@ -1035,18 +1061,19 @@ function render() {
 
 /* ---------- 野原に置く ---------- */
 
-function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null, source = null, note = ''}) {
+function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null, domains: customDomains = null, source = null, note = ''}) {
   if (state.placements.length >= PLACEMENT_LIMIT) { notify(`進路マップに追加できるのは${PLACEMENT_LIMIT}件までです。`); return false; }
   if (ref && state.placements.some(placement => placement.ref === ref && placement.lane === lane)) { notify('同じ時期に追加済みです。'); return false; }
   if (url && state.placements.some(placement => placement.url === url)) { notify('このページは追加済みです。'); return false; }
   const placement = {
     id: newPlacementId(), lane, x: freeX(state.placements, lane),
     label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note,
-    topic, url, title, photo, domains: null, source: source ?? (['custom', 'link', 'photo'].includes(kind) ? 'self' : 'catalog')
+    topic, url, title, photo, domains: customDomains, source: source ?? (['custom', 'link', 'photo'].includes(kind) ? 'self' : 'catalog')
   };
   const before = convergences(state.placements).length;
   state.placements = [...state.placements, placement];
   ui.selected = placement.id;
+  ui.routeDomain = null;
   ui.picker = null;
   ui.draft = null;
   save();
@@ -1090,6 +1117,7 @@ function placeInterestPlan(plan) {
   });
   state.placements = placements;
   ui.selected = created.at(-1).id;
+  ui.routeDomain = null;
   save();
   const after = convergences(state.placements);
   render();
@@ -1113,8 +1141,12 @@ document.addEventListener('click', event => {
 
   const svgNode = event.target.closest('[data-node]');
   if (svgNode) {
-    ui.selected = ui.selected === svgNode.dataset.node ? null : svgNode.dataset.node;
-    ui.routeKind = null;
+    const clickedId = svgNode.dataset.node;
+    const routeNode = clickedId.startsWith('route-');
+    const next = selectFieldNode({currentSelected: ui.selected, clickedId, routeDomain: ui.routeDomain});
+    ui.selected = next.selected;
+    ui.routeDomain = next.routeDomain;
+    if (!routeNode) ui.routeKind = null;
     if (ui.moving !== ui.selected) ui.moving = null;
     return render();
   }
@@ -1128,6 +1160,25 @@ document.addEventListener('click', event => {
   if (!target) return;
 
   if (target.id === 'storage-toggle') {setPersist(!persist); return render();}
+  if (target.hasAttribute('data-share-map')) {
+    try {
+      const encoded = encodeMapShare(state.placements, catalog);
+      ui.mapShareLink = `${location.origin}${location.pathname}#shared?d=${encoded}`;
+      render();
+      $('map-share-result')?.focus();
+    } catch (error) {
+      notify(error.message);
+    }
+    return;
+  }
+  if (target.hasAttribute('data-copy-map-share')) {
+    if (!ui.mapShareLink) return;
+    navigator.clipboard.writeText(ui.mapShareLink)
+      .then(() => notify('マップの共有リンクをコピーしました。'))
+      .catch(error => notify(`コピーできませんでした（${error.name}）。リンクを選んでコピーしてください。`));
+    return;
+  }
+  if (target.hasAttribute('data-return-own-map')) return location.reload();
   if (target.hasAttribute('data-copy-share')) {
     if (!ui.shareLink) return;
     navigator.clipboard.writeText(ui.shareLink)
@@ -1159,8 +1210,21 @@ document.addEventListener('click', event => {
     notify('受信箱から消しました。');
     return render();
   }
-  if (target.hasAttribute('data-deselect')) {ui.selected = null; ui.routeKind = null; return render();}
-  if (target.dataset.nodeOpen) {ui.selected = target.dataset.nodeOpen; ui.routeKind = null; ui.listView = false; return render();}
+  if (target.hasAttribute('data-deselect')) {ui.selected = null; return render();}
+  if (target.hasAttribute('data-close-route')) {
+    ui.routeDomain = null;
+    ui.routeKind = null;
+    if (ui.selected?.startsWith('route-') || ui.selected?.startsWith('school-option-')) ui.selected = null;
+    return render();
+  }
+  if (target.dataset.nodeOpen) {
+    const next = selectFieldNode({currentSelected: ui.selected, clickedId: target.dataset.nodeOpen, routeDomain: ui.routeDomain});
+    ui.selected = next.selected;
+    ui.routeDomain = next.routeDomain;
+    ui.routeKind = null;
+    ui.listView = false;
+    return render();
+  }
   if (target.hasAttribute('data-list-view')) {ui.listView = !ui.listView; return render();}
   if (target.dataset.fieldView) {ui.fieldView = target.dataset.fieldView; return render();}
   if (target.hasAttribute('data-picks-open')) {ui.picksOpen = !ui.picksOpen; return render();}
@@ -1209,6 +1273,12 @@ document.addEventListener('click', event => {
 
   if (target.dataset.draftTopic) {ui.draft = {...ui.draft, topic: ui.draft.topic === target.dataset.draftTopic ? null : target.dataset.draftTopic}; return render();}
   if (target.dataset.draftVerb) {ui.draft = {...ui.draft, verb: ui.draft.verb === target.dataset.draftVerb ? null : target.dataset.draftVerb}; return render();}
+  if (target.dataset.draftDomain) {
+    const domainId = target.dataset.draftDomain;
+    const connected = ui.draft.domains.includes(domainId);
+    ui.draft = {...ui.draft, domains: connected ? ui.draft.domains.filter(id => id !== domainId) : [...ui.draft.domains, domainId]};
+    return render();
+  }
   if (target.dataset.draftLane) {ui.draft = {...ui.draft, lane: target.dataset.draftLane}; return render();}
   if (target.hasAttribute('data-draft-cancel')) {ui.draft = null; notify('追加をやめました。何も残していません。'); return render();}
 
@@ -1242,6 +1312,7 @@ document.addEventListener('click', event => {
     state.placements = state.placements.filter(placement => placement.id !== id);
     state.log = state.log.map(entry => entry.placement === id ? {...entry, placement: null} : entry);
     ui.selected = null;
+    ui.routeDomain = null;
     save();
     notify('進路マップから削除しました。やったことの記録は残しています。');
     return render();
@@ -1394,9 +1465,10 @@ document.addEventListener('submit', event => {
     const draft = ui.draft;
     const title = form.elements.title.value.trim();
     if (!title) return notify('進路マップに表示する名前を書いてください。');
+    if (draft.kind === 'link' && !draft.domains.length) return notify('外部情報とつなぐジャンルを1つ以上選んでください。');
     return place({
       kind: draft.kind, ref: null, label: title, verb: draft.verb, lane: draft.lane,
-      topic: draft.topic, url: draft.url, title, photo: draft.photo
+      topic: draft.topic, url: draft.url, title, photo: draft.photo, domains: draft.domains
     });
   }
   if (form.hasAttribute('data-pick-write')) {
@@ -1545,6 +1617,7 @@ window.addEventListener('hashchange', () => {
   // ブックマークレットから届いた取り込み要求は、ここで下書きに変える。
   consumeAddHash();
   consumeRecommendationHash();
+  consumeSharedMapHash();
   render();
   $('main-content').focus();
   window.scrollTo(0, 0);
@@ -1554,4 +1627,5 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 restore();
 consumeAddHash();
 consumeRecommendationHash();
+consumeSharedMapHash();
 render();
