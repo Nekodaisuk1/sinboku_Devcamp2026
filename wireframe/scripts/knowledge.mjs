@@ -9,6 +9,9 @@ const date=value=>typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(value) &
 const resourceCategories=new Set(['material','place','event','continuing','club','school','university']);
 const gradeIds=new Set(['j1','j2','j3','h1','h2','h3']);
 const costs=new Set(['free','paid','unknown']);
+// イベントは「1回きりのもの」と「回ごとに条件が違う一覧」で言えることが違う。
+// 一覧に1つの開催日を書かせると、載っていない日程を載っているように見せてしまう。
+const occurrences=new Set(['single','listing']);
 
 export function validateKnowledge(data) {
   if(data?.version!==2 || !Array.isArray(data.concepts) || !Array.isArray(data.resources) || !Array.isArray(data.verbs) || !data.directions || !data.topics || !data.domains) fail('invalid envelope');
@@ -91,10 +94,24 @@ export function validateKnowledge(data) {
     if(!resourceCategories.has(resource.category)) fail(`unknown category on ${resource.id}`);
     if(resource.prefecture!==null && !PREFECTURES.includes(resource.prefecture)) fail(`unknown prefecture on ${resource.id}`);
     if(!Array.isArray(resource.grades) || resource.grades.some(value=>!gradeIds.has(value))) fail(`unknown grade on ${resource.id}`);
+    unique(resource.grades,`grades on ${resource.id}`);
     if(!costs.has(resource.cost)) fail(`unknown cost on ${resource.id}`);
+    // free と cost は同じことを2通りで言っている。片方だけ直して食い違うのを防ぐ。
+    if(resource.free!==(resource.cost==='free')) fail(`free and cost disagree on ${resource.id}`);
     if(resource.deadline!==null && !date(resource.deadline)) fail(`invalid deadline on ${resource.id}`);
     if(resource.deadline && resource.date && resource.deadline>resource.date) fail(`deadline after event on ${resource.id}`);
-    if(resource.free===true && resource.cost!=='free') fail(`free resource ${resource.id} must use cost free`);
+
+    // イベントは「いつ・いつまでに・誰が」を必ず持つ。分からないものは null のまま持たせ、
+    // 画面が「公式案内で確認」と言えるようにする。キーごと無いのは許さない（黙って空欄になるため）。
+    if(resource.category==='event') {
+      if(!occurrences.has(resource.occurrence)) fail(`event ${resource.id} must say whether it is single or a listing`);
+      for(const field of ['date','deadline','grades']) if(!Object.hasOwn(resource,field)) fail(`event ${resource.id} is missing ${field}`);
+      if(resource.occurrence==='single' && !date(resource.date)) fail(`a single event needs its date: ${resource.id}`);
+      // 一覧に1つの開催日は無い。書いてあったら、それは回のうちの1つを全体のように見せている。
+      if(resource.occurrence==='listing' && resource.date!==null && resource.date!==undefined) fail(`a listing of sessions must not claim one date: ${resource.id}`);
+    } else if(resource.occurrence!==null) {
+      fail(`only an event carries an occurrence: ${resource.id}`);
+    }
   }
   return data;
 }

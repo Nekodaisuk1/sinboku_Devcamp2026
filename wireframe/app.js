@@ -749,6 +749,18 @@ function activityMarkup(activity) {
   </li>`;
 }
 
+/**
+ * イベントの「いつ・いつまでに」。空欄にして黙らない。
+ * 回ごとに条件が違う一覧に、1つの日付を書くことはしない。それは載っていない日程を載っているように見せる。
+ */
+function eventFactsMarkup(item) {
+  if (item.category !== 'event') return '';
+  if (item.occurrence === 'listing') {
+    return '<p class="resource-source">開催日・申込期限・対象は回ごとに違います。公式案内で、行きたい回のページを確認してください。</p>';
+  }
+  return `<p class="resource-source">開催 ${item.date ? escape(item.date) : '公式案内で確認'} · 申込期限 ${item.deadline ? escape(item.deadline) : '公式案内で確認'}</p>`;
+}
+
 function resourceMarkup(item) {
   const placed = state.placements.some(placement => placement.ref === item.id);
   // 古い情報を隠さず、消さず、そう言う。通信しないので、言えるのは日付から分かることだけ。
@@ -762,7 +774,8 @@ function resourceMarkup(item) {
     <details><summary>条件と、なぜここに出るのか</summary>
       <p class="resource-reason">${escape(item.reason)}</p>
       <dl>${item.conditions.map(([key, value]) => `<dt>${escape(key)}</dt><dd>${escape(value)}</dd>`).join('')}</dl>
-      <p class="resource-source">出典 ${escape(item.source)}（確認 ${escape(item.checkedOn)}）${item.date ? ` · 開催 ${escape(item.date)}` : ''}${item.deadline ? ` · 申込期限 ${escape(item.deadline)}` : ''}</p>
+      <p class="resource-source">出典 ${escape(item.source)}（確認 ${escape(item.checkedOn)}）</p>
+      ${eventFactsMarkup(item)}
       <p class="resource-source">対象 ${item.grades?.length ? item.grades.map(id => escape(gradeById(id)?.label ?? id)).join('・') : '公式案内で確認'} · 費用 ${escape({free: '無料と確認', paid: '有料', unknown: '公式案内で確認'}[item.cost] ?? '公式案内で確認')}</p>
     </details>
     <div class="resource-actions">
@@ -913,7 +926,7 @@ function listingsMarkup() {
       <p class="panel-hint">「無料」と言えるのは、公式の案内でそう確認できたものだけです。分からないものは、ここでは残しません。</p>
 
       <p class="panel-label">対象の学年</p>
-      ${pickChips('grade', [['', '指定しない'], ...GRADES.map(item => [item.id, item.label])], picks.grade ?? '')}
+      ${pickChips('grade', [['', '指定しない'], ...GRADES.filter(item => !item.id.startsWith('u')).map(item => [item.id, item.label])], picks.grade ?? '')}
       <p class="panel-hint">対象が書かれていないものも残します。書かれていない＝対象外、ではありません。</p>
 
       <p class="panel-label">開催の時期</p>

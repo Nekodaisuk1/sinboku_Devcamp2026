@@ -1231,7 +1231,9 @@ export default {
       "verbs": [
         "dig",
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "scratch-create": {
       "domain": "information",
@@ -1284,7 +1286,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "coderdojo": {
       "domain": "information",
@@ -1336,7 +1340,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "guitar-anatomy": {
       "domain": "sound",
@@ -1384,7 +1390,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "fermentation": {
       "domain": "food",
@@ -1431,7 +1439,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "oshima-school": {
       "domain": "ecology",
@@ -1480,7 +1490,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "oshima-diving": {
       "domain": "ecology",
@@ -1531,7 +1543,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "oshima-visit": {
       "domain": "ecology",
@@ -1582,7 +1596,8 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": "single"
     },
     "kaiyo-life": {
       "domain": "food",
@@ -1631,7 +1646,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "kaiyo-engineering": {
       "domain": "engineering",
@@ -1678,7 +1695,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "kaiyo-environment": {
       "domain": "environment",
@@ -1726,7 +1745,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "ritsumeikan-media": {
       "domain": "media",
@@ -1773,7 +1794,9 @@ export default {
       "conceptIds": [],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "kyushu-sound": {
       "domain": "sound",
@@ -1821,7 +1844,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "ikilog": {
       "domain": "ecology",
@@ -1875,7 +1900,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "kahaku-vr": {
       "domain": "ecology",
@@ -1927,7 +1954,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "wbsj-startbird": {
       "domain": "ecology",
@@ -1980,7 +2009,9 @@ export default {
       "verbs": [
         "observe",
         "compare"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "nacsj-shizenshirabe": {
       "domain": "ecology",
@@ -2036,7 +2067,9 @@ export default {
       "verbs": [
         "compare",
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "omnh-ouchi": {
       "domain": "ecology",
@@ -2089,7 +2122,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "maff-kids": {
       "domain": "food",
@@ -2147,7 +2182,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "shizen-kyoikuen": {
       "domain": "ecology",
@@ -2208,7 +2245,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "tsukuba-botanical": {
       "domain": "ecology",
@@ -2267,7 +2306,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "biwahaku": {
       "domain": "ecology",
@@ -2328,7 +2369,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "chiba-umihaku": {
       "domain": "ecology",
@@ -2387,7 +2430,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "umihaku-kansatsu": {
       "domain": "ecology",
@@ -2451,7 +2496,9 @@ export default {
       "reviewAfter": "2026-11-02",
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": "listing",
+      "date": null
     },
     "hirameki-science": {
       "domain": "ecology",
@@ -2516,7 +2563,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": "listing",
+      "date": null
     },
     "hokudai-coast-ecology": {
       "domain": "ecology",
@@ -2585,7 +2634,8 @@ export default {
       "reviewAfter": "2027-03-22",
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": "single"
     },
     "hiroshima-kokai": {
       "domain": "ecology",
@@ -2650,7 +2700,9 @@ export default {
       "reviewAfter": "2026-11-29",
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": "listing",
+      "date": null
     },
     "wbsj-tanchokai": {
       "domain": "ecology",
@@ -2706,7 +2758,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "kodomo-ecoclub": {
       "domain": "environment",
@@ -2770,7 +2824,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "zenkoku-suisei": {
       "domain": "environment",
@@ -2835,7 +2891,9 @@ export default {
       "reviewAfter": "2027-04-01",
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "takao-satoyama": {
       "domain": "ecology",
@@ -2900,7 +2958,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "satoyama-go": {
       "domain": "ecology",
@@ -2964,7 +3024,9 @@ export default {
       "reviewAfter": "2026-12-01",
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "marine-challenge": {
       "domain": "ecology",
@@ -3028,7 +3090,9 @@ export default {
       "reviewAfter": "2026-12-01",
       "verbs": [
         "dig"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "kikigaki": {
       "domain": "ecology",
@@ -3094,7 +3158,9 @@ export default {
       "reviewAfter": "2027-05-01",
       "verbs": [
         "tell"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "tuat-ecoregion": {
       "domain": "ecology",
@@ -3148,7 +3214,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "hokudai-fisheries": {
       "domain": "ecology",
@@ -3207,7 +3275,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "mie-bioresources": {
       "domain": "ecology",
@@ -3266,7 +3336,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "shinshu-bio": {
       "domain": "ecology",
@@ -3324,7 +3396,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "gifu-forest-academy": {
       "domain": "ecology",
@@ -3383,7 +3457,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "igusa-bio-club": {
       "domain": "ecology",
@@ -3436,7 +3512,9 @@ export default {
       ],
       "reviewStatus": "published",
       "reviewAfter": null,
-      "verbs": []
+      "verbs": [],
+      "occurrence": null,
+      "date": null
     },
     "omnh": {
       "domain": "ecology",
@@ -3495,7 +3573,9 @@ export default {
       "reviewAfter": null,
       "verbs": [
         "observe"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     },
     "u22-procon": {
       "domain": "information",
@@ -3559,7 +3639,9 @@ export default {
       "reviewAfter": "2027-06-01",
       "verbs": [
         "make"
-      ]
+      ],
+      "occurrence": null,
+      "date": null
     }
   }
 };
