@@ -408,7 +408,7 @@ export function selectFieldNode({currentSelected = null, clickedId, routeDomain 
   const selected = currentSelected === clickedId ? null : clickedId;
   return {
     selected,
-    routeDomain: selected?.startsWith('domain-') ? selected.slice(7) : null
+    routeDomain: clickedId.startsWith('domain-') ? clickedId.slice(7) : routeDomain
   };
 }
 

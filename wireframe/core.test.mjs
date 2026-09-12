@@ -583,6 +583,35 @@ test('selecting an intermediate route node keeps its route visible', () => {
   );
 });
 
+test('selecting a node for editing does not collapse an open route graph', () => {
+  assert.deepEqual(
+    fieldModule.selectFieldNode({
+      currentSelected: 'route-media-general-course',
+      clickedId: 'placement-1',
+      routeDomain: 'media'
+    }),
+    {selected: 'placement-1', routeDomain: 'media'}
+  );
+  assert.deepEqual(
+    fieldModule.selectFieldNode({
+      currentSelected: 'domain-media',
+      clickedId: 'domain-media',
+      routeDomain: 'media'
+    }),
+    {selected: null, routeDomain: 'media'},
+    'closing domain details must leave the graph visible'
+  );
+  assert.deepEqual(
+    fieldModule.selectFieldNode({
+      currentSelected: 'placement-1',
+      clickedId: 'domain-information',
+      routeDomain: 'media'
+    }),
+    {selected: 'domain-information', routeDomain: 'information'},
+    'choosing another domain must switch the open graph'
+  );
+});
+
 test('dropping a node reads its lane from the vertical position, and never leaves the field', () => {
   const view = layout({placements: [put('a', 'games', 0.5)], width: 360});
   assert.equal(laneAt(view.lanes[0].top + 1, view.lanes), 'lab');

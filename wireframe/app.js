@@ -177,10 +177,7 @@ function consumeSharedMapHash() {
 function fieldView() {
   // 絞り込みは「描くものを減らす」だけ。保存された置きものには手を触れない。
   const scope = visibleFor(state.placements, {view: ui.fieldView, selected: ui.selected});
-  const selected = ui.selected ?? '';
-  const routeDomain = selected.startsWith('domain-') ? selected.slice(7)
-    : selected.startsWith('route-') ? ui.routeDomain
-    : null;
+  const routeDomain = ui.routeDomain;
   const anchor = routeDomain
     ? revealWorld(scope.placements).domains.find(domain => domain.id === routeDomain)?.x ?? 0.5
     : 0.5;
@@ -621,6 +618,7 @@ function nowPage() {
         <button class="grade-open" data-grade-open>${grade ? `いま ${escape(grade.label)}` : 'いま何年生？'}</button>
         <button class="primary" data-open-picker="topic">＋ 項目を追加</button>
         <button class="ghost" data-list-view aria-pressed="${ui.listView}">${ui.listView ? 'マップで見る' : '一覧で読む'}</button>
+        ${ui.routeDomain ? '<button class="ghost" data-close-route>ルート表示を閉じる</button>' : ''}
         ${state.placements.length ? '<button class="ghost" data-share-map>このマップを共有</button>' : ''}
       </div>
       ${ui.sharedMap ? `<aside class="shared-map-notice"><b>共有されたマップを表示中</b><span>この端末に保存している自分のマップは変更していません。</span><button class="text-button" data-return-own-map>自分のマップに戻る</button></aside>` : ''}
@@ -1155,7 +1153,7 @@ document.addEventListener('click', event => {
   const laneHit = event.target.closest('.lane');
   if (laneHit) {
     const found = [...laneHit.classList].find(name => name.startsWith('lane-') && LANE_IDS.includes(name.slice(5)));
-    if (found) {ui.selected = `lane-${found.slice(5)}`; ui.routeDomain = null; ui.routeKind = null; return render();}
+    if (found) {ui.selected = `lane-${found.slice(5)}`; ui.routeKind = null; return render();}
   }
 
   const target = event.target.closest('button');
@@ -1212,10 +1210,17 @@ document.addEventListener('click', event => {
     notify('受信箱から消しました。');
     return render();
   }
-  if (target.hasAttribute('data-deselect')) {ui.selected = null; ui.routeDomain = null; ui.routeKind = null; return render();}
+  if (target.hasAttribute('data-deselect')) {ui.selected = null; return render();}
+  if (target.hasAttribute('data-close-route')) {
+    ui.routeDomain = null;
+    ui.routeKind = null;
+    if (ui.selected?.startsWith('route-') || ui.selected?.startsWith('school-option-')) ui.selected = null;
+    return render();
+  }
   if (target.dataset.nodeOpen) {
-    ui.selected = target.dataset.nodeOpen;
-    ui.routeDomain = ui.selected.startsWith('domain-') ? ui.selected.slice(7) : null;
+    const next = selectFieldNode({currentSelected: ui.selected, clickedId: target.dataset.nodeOpen, routeDomain: ui.routeDomain});
+    ui.selected = next.selected;
+    ui.routeDomain = next.routeDomain;
     ui.routeKind = null;
     ui.listView = false;
     return render();
