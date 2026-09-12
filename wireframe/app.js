@@ -13,7 +13,7 @@ import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, re
 import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
-import {selectFieldNode, highlightAfterClick} from './field.mjs';
+import {selectFieldNode, highlightAfterClick, schoolExpansionAfterClick} from './field.mjs';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const $ = id => document.getElementById(id);
@@ -23,7 +23,7 @@ const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => r
 let state = emptyState();
 // 画面の一時的な状態。保存の対象にしない。
 const ui = {query: '', filter: 'all', athome: false, editing: null, gradePicker: false, legacy: false,
-            selected: null, highlighted: null, routeDomain: null, routeKind: null, listView: false, about: false, picker: null,
+            selected: null, highlighted: null, routeDomain: null, routeKind: null, expandedSchoolId: null, listView: false, about: false, picker: null,
             verbSection: 'activities', fieldWidth: 360, fieldScroll: null,
             // 表示の絞り込みと段の展開は、見え方だけの状態。保存しない。
             fieldView: 'all', listSort: 'lane', expandedLanes: [], moving: null,
@@ -182,11 +182,14 @@ function fieldView() {
   const anchor = routeDomain
     ? revealWorld(scope.placements).domains.find(domain => domain.id === routeDomain)?.x ?? 0.5
     : 0.5;
-  const extra = routeDomain ? routePath(routeDomain, ui.routeKind, anchor) : {nodes: [], links: []};
+  const extra = routeDomain
+    ? routePath(routeDomain, ui.routeKind, anchor, {expandedSchoolId: ui.expandedSchoolId})
+    : {nodes: [], links: []};
   const extraNodes = extra.nodes.map(node => ({...node, links: extra.links.filter(link => link.from === node.id)}));
   // 選んだものと、その線の行き先は「ほか◯件」に隠さない。隠れると線を最後まで追えない。
   // いま動かしているものも同じ。動かした先で消えてしまっては、動かした意味がない。
-  const keep = new Set([...linkedSet(scope.placements, focus), focus, ui.selected, ui.moving].filter(Boolean));
+  const openSchools = extraNodes.filter(node => node.kind === 'school-option').map(node => node.id);
+  const keep = new Set([...linkedSet(scope.placements, focus), focus, ui.selected, ui.expandedSchoolId, ui.moving, ...openSchools].filter(Boolean));
   const view = layout({placements: scope.placements, extraNodes, width: ui.fieldWidth, expandedLanes: ui.expandedLanes, keep});
   return {...view, scope};
 }
@@ -403,9 +406,10 @@ function domainPanel(domainId) {
 }
 
 function routeNodePanel(node) {
+  const option = node.kind === 'school-option';
   return `<section class="panel">
     <button class="panel-close" data-deselect>× 閉じる</button>
-    <p class="panel-kind">進路ルートの途中</p>
+    <p class="panel-kind">${option ? '似た学部・活動を持つ学校' : '進路ルートの途中'}</p>
     <h2>${escape(node.label)}</h2>
     <p>${escape(node.detail)}</p>
     ${node.link ? `<a class="secondary" href="${escape(node.link.url)}" target="_blank" rel="noopener noreferrer">${escape(node.link.name)} ↗<small>出典 ${escape(node.link.source)}・別のタブで開きます</small></a>` : ''}
@@ -1147,7 +1151,8 @@ document.addEventListener('click', event => {
   if (svgNode) {
     const clickedId = svgNode.dataset.node;
     ui.highlighted = highlightAfterClick(ui.highlighted, clickedId);
-    const routeNode = clickedId.startsWith('route-');
+    ui.expandedSchoolId = schoolExpansionAfterClick(lastView?.byId.get(clickedId), ui.expandedSchoolId);
+    const routeNode = clickedId.startsWith('route-') || clickedId.startsWith('school-option-');
     const next = selectFieldNode({currentSelected: ui.selected, clickedId, routeDomain: ui.routeDomain});
     ui.selected = next.selected;
     ui.routeDomain = next.routeDomain;
@@ -1215,11 +1220,12 @@ document.addEventListener('click', event => {
     notify('受信箱から消しました。');
     return render();
   }
-  if (target.hasAttribute('data-deselect')) {ui.selected = null; return render();}
+  if (target.hasAttribute('data-deselect')) {ui.selected = null; ui.expandedSchoolId = null; return render();}
   if (target.hasAttribute('data-clear-highlight')) {ui.highlighted = null; return render();}
   if (target.hasAttribute('data-close-route')) {
     ui.routeDomain = null;
     ui.routeKind = null;
+    ui.expandedSchoolId = null;
     if (ui.selected?.startsWith('route-') || ui.selected?.startsWith('school-option-')) ui.selected = null;
     return render();
   }
