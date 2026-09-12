@@ -13,7 +13,7 @@
     "test": "tsx --test test/*.test.ts",
     "check": "npm run typecheck && npm run test",
     "catalog:seed": "node scripts/build-catalog-seed.mjs",
-    "prototype:sync": "node scripts/sync-prototype.mjs",
+    "prototype:sync": "npm --prefix ../wireframe run build && node scripts/sync-prototype.mjs",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db"
