@@ -1148,6 +1148,15 @@ export default {
       ],
       "reason": "海の写真・観測・環境の問いを扱う教材。生き物と環境のつながりを、観察する視点で考えられます。",
       "step": "教材の見出しから、気になる問いを1つ選ぶ。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "environment-living"
@@ -1198,6 +1207,11 @@ export default {
       ],
       "reason": "プログラムの順番と、絵・音による表現を同時に試せます。遊びを作る入口にもなります。",
       "step": "気になるチュートリアルを1つ開き、動きか音を1つ変えてみる。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "making-things"
       ],
@@ -1245,6 +1259,11 @@ export default {
       ],
       "reason": "ScratchやWeb制作など、興味に合わせて取り組む地域の活動です。扱う内容は道場ごとに違います。",
       "step": "近くの道場を1つ選び、開催案内を確認する。",
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "making-things"
       ],
@@ -1287,6 +1306,11 @@ export default {
       ],
       "reason": "音の仕組みと、楽器の形・材料を同じ対象から見られます。音響とデザインをつなぐ読みものです。",
       "step": "「しくみ」から気になる見出しを選ぶ。楽器の購入は不要。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "making-things",
         "sound-science"
@@ -1330,6 +1354,11 @@ export default {
       ],
       "reason": "料理に使う食品を、微生物と成分の変化から見る入口です。好きな料理から科学の問いを見つけられます。",
       "step": "家で使う調味料を1つ思い浮かべて、記事に登場するか探す。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "microbe-life"
       ],
@@ -1371,6 +1400,15 @@ export default {
       ],
       "child": "oshima-diving",
       "reason": "海への興味を、授業だけでなく学校生活や部活動から考える入口。生態学を専門的に学べると保証するものではありません。",
+      "category": "school",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork"
@@ -1411,6 +1449,15 @@ export default {
       ],
       "host": "oshima-school",
       "reason": "海への関心を実技の面から広げる活動例です。生物調査そのものを行うという意味ではありません。",
+      "category": "club",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork"
@@ -1458,6 +1505,11 @@ export default {
       "host": "oshima-school",
       "date": "2026-10-24",
       "reason": "実際の学校や活動を見て、続けたいか確かめる入口。体験参加と入学資格は別です。",
+      "category": "event",
+      "prefecture": "東京都",
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life"
       ],
@@ -1499,6 +1551,15 @@ export default {
         ]
       ],
       "reason": "海洋生物と食品を同じ学部の中で扱います。料理が好きという入口から、食品を研究する進路にもつながります。",
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "biology"
@@ -1538,6 +1599,15 @@ export default {
         ]
       ],
       "reason": "海で使う機械だけでなく、情報や物流という仕組みにも目を向ける進路です。",
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life"
       ],
@@ -1576,6 +1646,15 @@ export default {
         ]
       ],
       "reason": "環境を理解する学びと、資源をどう扱うかという問いを比較できます。",
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "environment-living"
@@ -1617,6 +1696,15 @@ export default {
         ]
       ],
       "reason": "ゲームはプログラミングだけではありません。作品表現や社会との関わりも含む学びを比較できます。",
+      "category": "university",
+      "prefecture": "大阪府",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [],
       "reviewStatus": "published",
       "reviewAfter": null,
@@ -1654,6 +1742,15 @@ export default {
         ]
       ],
       "reason": "音楽への興味を、文化だけでなく物理や聴覚、情報の視点からも深められます。",
+      "category": "university",
+      "prefecture": "福岡県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "sound-science"
       ],
@@ -1699,6 +1796,11 @@ export default {
       ],
       "reason": "「どこで何が見つかったか」を種名から追えます。海・森・川・街のどこで見つけたものも、同じ形で記録できます。",
       "step": "知っている生き物の名前を1つ入れて、近くに記録があるか見る。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "citizen-survey",
         "record-keeping",
@@ -1747,6 +1849,11 @@ export default {
       ],
       "reason": "実物の標本がどう並んでいるかを先に見ておくと、現地へ行ったとき何を見たいかが決まります。",
       "step": "地球館の1フロアだけ回って、気になった展示の名前を控える。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "biology",
         "plant-life"
@@ -1793,6 +1900,11 @@ export default {
       ],
       "reason": "鳥は街でも海でも森でも見られます。見分け方を先に知っておくと、どこへ行っても同じ目で見られます。",
       "step": "窓から見える鳥を1種類だけ、名前まで調べてみる。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "bird-life",
         "fieldwork",
@@ -1816,7 +1928,7 @@ export default {
       "type": "resource",
       "name": "身近な生きものの見分け方マニュアル",
       "summary": "市民参加の調査「自然しらべ」で使われた、カメ・アリ・セミ・貝殻などの資料。",
-      "url": "https://www.nacsj.or.jp/activities/ss/",
+      "url": "https://www.nacsj.or.jp/magazine/category/shirabe/",
       "source": "公益財団法人 日本自然保護協会",
       "checkedOn": "2026-09-12",
       "example": false,
@@ -1842,6 +1954,11 @@ export default {
       ],
       "reason": "テーマごとに「どこを見れば見分けられるか」が書かれています。虫・貝・水辺と、対象を変えて同じ観察ができます。",
       "step": "気になるテーマを1つ開き、見分けるポイントを3つ書き出す。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "citizen-survey",
         "insect-life",
@@ -1893,6 +2010,11 @@ export default {
       ],
       "reason": "博物館の人がどこを見て種類を判断しているかがわかります。自分で拾ったものの扱い方にもつながります。",
       "step": "「ごきんじょでかんさつに出かけよう」を読んで、近所で1つ探してみる。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "biology",
         "record-keeping",
@@ -1942,6 +2064,15 @@ export default {
       ],
       "reason": "生き物を食べものや産業の側から見ると、森・海・畑が同じ話としてつながります。",
       "step": "「森林を知りたい」を開いて、木が育つまでの年数を確かめる。",
+      "category": "material",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "marine-life",
@@ -1990,6 +2121,18 @@ export default {
       ],
       "reason": "街の真ん中にも森と水辺があります。遠くへ行かなくても、森・草地・池の違いを一度に見比べられます。",
       "step": "入口でその日の開花・観察情報を見てから歩く。",
+      "category": "place",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "urban-nature",
         "fieldwork",
@@ -2038,6 +2181,18 @@ export default {
       ],
       "reason": "同じ「植物」でも、育つ環境ごとに姿が違うことを、歩いて比べられます。",
       "step": "温室と屋外で、葉の厚さや形がどう違うか見比べる。",
+      "category": "place",
+      "prefecture": "茨城県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "plant-life",
         "fieldwork",
@@ -2086,6 +2241,18 @@ export default {
       ],
       "reason": "海の魚とは違う、川と湖の生き物だけを集めた展示です。淡水という切り口で生き物を見直せます。",
       "step": "水族展示で、同じ魚が湖と川のどちらにいるか確かめる。",
+      "category": "place",
+      "prefecture": "滋賀県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "freshwater-life",
         "biology",
@@ -2134,6 +2301,18 @@ export default {
       ],
       "reason": "水族館とは別に、標本から海の生き物を見る場所です。近くの海岸で観察会も開かれています。",
       "step": "展示で見た生き物が、近くの海岸のどこにいるか確かめる。",
+      "category": "place",
+      "prefecture": "千葉県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "paid",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "biology",
@@ -2186,6 +2365,18 @@ export default {
       "host": "chiba-umihaku",
       "reason": "一人では見つけられない生き物を、研究している人と一緒に探せます。同じ海岸でも季節ごとにテーマが変わります。",
       "step": "一覧から行ける日の回を選び、対象と申込の締切を確認する。",
+      "category": "event",
+      "prefecture": "千葉県",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork",
@@ -2209,7 +2400,7 @@ export default {
       "type": "resource",
       "name": "ひらめき☆ときめきサイエンス",
       "summary": "大学や研究機関が、進行中の研究を中高生向けの講義・実験として公開する。",
-      "url": "https://www.jsps.go.jp/hirameki/",
+      "url": "https://www.jsps.go.jp/j-hirameki/",
       "source": "独立行政法人 日本学術振興会",
       "checkedOn": "2026-09-12",
       "example": false,
@@ -2239,6 +2430,18 @@ export default {
       ],
       "reason": "大学の研究室で実際に何をしているかを、進学前に一度見られます。学部の名前だけではわからない中身がわかります。",
       "step": "実施プログラム一覧で、自分が行ける場所のものを探す。",
+      "category": "event",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "research-challenge",
         "biology",
@@ -2296,6 +2499,18 @@ export default {
       "date": "2027-03-21",
       "reason": "ひらめき☆ときめきサイエンスの実例です。海の生き物を「行動」から調べる方法を、研究している場所で体験できます。",
       "step": "申込開始日を控えて、募集ページを確認する。",
+      "category": "event",
+      "prefecture": "北海道",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": "2027-03-01",
       "conceptIds": [
         "marine-life",
         "fieldwork",
@@ -2352,6 +2567,15 @@ export default {
       ],
       "reason": "生物・環境の講座が複数あります。大学の先生がどんな問いを立てているかを、一日で確かめられます。",
       "step": "講座一覧から生き物に関わるものを探し、開催日と申込方法を確認する。",
+      "category": "event",
+      "prefecture": "広島県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "biology",
         "research-challenge",
@@ -2403,6 +2627,11 @@ export default {
       ],
       "reason": "同じ場所に毎月通う会もあります。季節で入れかわる鳥を、続けて見ることで違いがわかります。",
       "step": "住んでいる地域の支部を探し、次回の開催日を見る。",
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "bird-life",
         "fieldwork",
@@ -2455,6 +2684,18 @@ export default {
       ],
       "reason": "一度の体験ではなく、同じ場所を続けて見る活動です。自分で決めたテーマを一年通して調べられます。",
       "step": "ほかのクラブの活動報告を読んで、自分にもできそうなテーマを探す。",
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "citizen-survey",
         "environment-living",
@@ -2507,6 +2748,18 @@ export default {
       ],
       "reason": "同じ方法で全国の人が調べているので、自分の川の結果をほかの場所と比べられます。",
       "step": "住んでいる都道府県の窓口を調べ、近くの川の結果が出ているか見る。",
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "freshwater-life",
         "citizen-survey",
@@ -2560,6 +2813,18 @@ export default {
       ],
       "reason": "観察するだけでなく、人が手を入れることで保たれる森があります。手入れの前と後で生き物がどう変わるかを見られます。",
       "step": "次の活動日を確認し、午前だけ参加できるか問い合わせる。",
+      "category": "continuing",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-care",
         "forest-life",
@@ -2613,6 +2878,18 @@ export default {
       ],
       "reason": "都内にも、続けて通える里山があります。季節ごとに作業が変わるので、一年を通して同じ場所を見られます。",
       "step": "活動スケジュールから、中高生も参加できる回を探す。",
+      "category": "continuing",
+      "prefecture": "東京都",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-care",
         "fieldwork",
@@ -2665,6 +2942,18 @@ export default {
       ],
       "reason": "観察や記録を「自分の研究」にしたいときの受け皿です。今年の募集は終わっていますが、何が求められるかを先に読めます。",
       "step": "これまで採択された研究のテーマを見て、自分の問いに近いものを探す。",
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "research-challenge",
         "marine-life",
@@ -2722,6 +3011,15 @@ export default {
       ],
       "reason": "生き物そのものではなく、そこで暮らしてきた人から森や海を知る方法です。記録して伝えるところまでが活動に入っています。",
       "step": "過去の作品を1つ読んで、どんな聞き方をしているか見る。",
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "free",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "marine-life",
@@ -2769,6 +3067,15 @@ export default {
         ]
       ],
       "reason": "「森が好き」から進める学科の一つです。講義だけでなく実習が組まれていることが、カリキュラムから確認できます。",
+      "category": "university",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "fieldwork",
@@ -2819,6 +3126,15 @@ export default {
         ]
       ],
       "reason": "海の生き物を、資源・食品・環境のどこから見るかで学科が分かれています。同じ「海」でも進む先が違います。",
+      "category": "university",
+      "prefecture": "北海道",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "fieldwork",
@@ -2869,6 +3185,15 @@ export default {
         ]
       ],
       "reason": "海と森を別々の学部に分けず、同じ学部の中から選べます。決めきらずに入って、あとから寄せていけます。",
+      "category": "university",
+      "prefecture": "三重県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "marine-life",
         "forest-life",
@@ -2918,6 +3243,15 @@ export default {
         ]
       ],
       "reason": "川や湖の生き物を専門に扱える大学は多くありません。湖の実験所を持っていることが、学べる内容に直結します。",
+      "category": "university",
+      "prefecture": "長野県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "freshwater-life",
         "fieldwork",
@@ -2968,6 +3302,15 @@ export default {
         ]
       ],
       "reason": "大学以外にも、森を仕事にする学び方があります。木を育てる側と、木を使う側で学科が分かれています。",
+      "category": "school",
+      "prefecture": "岐阜県",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "forest-life",
         "forest-care",
@@ -3012,6 +3355,15 @@ export default {
         ]
       ],
       "reason": "高校でも、学会で発表するところまで続けている部があります。進学より前に、どこまでできるかの一例です。",
+      "category": "club",
+      "prefecture": "東京都",
+      "grades": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "fieldwork",
         "biology",
@@ -3057,6 +3409,18 @@ export default {
       ],
       "reason": "一度見に行くだけでなく、行事や友の会で続けて通えます。標本の見方を教わると、自分で拾ったものも扱えます。",
       "step": "行事の一覧から、参加できそうな観察会を1つ見る。",
+      "category": "place",
+      "prefecture": "大阪府",
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "insect-life",
         "plant-life",
@@ -3110,6 +3474,18 @@ export default {
       ],
       "reason": "ゲームを作る手を止めずに、外へ出す場所です。作品を説明する形にまとめる練習にもなります。",
       "step": "過去の受賞作品を見て、どこまで作れば出せるか確かめる。",
+      "category": "continuing",
+      "prefecture": null,
+      "grades": [
+        "j1",
+        "j2",
+        "j3",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "cost": "unknown",
+      "deadline": null,
       "conceptIds": [
         "making-things",
         "research-challenge"

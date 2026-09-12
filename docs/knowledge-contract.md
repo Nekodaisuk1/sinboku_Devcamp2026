@@ -62,6 +62,11 @@ knowledge.json → 検証・変換 → knowledge-data.mjs → 地図・詳細・
 | conditions | `[見出し, 内容]` の配列。対象・場所・費用・参加条件・日程など。不明は「公式案内で未確認」 |
 | date | eventで必須。開催日YYYY-MM-DD |
 | online / free | 確認できる場合のみtrue。falseは「オンライン不可」「有料」の断定ではなく検索用の未該当値 |
+| category | material / place / event / continuing / club / school / university |
+| prefecture | 都道府県名。場所に縛られない場合はnull |
+| grades | j1〜j3 / h1〜h3。公式情報で対象を特定できない場合は空配列 |
+| cost | free / paid / unknown。不明を無料扱いしない |
+| deadline | 申込期限YYYY-MM-DD。ない、または未確認ならnull |
 | example | 実在する掲載情報はfalse。活動案を実在の募集として登録しない |
 | step | 最初にできる小さな行動。実際の参加資格を確認せず申し込みを促さない |
 
@@ -83,6 +88,8 @@ topicごとの配列。各項目にid / icon / title / description / domains / a
 4. 根拠を確認できたものだけpublishedにする。IDとリンクの整合を検証する。
 5. 画面で少なくとも「海 → 生き物 → 森・川」「外に出て観察する → 実在の情報」を確認する。
 6. ビルドしてプレビュー。本番反映は公開担当者が行う。
+
+複数件を追加するときは `docs/resource-data-workflow.md` の下書き限定インポートを使う。既存IDの上書きや、未レビュー情報の一括公開はしない。
 
 個人のメモ、実在する生徒の情報、APIキーをこのJSONに入れない。すべて公開配信される。任意の画像URLや写真は今回の仕様に入れない。
 

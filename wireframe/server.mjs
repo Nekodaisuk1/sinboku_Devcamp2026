@@ -14,6 +14,8 @@ const files = new Map([
   ['/log.mjs', ['log.mjs', 'text/javascript; charset=utf-8']],
   ['/store.mjs', ['store.mjs', 'text/javascript; charset=utf-8']],
   ['/field.mjs', ['field.mjs', 'text/javascript; charset=utf-8']],
+  ['/regions.mjs', ['regions.mjs', 'text/javascript; charset=utf-8']],
+  ['/recommendations.mjs', ['recommendations.mjs', 'text/javascript; charset=utf-8']],
   ['/field-ui.mjs', ['field-ui.mjs', 'text/javascript; charset=utf-8']],
   ['/catalog.mjs', ['catalog.mjs', 'text/javascript; charset=utf-8']],
   ['/routes.mjs', ['routes.mjs', 'text/javascript; charset=utf-8']],
@@ -38,5 +40,8 @@ const server = createServer(async (request, response) => {
     response.end('Unable to read the requested file');
   }
 });
-server.listen(4317, '127.0.0.1', () => console.log('シンボク Build 23: http://127.0.0.1:4317'));
+// 既に別のプロセスが 4317 を使っているときのために、PORT で変えられるようにする。
+const port = Number(process.env.PORT ?? 4317);
+if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`Invalid PORT: ${process.env.PORT}`);
+server.listen(port, '127.0.0.1', () => console.log(`シンボク Build 25: http://127.0.0.1:${port}`));
 server.on('error', error => {console.error(error); process.exitCode = 1;});

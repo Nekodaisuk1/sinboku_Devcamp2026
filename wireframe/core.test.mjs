@@ -7,8 +7,13 @@ import {buildTimeline, nextDecision, stageWhen, schoolYearStart, STAGES, GRADES,
 import {validateLog, addEntry, removeEntry, byMonth, recentCount, sortLog, LOG_LIMIT} from './log.mjs';
 import {encodeState, decodeState, emptyState, STATE_BYTES} from './store.mjs';
 import {verbs, activitiesForVerb, activitiesByTopic, domainsForVerb, resourcesForVerb, allActivities, verbCoverage, domains, topics, resources} from './verbs.mjs';
-import {searchCatalog, catalogIds, normalizeQuery} from './catalog.mjs';
+import {
+  searchCatalog, catalogIds, normalizeQuery,
+  CATEGORIES, STALE_DAYS, freshnessOf, filterResources, coverage, coverageSentence
+} from './catalog.mjs';
 import {validateKnowledge} from './scripts/knowledge.mjs';
+import {encodeRecommendation, decodeRecommendation, receiveRecommendation, validateRecommendations,
+        RECOMMENDATION_LIMIT} from './recommendations.mjs';
 
 const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => routesForDomain(id, {name: id}).map(route => route.id)))};
 
@@ -732,4 +737,182 @@ test('describeSource marks the self-added and the family-sent as unconfirmed, an
   const family = {...own, source: 'family'};
   assert.equal(describeSource(family).caution, '内容は確認していません');
   assert.equal(describeSource(family).label, '家族から');
+});
+
+/* --- Build 24: 絞り込み・鮮度・掲載範囲。合成データで検査する --- */
+/* filterResources / coverage / coverageSentence は [{id, ...resource}] という配列で受け取る。 */
+
+const sample = [
+  {
+    id: 'tokyoEvent', category: 'event', prefecture: '東京都', grades: ['j1', 'j2'],
+    cost: 'free', domain: 'ecology', date: '2026-10-01', deadline: '2026-09-20',
+    online: false, checkedOn: '2026-09-01'
+  },
+  {
+    id: 'chibaMaterial', category: 'material', prefecture: null, grades: [],
+    cost: 'unknown', domain: 'ecology', date: null, deadline: null,
+    online: true, checkedOn: '2026-08-01'
+  },
+  {
+    id: 'osakaClub', category: 'club', prefecture: '大阪府', grades: ['h1'],
+    cost: 'paid', domain: 'engineering', date: null, deadline: null,
+    online: false, checkedOn: '2026-09-05'
+  }
+];
+
+test('CATEGORIES lists exactly the seven kinds the Build 24 contract defines, and STALE_DAYS is 180', () => {
+  assert.deepEqual(CATEGORIES.map(c => c.id), ['material', 'place', 'event', 'continuing', 'club', 'school', 'university']);
+  assert.equal(STALE_DAYS, 180);
+});
+
+test('filterResources keeps every resource when no filters are given', () => {
+  const result = filterResources(sample, {}, '2026-09-12');
+  assert.equal(result.length, sample.length);
+});
+
+test('filtering by prefecture keeps that prefecture and place-agnostic resources, and drops other prefectures', () => {
+  const result = filterResources(sample, {prefecture: '東京都'}, '2026-09-12');
+  assert.deepEqual(result.map(r => r.id).sort(), ['chibaMaterial', 'tokyoEvent']);
+});
+
+test('filtering by free cost drops resources whose cost is unknown or paid', () => {
+  const result = filterResources(sample, {cost: 'free'}, '2026-09-12');
+  assert.deepEqual(result.map(r => r.id), ['tokyoEvent']);
+});
+
+test('filtering by grade keeps that grade and resources whose target grade is unspecified', () => {
+  const result = filterResources(sample, {grade: 'j1'}, '2026-09-12');
+  assert.deepEqual(result.map(r => r.id).sort(), ['chibaMaterial', 'tokyoEvent']);
+});
+
+test('freshnessOf calls a past event date closed, even when its deadline and check date also look bad', () => {
+  const resource = {date: '2026-09-01', deadline: '2026-08-01', checkedOn: '2025-01-01'};
+  assert.equal(freshnessOf(resource, '2026-09-12').state, 'closed');
+});
+
+test('freshnessOf calls a passed deadline over while the event itself is still upcoming', () => {
+  const resource = {date: '2026-12-01', deadline: '2026-09-01', checkedOn: '2026-09-01'};
+  assert.equal(freshnessOf(resource, '2026-09-12').state, 'over');
+});
+
+test('freshnessOf calls a passed reviewAfter date over', () => {
+  const resource = {date: null, deadline: null, reviewAfter: '2026-09-01', checkedOn: '2026-09-01'};
+  assert.equal(freshnessOf(resource, '2026-09-12').state, 'over');
+});
+
+test('freshnessOf calls an old checkedOn stale once nothing else applies', () => {
+  const resource = {date: null, deadline: null, checkedOn: '2026-01-01'};
+  assert.equal(freshnessOf(resource, '2026-09-12').state, 'stale');
+});
+
+test('freshnessOf reports ok with a null note when nothing is wrong', () => {
+  const resource = {date: '2026-12-01', deadline: '2026-11-01', checkedOn: '2026-09-01'};
+  const result = freshnessOf(resource, '2026-09-12');
+  assert.equal(result.state, 'ok');
+  assert.equal(result.note, null);
+});
+
+test('coverage counts every resource exactly once across prefectures, with the place-agnostic ones last', () => {
+  const result = coverage(sample);
+  assert.equal(result.total, sample.length);
+  assert.equal(result.byPrefecture.reduce((sum, entry) => sum + entry.count, 0), result.total);
+  assert.equal(result.byPrefecture.at(-1).prefecture, null);
+});
+
+test('coverage lists every known field of study in byDomain, marking one with no resources as zero and thin', () => {
+  // sample only uses 'ecology' and 'engineering'; every other domain must still appear at 0.
+  const result = coverage(sample);
+  assert.deepEqual(result.byDomain.map(entry => entry.domain).sort(), Object.keys(domains).sort());
+  const empty = result.byDomain.find(entry => entry.domain === 'environment');
+  assert.deepEqual(empty, {domain: 'environment', name: domains.environment.name, count: 0, thin: true});
+});
+
+test('coverage lists all seven categories in byCategory, even ones with no resources', () => {
+  // sample only uses event/material/club; the other four categories must still appear at 0.
+  const result = coverage(sample);
+  assert.deepEqual(result.byCategory.map(entry => entry.category).sort(), CATEGORIES.map(c => c.id).sort());
+  const empty = result.byCategory.find(entry => entry.category === 'university');
+  assert.deepEqual(empty, {category: 'university', label: '大学', count: 0});
+});
+
+test('coverageSentence never claims nationwide coverage', () => {
+  const sentence = coverageSentence(sample);
+  assert.ok(!/全国(対応|どこでも)/.test(sentence), sentence);
+});
+
+/* --- Build 24: 実データ42件に対する検査。担当Aのフィールド追加が終わるまで落ちる可能性がある --- */
+
+const realResources = Object.entries(resources).map(([id, resource]) => ({id, ...resource}));
+
+test('coverage counts every real resource exactly once across prefectures', () => {
+  const result = coverage(realResources);
+  assert.equal(result.total, realResources.length);
+  assert.equal(result.byPrefecture.reduce((sum, entry) => sum + entry.count, 0), result.total);
+});
+
+test('coverage never drops a known field of study from byDomain for the real catalog', () => {
+  const result = coverage(realResources);
+  assert.deepEqual(result.byDomain.map(entry => entry.domain).sort(), Object.keys(domains).sort());
+});
+
+test('coverageSentence never claims nationwide coverage for the real catalog', () => {
+  const sentence = coverageSentence(realResources);
+  assert.ok(!/全国(対応|どこでも)/.test(sentence), sentence);
+});
+
+/* --- Build 25: 家族のおすすめは、本人の受信箱を経てから野原へ入る --- */
+
+test('a family recommendation link round-trips Japanese text without carrying private state', () => {
+  const source = {
+    title: '海の研究を体験できるイベント', url: 'https://example.com/events?kind=海',
+    note: '前に話していたことと近そう', topic: 'sea', verb: 'observe'
+  };
+  const encoded = encodeRecommendation(source, catalog);
+  assert.match(encoded, /^[A-Za-z0-9_-]+$/);
+  assert.deepEqual(decodeRecommendation(encoded, catalog), {...source, status: 'new', id: null, receivedOn: null});
+  assert.equal(encoded.includes('grade'), false, 'the link has no student profile field');
+});
+
+test('recommendation links reject unsafe URLs, unknown tags and malformed payloads', () => {
+  assert.throws(() => encodeRecommendation({title: 'bad', url: 'javascript:alert(1)'}, catalog), /http/);
+  assert.throws(() => encodeRecommendation({title: 'bad', url: 'https://example.com', topic: 'unknown'}, catalog), /何について/);
+  assert.throws(() => decodeRecommendation('%%%not-valid%%%', catalog), /読み取れません/);
+});
+
+test('receiving a recommendation deduplicates it and keeps a bounded inbox', () => {
+  const payload = {title: '海の研究', url: 'https://example.com/sea', note: '', topic: 'sea', verb: null};
+  const first = receiveRecommendation(payload, [], catalog, {id: 'rfirst', receivedOn: '2026-09-12'});
+  assert.equal(first.added, true);
+  assert.equal(first.items[0].status, 'new');
+  const duplicate = receiveRecommendation(payload, first.items, catalog, {id: 'rsecond', receivedOn: '2026-09-12'});
+  assert.equal(duplicate.added, false);
+  assert.equal(duplicate.items.length, 1);
+
+  const full = Array.from({length: RECOMMENDATION_LIMIT}, (_, index) => ({
+    id: `r${index}`, title: `おすすめ${index}`, url: `https://example.com/${index}`,
+    note: '', topic: null, verb: null, status: 'later', receivedOn: '2026-09-01'
+  }));
+  const bounded = receiveRecommendation({...payload, url: 'https://example.com/new'}, full, catalog, {id: 'rnew', receivedOn: '2026-09-12'});
+  assert.equal(bounded.items.length, RECOMMENDATION_LIMIT);
+  assert.equal(bounded.items[0].id, 'rnew');
+});
+
+test('recommendations survive storage, while older Build 24 state gets an empty inbox', () => {
+  const recommendation = {
+    id: 'rfamily', title: '家族から届いたページ', url: 'https://example.com/family', note: '見てみて',
+    topic: 'sea', verb: 'observe', status: 'new', receivedOn: '2026-09-12'
+  };
+  const state = {...emptyState(), recommendations: [recommendation]};
+  assert.deepEqual(decodeState(encodeState(state), catalog).recommendations, [recommendation]);
+  assert.throws(() => validateRecommendations([{...recommendation, receivedOn: '2026-99-99'}], catalog), /受取日/);
+
+  const old = JSON.parse(encodeState(emptyState()));
+  delete old.recommendations;
+  assert.deepEqual(decodeState(JSON.stringify(old), catalog).recommendations, []);
+});
+
+test('every real resource belongs to one of the seven known categories', () => {
+  for (const resource of realResources) {
+    assert.ok(CATEGORIES.some(c => c.id === resource.category), `${resource.id} has category ${resource.category}`);
+  }
 });

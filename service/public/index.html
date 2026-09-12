@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="シンボクのクラウド版。自分の進路の地図を育てる場所。">
+    <title>シンボク</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main class="shell">
+      <p class="eyebrow">SHIMBOKU / CLOUD BETA</p>
+      <h1>気になるものを、<br>自分の地図に育てよう。</h1>
+      <p id="status" class="status">接続を確認しています…</p>
+      <section id="guest" class="card" hidden>
+        <h2>まずは、この端末で始める</h2>
+        <p>地図を試して、残したくなったらメールで同期を始められます。</p>
+        <a class="button secondary" href="/prototype/">端末だけで試す</a>
+        <hr>
+        <h2>地図を同期する</h2>
+        <form id="sign-in-form">
+          <label>メールアドレス<input id="email" name="email" type="email" autocomplete="email" required></label>
+          <button class="button" type="submit">ログインリンクを送る</button>
+        </form>
+        <p id="form-note" class="note" aria-live="polite"></p>
+      </section>
+      <section id="member" class="card" hidden>
+        <p class="pill">同期中</p>
+        <h2 id="member-title">あなたの地図</h2>
+        <p>クラウドの野原は Build 27 でここへ移ります。いまはアカウントとデータの境界を先に用意しています。</p>
+        <button id="sign-out" class="text-button" type="button">この端末からログアウト</button>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
