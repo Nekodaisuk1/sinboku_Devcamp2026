@@ -17,7 +17,10 @@ import {PREFECTURES} from './regions.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, validateRecommendations,
         RECOMMENDATION_LIMIT} from './recommendations.mjs';
 import * as fieldModule from './field.mjs';
-import {universityCandidates, universityCandidatesForDomain, EDUCATION_CHECKED_ON} from './education.mjs';
+import {
+  highSchoolCandidates, highSchoolCandidatesForDomain,
+  universityCandidates, universityCandidatesForDomain, EDUCATION_CHECKED_ON
+} from './education.mjs';
 import {schoolId, dismissSchool, recordSchoolView, toggleSchoolMark, formatSchoolViewTime, SCHOOL_RECORD_LIMIT} from './school-records.mjs';
 
 const routeRecords = routeDomains().flatMap(domainId => routesForDomain(domainId, {name: domainId}).map(route => ({domainId, route})));
@@ -612,6 +615,17 @@ test('every field offers four or five checked university alternatives', () => {
     assert.ok(candidates.every(item => /^https:\/\//.test(item.url) && item.activity.length > 12));
   }
   assert.equal(new Set(universityCandidates.map(item => item.id)).size, universityCandidates.length);
+});
+
+test('marine and biology fields offer checked Kanto high-school activities', () => {
+  for (const domainId of ['ecology', 'biology', 'environment']) {
+    const candidates = highSchoolCandidatesForDomain(domainId);
+    assert.ok(candidates.length >= 4 && candidates.length <= 5, `${domainId} has ${candidates.length} high schools`);
+    assert.ok(candidates.every(item => item.checkedOn === EDUCATION_CHECKED_ON));
+    assert.ok(candidates.every(item => /^https:\/\//.test(item.url)
+      && (item.prefecture.endsWith('県') || item.prefecture === '東京都')));
+  }
+  assert.equal(new Set(highSchoolCandidates.map(item => item.id)).size, highSchoolCandidates.length);
 });
 
 test('a general science field without detailed routes still exposes clickable university and high-school steps', () => {

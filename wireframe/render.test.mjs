@@ -120,6 +120,17 @@ test('every operable element in the field carries a name and is keyboard-reachab
   }
 });
 
+test('starting a node drag captures its pointer until the gesture ends', () => {
+  assert.equal(typeof fieldUiModule.captureNodePointer, 'function');
+  let captured = null;
+  const node = {setPointerCapture(pointerId) {captured = pointerId;}};
+
+  fieldUiModule.captureNodePointer(node, 17);
+
+  assert.equal(captured, 17);
+  assert.equal(fieldUiModule.captureNodePointer({}, 18), false);
+});
+
 test('a cluster names the count it hides in words, not only through its shape', () => {
   const placements = Array.from({length: 6}, (_, index) => put(`p${index}`, 'games', 0.5, 'now', 'topic'));
   const view = layout({placements, width: 360});

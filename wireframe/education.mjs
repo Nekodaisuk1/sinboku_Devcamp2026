@@ -4,6 +4,32 @@ const candidate = (id, name, url, source, activity, domains) => ({
   id, name, url, source, activity, domains, checkedOn: EDUCATION_CHECKED_ON
 });
 
+const schoolCandidate = (id, name, prefecture, url, source, activity, domains) => ({
+  id, name, prefecture, url, source, activity, domains, checkedOn: EDUCATION_CHECKED_ON
+});
+
+// Official school pages checked on the date above. These entries describe a
+// concrete class, field exercise, or research activity rather than only naming
+// a broad school type.
+export const highSchoolCandidates = [
+  schoolCandidate('ibaraki-kaiyo', '茨城県立海洋高等学校', '茨城県', 'https://www.kaiyo-h.ibk.ed.jp/', '茨城県立海洋高等学校', '実習船「鹿島丸」を使い、海洋技術・水産食品・海洋産業を実習中心で学ぶ', ['ecology', 'biology', 'environment']),
+  schoolCandidate('kanagawa-kaiyokagaku', '神奈川県立海洋科学高等学校', '神奈川県', 'https://www.pen-kanagawa.ed.jp/kaiyokagaku-h/gaiyou/', '神奈川県立海洋科学高等学校', '船舶運航・水産食品・無線技術・生物環境の4学科で海洋を専門的に学ぶ', ['ecology', 'biology', 'environment']),
+  schoolCandidate('chiba-tateyamasogo', '千葉県立館山総合高等学校 海洋科', '千葉県', 'https://cms2.chiba-c.ed.jp/tateyamasogo/%E5%85%A8%E6%97%A5%E5%88%B6%E3%81%AE%E8%AA%B2%E7%A8%8B-1/%E6%B5%B7%E6%B4%8B%E7%A7%91/', '千葉県立館山総合高等学校', '南房総の海で潜水し、栽培環境・船舶・食品加工を実習する', ['ecology', 'biology', 'environment']),
+  schoolCandidate('tochigi-bato', '栃木県立馬頭高等学校 水産科', '栃木県', 'https://www.tochigi-edu.ed.jp/bato/nc3/%E6%B0%B4%E7%94%A3%E7%A7%91', '栃木県立馬頭高等学校', '全国唯一の内陸水産科で、淡水魚の増養殖・採卵と河川の水質・生物調査を行う', ['ecology', 'biology', 'environment']),
+  schoolCandidate('tokyo-oshima-kaiyo', '東京都立大島海洋国際高等学校', '東京都', 'https://www.metro.ed.jp/oosimakaiyokokusai-h/index.html', '東京都立大島海洋国際高等学校', '伊豆大島を学びの場に、海洋・船舶・水産と国際理解を実習から学ぶ', ['ecology', 'biology', 'environment']),
+
+  schoolCandidate('chiba-chibahigashi-biology', '千葉県立千葉東高等学校 生物部', '千葉県', 'https://cms1.chiba-c.ed.jp/chibahigashi-h/e2e1d11aa88a9ccb3ded7372a7b26eb8/%E6%96%87%E5%8C%96%E9%83%A8/%E7%94%9F%E7%89%A9%E9%83%A8', '千葉県立千葉東高等学校', '飼育生物から疑問を見つけて課題研究を行い、大学や県の研究発表会で発表する', ['biology']),
+  schoolCandidate('chiba-kemigawa-biology', '千葉県立検見川高等学校 生物部', '千葉県', 'https://cms1.chiba-c.ed.jp/kemigawa-h/blogs/blog_entries/view/80/a65abf9f174009e3dd7f1f883949ae0c?frame_id=631', '千葉県立検見川高等学校', 'ミールワームによる海岸ごみ処理を研究し、高校生理科研究発表会で議論する', ['biology', 'environment']),
+  schoolCandidate('chiba-funabashikeimei-biology', '千葉県立船橋啓明高等学校 生物部', '千葉県', 'https://cms1.chiba-c.ed.jp/f.keimei-h/2f2400f1167cffd40854e55713436a12/%E7%94%9F%E7%89%A9', '千葉県立船橋啓明高等学校', '自然博物館と連携し、希少なホトケドジョウのレスキューと観察に取り組む', ['biology', 'ecology']),
+  schoolCandidate('chiba-kisarazu-biology', '千葉県立木更津高等学校 生物部', '千葉県', 'https://cms2.chiba-c.ed.jp/kisarazuhs/%E9%83%A8%E6%B4%BB%E5%8B%95%E3%83%BB%E5%A7%94%E5%93%A1%E4%BC%9A/%E6%96%87%E5%8C%96%E7%B3%BB/%E7%94%9F%E7%89%A9', '千葉県立木更津高等学校', '研究機関の指導を受け、DNAと生物情報学を用いた研究を発表する', ['biology'])
+];
+
+export function highSchoolCandidatesForDomain(domainId, {limit = 5, excludeUrl = null} = {}) {
+  return highSchoolCandidates
+    .filter(item => item.domains.includes(domainId) && item.url !== excludeUrl)
+    .slice(0, limit);
+}
+
 // University and faculty pages checked on the date above. A candidate may belong to
 // several fields when its official curriculum explicitly crosses those fields.
 export const universityCandidates = [
