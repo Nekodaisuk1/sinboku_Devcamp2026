@@ -65,7 +65,7 @@ test('a cluster names the count it hides in words, not only through its shape', 
   assert.match(attr(tag, 'aria-label'), /\d+/, 'the aria-label must state the hidden count as a digit');
 });
 
-test('a converged field is marked by class, spark and word together, never by color alone', () => {
+test('a converged field is marked by class, spark and plain language, never by color alone', () => {
   // 既存の約束（README/実装コメント）は「色・枠線・印の3つで示す」なので、
   // クラスだけでなく node-spark の印と、一覧側の「合流」という言葉の両方があるかを確かめる。
   const placements = [put('a', 'sea', 0.2), put('b', 'cooking', 0.8)];
@@ -77,7 +77,7 @@ test('a converged field is marked by class, spark and word together, never by co
   assert.match(nodeBlock, /node-spark/, 'a converged node must also carry the spark mark, not only the class');
   const groups = listGroups(placements, 'domain');
   const listHtml = renderFieldList(groups, convergences(placements));
-  assert.match(listHtml, /合流/, 'renderFieldList must say "合流" in words, not rely on color or a class alone');
+  assert.match(listHtml, /複数の項目に共通/, 'renderFieldList must explain the shared field without relying on color or a class alone');
 });
 
 test('user-supplied text is escaped before it reaches the SVG or the list', () => {
@@ -120,7 +120,7 @@ test('route comparison shows each route feature and a direct official detail lin
   const html = renderRoutes({domainId: 'media', domain: domains.media, saved: new Set(), checkedOn: '2026-09-12'});
   assert.equal((html.match(/class="route-card"/g) ?? []).length, 4);
   assert.equal((html.match(/class="route-detail"/g) ?? []).length, 4);
-  assert.match(html, /この経路の大学・学部を公式ページで見る/);
+  assert.match(html, /このルートの大学・学部を公式ページで見る/);
 });
 
 test('university candidates show four together and put later candidates behind an expandable control', () => {

@@ -48,7 +48,7 @@ function save() {
     // 写真を足して入りきらなくなった場合と、ブラウザが保存を止めている場合では、次にやることが違う。
     persist = false;
     storageNote = error.name === 'QuotaExceededError' || /大きすぎ/.test(error.message)
-      ? `記録を保存できませんでした。${error.message} 写真を置いた置きものを外すと、また保存できるようになります。画面を閉じるまでは、いまの内容は残っています。`
+      ? `記録を保存できませんでした。${error.message} 写真を含む項目を削除すると、また保存できるようになります。画面を閉じるまでは、いまの内容は残っています。`
       : `記録を保存できませんでした（${error.name}）。このブラウザの設定で保存が止められている可能性があります。`;
     render();
   }
@@ -153,7 +153,7 @@ function consumeRecommendationHash() {
     });
     state.recommendations = result.items;
     save();
-    notify(result.added ? '家族からのおすすめが届きました。野原に置くか、あとで見るかを選べます。' : 'このおすすめは、すでに届いています。');
+    notify(result.added ? '家族からのおすすめが届きました。進路マップに追加するか、あとで見るかを選べます。' : 'このおすすめは、すでに届いています。');
   } catch (error) {
     notify(error.message);
   }
@@ -195,13 +195,13 @@ function expandedMarkup(view) {
   if (!open.length) return '';
   // 段の名前は「◯◯を選ぶ」なので、「を閉じる」を足すと「選ぶを閉じる」になる。
   // 見出しは名前だけにして、何をする釦かは aria-label で言う。
-  return `<p class="field-expanded">広げている段：${open.map(lane =>
-    `<button class="lane-chip on" data-expand-lane="${escape(lane.id)}" data-expand-from="list" aria-label="${escape(lane.title)}の段をまとめる">${escape(lane.title)}<span aria-hidden="true"> ✕</span></button>`).join('')}</p>`;
+  return `<p class="field-expanded">広げている時期：${open.map(lane =>
+    `<button class="lane-chip on" data-expand-lane="${escape(lane.id)}" data-expand-from="list" aria-label="${escape(lane.title)}の時期をまとめる">${escape(lane.title)}<span aria-hidden="true"> ✕</span></button>`).join('')}</p>`;
 }
 
 function fieldViewMarkup() {
   if (state.placements.length === 0) return '';
-  return `<div class="field-views" role="group" aria-label="野原の表示">
+  return `<div class="field-views" role="group" aria-label="進路マップの表示">
     ${FIELD_VIEWS.map(item => `<button class="view-chip${ui.fieldView === item.id ? ' on' : ''}" data-field-view="${escape(item.id)}" aria-pressed="${ui.fieldView === item.id}" title="${escape(item.hint)}">${escape(item.label)}</button>`).join('')}
   </div>`;
 }
@@ -248,10 +248,10 @@ function highlightFor(view) {
 function tutorialMarkup() {
   const count = state.placements.length;
   if (count === 0) {
-    return `<section class="tutor tutor-start" aria-label="野原のはじめかた">
+    return `<section class="tutor tutor-start" aria-label="進路マップの使い方">
       <p class="tutor-step">はじめかた</p>
-      <h2>好きなものを、ひとつ置く</h2>
-      <p>選ぶと線が伸びて、つながる学問が現れます。</p>
+      <h2>好きなものを、ひとつ追加する</h2>
+      <p>選ぶと、関連する学問が線で表示されます。</p>
       <div class="tutor-choices">
         ${Object.entries(topics).map(([id, topic]) => `<button class="tutor-choice" data-quick-topic="${escape(id)}">${escape(topic.label)}</button>`).join('')}
         <button class="tutor-choice write" data-open-picker="custom">自分で書く</button>
@@ -266,23 +266,23 @@ function contextMarkup(next, grade, week) {
   const timing = next.when && next.when.months >= 0
     ? `あと${next.when.months}か月`
     : grade ? next.defer : '中3の12月ごろが目安';
-  const decision = next.name || '次の分岐点';
+  const decision = next.name || '次の選択時期';
   return `<section class="field-context" aria-label="いま確認できること">
     <button class="context-item context-decision" data-node-open="lane-${escape(next.decision)}">
-      <span>次に開く扉</span>
+      <span>次の選択時期</span>
       <b>${escape(decision)}</b>
       <small>${escape(timing)} · いま全部を決めなくて大丈夫</small>
     </button>
     ${state.placements.length === 1 ? `<button class="context-item context-resume" data-open-picker="topic">
       <span>つぎの一手</span>
-      <b>もうひとつ置いて、共通点を見る</b>
+      <b>もうひとつ追加して、共通点を見る</b>
       <small>別の好きなことや活動を選ぶ</small>
     </button>` : placement ? `<button class="context-item context-resume" data-node-open="${escape(placement.id)}">
-      <span>野原のつづき</span>
+      <span>進路マップのつづき</span>
       <b>「${escape(placement.label)}」を見る</b>
-      <small>野原に${state.placements.length}件${week ? ` · 7日間の記録${week}件` : ''}</small>
+      <small>追加した項目${state.placements.length}件${week ? ` · 7日間の記録${week}件` : ''}</small>
     </button>` : `<a class="context-item context-explore" href="#find">
-      <span>何を置くか迷ったら</span>
+      <span>何を追加するか迷ったら</span>
       <b>やっていることから探す</b>
       <small>36の活動と42の掲載情報</small>
     </a>`}
@@ -296,13 +296,13 @@ function convergenceMarkup() {
     if (state.placements.length < 2) return '';
     const loose = state.placements.filter(placement => !reachOf(placement).length).length;
     return `<section class="converge converge-none">
-      <h2>まだ合流していません</h2>
-      <p>${loose ? `${loose}件は、まだどこにもつながっていません。タップして関わり方を選ぶと線が伸びます。` : 'いま置いてあるものは、別々の領域に向かっています。それも一つの答えです。'}</p>
-      <p class="converge-note">無理に共通点を作ることはしません。別の好きなことを足すか、「探す」で動詞から活動を足してみてください。</p>
+      <h2>共通する学問はまだありません</h2>
+      <p>${loose ? `${loose}件は、まだ学問と関連づいていません。タップして関わり方を選ぶと、関連する学問が表示されます。` : '追加した項目は、それぞれ別の学問分野につながっています。それも一つの結果です。'}</p>
+      <p class="converge-note">無理に共通点を作ることはしません。別の好きなことを追加するか、「探す」で関わり方から活動を追加してみてください。</p>
     </section>`;
   }
   return `<section class="converge">
-    <h2>ここで合流しています</h2>
+    <h2>複数の項目に共通する学問</h2>
     <ul>${found.map(item => {
       // 名前を全部並べない。1つの学問に8件届くことがあり、並べると1行が画面を埋める。
       const {shown, rest, all, name} = convergenceSentence(item);
@@ -311,7 +311,7 @@ function convergenceMarkup() {
       <p class="converge-to">${escape(all)} <button class="link-button" data-node-open="domain-${escape(item.domain)}">${escape(name)}</button> につながっています</p>
     </li>`;
     }).join('')}</ul>
-    <p class="converge-note">同じ領域に届いているという意味です。向き不向きの判定ではありません。</p>
+    <p class="converge-note">複数の項目が同じ学問分野につながっているという意味です。向き不向きの判定ではありません。</p>
   </section>`;
 }
 
@@ -329,8 +329,8 @@ function placementPanel(placement) {
     ${placement.photo ? `<img class="photo-preview" src="${escape(placement.photo)}" alt="「${escape(placement.label)}」として置いた写真">` : ''}
     ${placement.url ? `<a class="secondary" href="${escape(placement.url)}" target="_blank" rel="noopener noreferrer nofollow">このページを開く ↗<small class="confirm-url">${escape(placement.url)}</small></a>` : ''}
     ${reach.length
-      ? `<p class="panel-reach">ここから <b>${reach.map(escape).join('・')}</b> に線が伸びています。</p>`
-      : '<p class="panel-reach muted">まだどこにもつながっていません。下でタグを選ぶと線が伸びます。</p>'}
+      ? `<p class="panel-reach">関連する学問：<b>${reach.map(escape).join('・')}</b></p>`
+      : '<p class="panel-reach muted">関連する学問はまだありません。下でタグを選ぶと表示されます。</p>'}
 
     ${own ? `<div class="panel-block">
       <p class="panel-label">何について？</p>
@@ -345,7 +345,7 @@ function placementPanel(placement) {
     <div class="panel-block">
       <p class="panel-label">いつのこと？</p>
       <div class="lane-row">${LANES.map(item => `<button class="lane-chip${placement.lane === item.id ? ' on' : ''}" data-move-lane="${escape(item.id)}" aria-pressed="${placement.lane === item.id}">${escape(item.id === 'now' ? 'いま' : item.horizon)}</button>`).join('')}</div>
-      <p class="panel-hint">未来の段に置けば「その頃にやりたいこと」として持っておけます。指で動かしても変えられます。</p>
+      <p class="panel-hint">未来の時期を選ぶと「その頃にやりたいこと」として残せます。指で動かしても変更できます。</p>
     </div>
 
     <form class="panel-log" data-log-form="${escape(placement.id)}">
@@ -357,7 +357,7 @@ function placementPanel(placement) {
     </form>
     ${records.length ? `<ul class="panel-records">${records.slice(0, 6).map(entry => `<li><span>${escape(entry.date.slice(5).replace('-', '/'))}</span>${escape(entry.text)}<button class="text-button warn" data-log-remove="${escape(entry.id)}">消す</button></li>`).join('')}</ul>` : ''}
 
-    <button class="text-button warn panel-remove" data-remove-placement="${escape(placement.id)}">この置きものを外す</button>
+    <button class="text-button warn panel-remove" data-remove-placement="${escape(placement.id)}">この項目を削除する</button>
   </section>`;
 }
 
@@ -369,15 +369,15 @@ function domainPanel(domainId) {
   const selectedRoute = routes.find(item => item.kind === ui.routeKind) ?? null;
   return `<section class="panel panel-domain">
     <button class="panel-close" data-deselect>× 閉じる</button>
-    <p class="panel-kind">置いたものから現れた学問</p>
+    <p class="panel-kind">追加した項目に関連する学問</p>
     <h2>${escape(domain.name)}</h2>
     <p>${escape(domain.summary)}</p>
     <p class="panel-example">${escape(domain.example)}</p>
-    ${from.length ? `<p class="panel-reach">${from.map(label => `「${escape(label)}」`).join('と')}から線が届いています。</p>` : ''}
+    ${from.length ? `<p class="panel-reach">${from.map(label => `「${escape(label)}」`).join('と')}に関連しています。</p>` : ''}
 
     ${routes.length ? `<div class="panel-block route-compare-panel">
-      <p class="panel-label">ここへの道は${routes.length}本。${selectedRoute ? '選んだ1本を野原に表示しています。' : '決める前に、すべて野原へ表示しています。'}</p>
-      ${selectedRoute ? '<button class="text-button route-show-all" data-route-all>すべての経路をもう一度比べる</button>' : ''}
+      <p class="panel-label">進路ルートは${routes.length}通り。${selectedRoute ? '選んだルートを進路マップに表示しています。' : '選ぶ前に、すべてのルートを進路マップに表示しています。'}</p>
+      ${selectedRoute ? '<button class="text-button route-show-all" data-route-all>すべてのルートをもう一度比べる</button>' : ''}
       ${renderUniversityCandidates(routes)}
       <div class="route-choice-grid">${routes.map(item => {
         return `<article class="route-choice${ui.routeKind === item.kind ? ' on' : ''}">
@@ -389,15 +389,15 @@ function domainPanel(domainId) {
           <p>${escape(item.why)}</p>
         </article>`;
       }).join('')}</div>
-      <a class="secondary route-entry" href="#routes/${escape(domainId)}">${routes.length}本の特徴を表と個別ページで比べる →</a>
-    </div>` : '<p class="empty-note">この学問の経路は、まだ用意できていません。</p>'}
+      <a class="secondary route-entry" href="#routes/${escape(domainId)}">${routes.length}通りの特徴を表と個別ページで比べる →</a>
+    </div>` : '<p class="empty-note">この学問の進路ルートは、まだ用意できていません。</p>'}
   </section>`;
 }
 
 function routeNodePanel(node) {
   return `<section class="panel">
     <button class="panel-close" data-deselect>× 閉じる</button>
-    <p class="panel-kind">経路の途中</p>
+    <p class="panel-kind">進路ルートの途中</p>
     <h2>${escape(node.label)}</h2>
     <p>${escape(node.detail)}</p>
     ${node.link ? `<a class="secondary" href="${escape(node.link.url)}" target="_blank" rel="noopener noreferrer">${escape(node.link.name)} ↗<small>出典 ${escape(node.link.source)}・別のタブで開きます</small></a>` : ''}
@@ -411,21 +411,21 @@ function lanePanel(laneId) {
   if (!rung) {
     return `<section class="panel">
       <button class="panel-close" data-deselect>× 閉じる</button>
-      <p class="panel-kind">いちばん下の段</p>
+      <p class="panel-kind">現在の時期</p>
       <h2>いま</h2>
-      <p>今日のこと。ここに置いたものが、上の段へ線を伸ばします。この段で決めることは、何もありません。</p>
+      <p>今日のことです。追加した項目から、関連する学問や進路が上の時期へ表示されます。ここで決めることはありません。</p>
     </section>`;
   }
   const editing = ui.editing === laneId;
   const away = rung.when === null ? ''
-    : rung.when.months < 0 ? 'この段は過ぎています。'
+    : rung.when.months < 0 ? 'この選択時期は過ぎています。'
     : rung.when.months === 0 ? '今月ごろです。'
     : `あと${rung.when.months}か月（${rung.when.year}年${rung.when.month}月ごろ）。`;
   return `<section class="panel">
     <button class="panel-close" data-deselect>× 閉じる</button>
-    <p class="panel-kind">分岐点${rung.status === 'next' ? '・次はここ' : ''}</p>
+    <p class="panel-kind">選択時期${rung.status === 'next' ? '・次はここ' : ''}</p>
     <h2>${escape(rung.name)}</h2>
-    <p class="panel-defer">${escape(rung.defer)}保留できる。${escape(away)}</p>
+    <p class="panel-defer">今すぐ決める必要はありません。目安は${escape(rung.defer)}です。${escape(away)}</p>
     <p>${escape(rung.detail)}</p>
     ${editing
       ? `<form class="stance-form" data-stance-form="${escape(laneId)}">
@@ -436,7 +436,7 @@ function lanePanel(laneId) {
         </form>`
       : rung.stance
         ? `<p class="stance"><span>いまの考え</span>${escape(rung.stance)} <button class="text-button" data-stance-edit="${escape(laneId)}">書き直す</button></p>`
-        : `<p class="stance empty">まだ決める段階ではありません。<button class="text-button" data-stance-edit="${escape(laneId)}">いま思っていることを書く</button></p>`}
+        : `<p class="stance empty">まだ決める時期ではありません。<button class="text-button" data-stance-edit="${escape(laneId)}">いま思っていることを書く</button></p>`}
   </section>`;
 }
 
@@ -497,16 +497,16 @@ async function shrinkPhoto(file) {
 function draftReachNote(draft) {
   const reach = reachOf({kind: draft.kind, ref: null, topic: draft.topic, verb: draft.verb})
     .map(id => domains[id]?.name).filter(Boolean);
-  if (!reach.length) return 'いまのままだと、どこにもつながりません。タグを選ぶと線が伸びます。選ばないまま置いてもかまいません。';
-  return `いまの選び方だと、${reach.join('・')}へ線が伸びます。`;
+  if (!reach.length) return 'いまのままだと、関連する学問はありません。タグはあとから選ぶこともできます。';
+  return `関連する学問：${reach.join('・')}`;
 }
 
 function draftMarkup() {
   if (!ui.draft) return '';
   const draft = ui.draft;
-  return `<dialog class="picker confirm-panel" id="draft" aria-label="野原に置く前の確認">
+  return `<dialog class="picker confirm-panel" id="draft" aria-label="進路マップに追加する前の確認">
     <div class="picker-head">
-      <p class="picker-lane">置く前に確認します</p>
+      <p class="picker-lane">追加する前に確認します</p>
       <button class="text-button" data-draft-cancel>やめる</button>
     </div>
     <p class="placement-caution">これは<b>自分で追加</b>するものです。このアプリは中身を見に行っていないので、内容は確認していません。${draft.kind === 'link' ? 'リンク先を開くかどうかは、自分で決めてください。' : ''}</p>
@@ -514,7 +514,7 @@ function draftMarkup() {
       ${draft.kind === 'link' ? `<div class="confirm-row"><span>リンク先</span><p class="confirm-url">${escape(draft.url)}</p></div>` : ''}
       ${draft.kind === 'photo' ? `<div class="confirm-row"><span>写真</span><img class="photo-preview" src="${escape(draft.photo)}" alt="置こうとしている写真"></div>` : ''}
 
-      <label for="draft-title">野原に出す名前</label>
+      <label for="draft-title">進路マップに表示する名前</label>
       <input id="draft-title" name="title" type="text" maxlength="${LABEL_LIMIT}" value="${escape(draft.title)}" placeholder="例：波の高さの調べ方" autocomplete="off" required>
 
       <p class="panel-label">何について？</p>
@@ -527,7 +527,7 @@ function draftMarkup() {
       <div class="lane-row">${LANES.map(item => `<button type="button" class="lane-chip${draft.lane === item.id ? ' on' : ''}" data-draft-lane="${escape(item.id)}" aria-pressed="${draft.lane === item.id}">${escape(item.id === 'now' ? 'いま' : item.horizon)}</button>`).join('')}</div>
 
       <p class="panel-hint">${escape(draftReachNote(draft))}</p>
-      <button class="primary" type="submit">野原に置く</button>
+      <button class="primary" type="submit">進路マップに追加</button>
     </form>
   </dialog>`;
 }
@@ -539,7 +539,7 @@ function bookmarkletMarkup() {
   return `<details class="bookmarklet">
     <summary>見ているページを、ここへ送れるようにする</summary>
     <p class="panel-hint">下のリンクをブラウザのお気に入りバーへドラッグして登録します。登録したあと、気になるページで押すと、この画面の確認に届きます。送られるのはアドレスとページの題名だけで、このアプリから外へは何も出しません。</p>
-    <p><a class="bookmarklet-link" href="${escape(code)}" onclick="return false">野原へ送る</a></p>
+    <p><a class="bookmarklet-link" href="${escape(code)}" onclick="return false">進路マップへ送る</a></p>
     <p class="panel-hint">ドラッグできないときは、次の文字列をお気に入りのアドレス欄に貼り付けてください。</p>
     <textarea class="bookmarklet-code" rows="3" readonly>${escape(code)}</textarea>
   </details>`;
@@ -561,27 +561,27 @@ function pickerMarkup() {
               <input id="pick-label" name="label" type="text" maxlength="${LABEL_LIMIT}" placeholder="例：アンプを自作する" autocomplete="off" required>
               <p class="panel-label">どんなふうに関わる？（あとで選んでもかまいません）</p>
               <div class="verb-row">${verbs.map(verb => `<label class="verb-chip small"><input type="radio" name="verb" value="${escape(verb.id)}"> ${escape(verb.icon)} ${escape(verb.label)}</label>`).join('')}</div>
-              <button class="primary" type="submit">置く</button>
+              <button class="primary" type="submit">追加する</button>
             </form>
 
             <form class="pick-link" data-pick-link>
-              <label for="pick-url">見つけたページを置く</label>
+              <label for="pick-url">見つけたページを追加</label>
               <input id="pick-url" name="url" type="url" inputmode="url" maxlength="${URL_LIMIT}" placeholder="https://" autocomplete="off" required>
               <button class="secondary" type="submit">確認する</button>
-              <p class="panel-hint">貼り付けても、すぐには置きません。置く前に確認画面が出ます。中身は見に行きません。</p>
+              <p class="panel-hint">貼り付けても、すぐには追加しません。先に確認画面が出ます。リンク先の中身は確認しません。</p>
             </form>
 
             <div class="pick-photo">
-              <label for="pick-photo">写真から置く</label>
+              <label for="pick-photo">写真を追加</label>
               <input id="pick-photo" type="file" accept="image/*" data-photo-input>
-              <p class="panel-hint">写真はこの端末の中だけに残ります。送信しません。保存できる大きさまで小さくしてから置きます（${PHOTO_LIMIT}枚まで）。</p>
+              <p class="panel-hint">写真はこの端末の中だけに残り、送信されません。保存できる大きさに縮小して追加します（${PHOTO_LIMIT}枚まで）。</p>
             </div>
 
             ${bookmarkletMarkup()}
           </div>`;
-  return `<dialog class="picker" id="picker" aria-label="野原に置くものを選ぶ">
+  return `<dialog class="picker" id="picker" aria-label="進路マップに追加するものを選ぶ">
     <div class="picker-head">
-      <p class="picker-lane">${escape(laneById(laneId).id === 'now' ? 'いまの段に置きます' : `${laneById(laneId).horizon}の段に置きます`)}</p>
+      <p class="picker-lane">${escape(laneById(laneId).id === 'now' ? '現在の時期に追加します' : `${laneById(laneId).horizon}の時期に追加します`)}</p>
       <button class="text-button" data-close-picker>閉じる</button>
     </div>
     <div class="lane-row">${LANES.map(item => `<button class="lane-chip${item.id === laneId ? ' on' : ''}" data-picker-lane="${escape(item.id)}">${escape(item.id === 'now' ? 'いま' : item.horizon)}</button>`).join('')}</div>
@@ -599,19 +599,19 @@ function nowPage() {
   const week = recentCount(state.log, 7);
   return `
     <section class="field-head">
-      <h1>時間の野原</h1>
-      <p class="lead">下が今日、上が7年先。横はどこに置いてもかまいません。<button class="link-button" data-about>この野原について</button></p>
+      <h1>7年進路マップ</h1>
+      <p class="lead">下が今日、上が7年先です。横の位置は自由に変えられます。<button class="link-button" data-about>このマップについて</button></p>
       <div class="field-controls">
         <button class="grade-open" data-grade-open>${grade ? `いま ${escape(grade.label)}` : 'いま何年生？'}</button>
-        <button class="primary" data-open-picker="topic">＋ 置く</button>
-        <button class="ghost" data-list-view aria-pressed="${ui.listView}">${ui.listView ? '野原で見る' : '一覧で読む'}</button>
+        <button class="primary" data-open-picker="topic">＋ 項目を追加</button>
+        <button class="ghost" data-list-view aria-pressed="${ui.listView}">${ui.listView ? 'マップで見る' : '一覧で読む'}</button>
       </div>
       ${fieldViewMarkup()}
-      ${ui.about ? '<p class="field-about">縦だけが時間です。横の位置に意味はありません。意味を持つのは、置いたものから伸びた線が、どこで合流するかです。関係がなさそうな2つが同じ学問に届くことがあります。</p>' : ''}
+      ${ui.about ? '<p class="field-about">縦軸は時間です。追加した項目と関連する学問を線で結びます。異なる興味が同じ学問につながることもあります。</p>' : ''}
       ${ui.gradePicker ? `<div class="grade-choices">
         ${GRADES.map(item => `<button class="grade-choice${state.grade === item.id ? ' on' : ''}" data-grade="${item.id}">${escape(item.label)}</button>`).join('')}
         <button class="grade-choice clear" data-grade="">答えない</button>
-      </div><p class="grade-note">分岐点まであと何か月かを出すためだけに使います。この端末の中だけです。</p>` : ''}
+      </div><p class="grade-note">次の選択時期まであと何か月かを出すためだけに使います。この端末の中だけです。</p>` : ''}
     </section>
 
     ${recommendationInboxMarkup()}
@@ -621,7 +621,7 @@ function nowPage() {
       ? `${listSortMarkup()}
          ${view.scope.placements.length
             ? renderFieldList(listWithSource(listGroups(view.scope.placements, ui.listSort)), convergences(view.scope.placements))
-            : '<p class="field-list-empty">まだ何も置いていません。</p>'}
+            : '<p class="field-list-empty">まだ項目がありません。</p>'}
          ${scopeMarkup(view.scope)}`
       : `<div class="field-stage">
            <div class="field-wrap" id="field-wrap">${renderField(view, {selected: ui.selected, highlight: highlightFor(view), next: next.decision})}</div>
@@ -629,7 +629,7 @@ function nowPage() {
          </div>
          ${expandedMarkup(view)}
          ${scopeMarkup(view.scope)}
-         <p class="field-legend">段の見出しをタップすると、その分岐点について読めます。置いたものは指でも、選んでから矢印キーでも動かせます。混みあった段は「広げる」で1つずつに分けられます。図が読みにくいときは「一覧で読む」へ。</p>`}
+         <p class="field-legend">時期の見出しをタップすると、その時期の選択について読めます。追加した項目は指でも、選んでから矢印キーでも動かせます。混みあった時期は「広げる」で1件ずつ表示できます。図が読みにくいときは「一覧で読む」へ。</p>`}
 
     ${selectionPanel(view)}
     ${convergenceMarkup()}
@@ -638,7 +638,7 @@ function nowPage() {
     <section class="family-entry" aria-labelledby="family-entry-title">
       <p class="eyebrow">家族と見つける</p>
       <h2 id="family-entry-title">おすすめを送ってもらう</h2>
-      <p>家族が作ったリンクから、この受信箱へ1件ずつ届きます。野原に置くかは自分で決められます。</p>
+      <p>家族が作ったリンクから、この受信箱へ1件ずつ届きます。進路マップに追加するかは自分で決められます。</p>
       <a class="secondary inline-action" href="#recommend">家族用の送り方を開く</a>
     </section>
     ${pickerMarkup()}
@@ -656,7 +656,7 @@ function recommendationCard(item) {
     ${tags.length ? `<p class="recommend-tags">${tags.map(tag => `<span>${escape(tag)}</span>`).join('')}</p>` : ''}
     <a class="recommend-url" href="${escape(item.url)}" target="_blank" rel="noopener noreferrer nofollow">${escape(host)}を開く</a>
     <div class="recommend-actions">
-      <button class="primary small" data-recommend-place="${escape(item.id)}">野原に置く</button>
+      <button class="primary small" data-recommend-place="${escape(item.id)}">進路マップに追加</button>
       ${item.status === 'new' ? `<button class="ghost small" data-recommend-later="${escape(item.id)}">あとで見る</button>` : ''}
       <button class="text-button" data-recommend-dismiss="${escape(item.id)}">受信箱から消す</button>
     </div>
@@ -671,7 +671,7 @@ function recommendationInboxMarkup() {
   return `<section class="recommend-inbox" aria-labelledby="recommend-inbox-title">
     <p class="eyebrow">届いたもの ${fresh.length ? `<strong>${fresh.length}</strong>` : ''}</p>
     <h2 id="recommend-inbox-title">家族からのおすすめ</h2>
-    <p class="panel-hint">リンク先の内容はこのアプリでは確認していません。開くか、野原へ置くかは自分で選べます。</p>
+    <p class="panel-hint">リンク先の内容はこのアプリでは確認していません。開くか、進路マップへ追加するかは自分で選べます。</p>
     ${fresh.length ? `<ul class="recommend-list">${fresh.map(recommendationCard).join('')}</ul>` : '<p class="recommend-empty">新しく届いたものはありません。</p>'}
     ${later.length ? `<details class="recommend-later"><summary>あとで見る（${later.length}件）</summary><ul class="recommend-list">${later.map(recommendationCard).join('')}</ul></details>` : ''}
   </section>`;
@@ -679,10 +679,10 @@ function recommendationInboxMarkup() {
 
 function recommendPage() {
   return `<section class="recommend-maker page-head">
-    <a class="back" href="#now">← 時間の野原へ</a>
+    <a class="back" href="#now">← 進路マップへ</a>
     <p class="eyebrow">家族用</p>
     <h1>1件だけ、おすすめを渡す</h1>
-    <p class="lead">気になったページと一言をリンクにします。受け取った本人が、野原に置くかを決めます。</p>
+    <p class="lead">気になったページと一言をリンクにします。受け取った本人が、進路マップに追加するかを決めます。</p>
     <form data-recommend-form class="recommend-form">
       <label>おすすめの名前 <input name="title" type="text" maxlength="${RECOMMENDATION_TITLE_LIMIT}" required placeholder="例：海の研究を体験できるイベント"></label>
       <label>ページのURL <input name="url" type="url" inputmode="url" maxlength="${RECOMMENDATION_URL_LIMIT}" required placeholder="https://"></label>
@@ -697,9 +697,9 @@ function recommendPage() {
       <h2>このリンクを本人へ送る</h2>
       <textarea readonly rows="4">${escape(ui.shareLink)}</textarea>
       <button class="secondary" data-copy-share>リンクをコピー</button>
-      <p>このリンクには上の1件だけが入っています。本人の記録や野原は家族側には見えません。</p>
+      <p>このリンクには上の1件だけが入っています。本人の記録や進路マップは家族側には見えません。</p>
     </div>` : ''}
-    <aside class="recommend-boundary"><strong>共有されるもの</strong><span>名前・URL・一言・選んだタグ</span><strong>共有されないもの</strong><span>本人の野原・記録・学年・保存内容</span></aside>
+    <aside class="recommend-boundary"><strong>共有されるもの</strong><span>名前・URL・一言・選んだタグ</span><strong>共有されないもの</strong><span>本人の進路マップ・記録・学年・保存内容</span></aside>
   </section>`;
 }
 
@@ -711,7 +711,7 @@ function activityMarkup(activity) {
     <h4>${escape(activity.title)}</h4>
     <p>${escape(activity.description)}</p>
     <p class="activity-time">目安 ${activity.minutes}分</p>
-    <button class="primary small" data-place-activity="${escape(activity.id)}">野原に置く</button>
+    <button class="primary small" data-place-activity="${escape(activity.id)}">進路マップに追加</button>
   </li>`;
 }
 
@@ -733,7 +733,7 @@ function resourceMarkup(item) {
     </details>
     <div class="resource-actions">
       <a class="secondary" href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">公式情報を見る ↗<small>別のタブで開きます</small></a>
-      <button class="text-button" data-place-resource="${escape(item.id)}"${placed ? ' disabled' : ''}>${placed ? '✓ 野原にある' : '野原に置く'}</button>
+      <button class="text-button" data-place-resource="${escape(item.id)}"${placed ? ' disabled' : ''}>${placed ? '✓ 追加済み' : '進路マップに追加'}</button>
     </div>
   </li>`;
 }
@@ -755,16 +755,16 @@ function verbDetail(verbId) {
       ? `<p class="verb-note">同じ「${escape(verb.label)}」が、好きなことをまたいで並びます。${ui.athome ? `家でできるのは${coverage.athome}件。` : `全部で${coverage.activities}件。`}</p>
          ${groups.map(group => `<div class="activity-group"><h4 class="activity-topic">${escape(group.label)}</h4><ul class="activity-list">${group.items.map(activityMarkup).join('')}</ul></div>`).join('')}`
       : '<p class="empty-note">この条件に合う活動アイデアは、まだ用意できていません。条件を外すと出ます。</p>'}
-    <p class="editorial">活動のアイデアです。募集中のイベントや、特定の団体の案内ではありません。動詞の割り当てはこのアプリの編集です。</p>
+    <p class="editorial">活動のアイデアです。募集中のイベントや、特定の団体の案内ではありません。関わり方の分類はこのアプリの編集です。</p>
   </section>`;
   const domainSection = `<section class="verb-pane" aria-label="つながる学問">
-    <h3>この動詞を、学問にすると</h3>
+    <h3>この関わり方につながる学問</h3>
     <p class="verb-note">向き不向きの判定ではありません。「${escape(verb.label)}」を仕事や研究として続けている分野です。</p>
     <ul class="domain-list">${fields.map(field => `<li>
       <h4>${escape(field.name)}</h4>
       <p>${escape(field.summary)}</p>
       <p class="domain-example">${escape(field.example)}</p>
-      <a class="secondary" href="#routes/${escape(field.id)}">${escape(field.name)}にたどり着く道を見る →</a>
+      <a class="secondary" href="#routes/${escape(field.id)}">${escape(field.name)}への進路ルートを見る →</a>
     </li>`).join('')}</ul>
   </section>`;
   const resourceSection = `<section class="verb-pane" aria-label="掲載情報">
@@ -774,7 +774,7 @@ function verbDetail(verbId) {
   </section>`;
   const panes = {activities: activitySection, domains: domainSection, resources: resourceSection};
   return `<section class="verb-detail">
-    <a class="back" href="#find">← ほかの動詞を見る</a>
+    <a class="back" href="#find">← ほかの関わり方を見る</a>
     <h2><span aria-hidden="true">${escape(verb.icon)}</span> ${escape(verb.label)}</h2>
     <p class="verb-summary">${escape(verb.summary)}</p>
     <p class="verb-detail-text">${escape(verb.detail)}</p>
@@ -787,18 +787,18 @@ function verbDetail(verbId) {
 }
 
 function searchResultMarkup(entry) {
-  const labels = {verb: '動詞', topic: '好きなこと', activity: 'やってみる', domain: '学びの領域', resource: '掲載情報'};
+  const labels = {verb: '関わり方', topic: '好きなこと', activity: 'やってみる', domain: '学問分野', resource: '掲載情報'};
   const href = entry.type === 'verb' ? `#find/${entry.id}`
     : entry.type === 'domain' ? (hasRoutes(entry.id) ? `#routes/${entry.id}` : '')
     : entry.type === 'activity' ? `#find/${entry.activity.verb}`
     : entry.type === 'topic' ? '#find' : entry.resource.url;
   const external = entry.type === 'resource';
   const placeAction = entry.type === 'resource'
-    ? `<button class="text-button" data-place-resource="${escape(entry.id)}">野原に置く</button>`
+    ? `<button class="text-button" data-place-resource="${escape(entry.id)}">進路マップに追加</button>`
     : entry.type === 'activity'
-      ? `<button class="text-button" data-place-activity="${escape(entry.id)}">野原に置く</button>`
+      ? `<button class="text-button" data-place-activity="${escape(entry.id)}">進路マップに追加</button>`
       : entry.type === 'topic'
-        ? `<button class="text-button" data-quick-topic="${escape(entry.id)}">野原に置く</button>` : '';
+        ? `<button class="text-button" data-quick-topic="${escape(entry.id)}">進路マップに追加</button>` : '';
   return `<li class="result">
     <p class="result-type">${escape(labels[entry.type])}</p>
     <div class="result-head">${href ? `<a href="${escape(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escape(entry.name)}${external ? ' ↗' : ''}</a>` : `<span>${escape(entry.name)}</span>`}${placeAction}</div>
@@ -891,7 +891,7 @@ function listingsMarkup() {
     <p class="result-count">${found.length}件 / 全${all.length}件</p>
     ${found.length
       ? `<ul class="resource-list">${found.map(resourceMarkup).join('')}</ul>`
-      : '<p class="empty-note">この条件に当てはまる掲載はありません。載せていないものを、それらしく作ることはしません。条件をゆるめるか、「探す」で動詞から見てください。</p>'}
+      : '<p class="empty-note">この条件に当てはまる掲載はありません。載せていないものを、それらしく作ることはしません。条件をゆるめるか、「探す」で関わり方から見てください。</p>'}
 
     <button class="ghost" data-coverage-open aria-expanded="${ui.coverageOpen}">${ui.coverageOpen ? '掲載の偏りを閉じる' : '掲載の偏りを見る'}</button>
     ${ui.coverageOpen ? `<div class="coverage">
@@ -902,7 +902,7 @@ function listingsMarkup() {
       <ul class="coverage-list">${stats.byPrefecture.map(item => `<li><span>${escape(item.prefecture ?? 'どこからでも')}</span><b>${item.count}件</b></li>`).join('')}</ul>
       <p class="panel-label">学問ごと</p>
       <ul class="coverage-list">${stats.byDomain.map(item => `<li><span>${escape(item.name)}</span><b>${item.count}件</b>${item.thin ? '<em>掲載が少ない</em>' : ''}</li>`).join('')}</ul>
-      ${thin.length ? `<p class="panel-hint">${thin.map(item => escape(item.name)).join('・')}は掲載が薄い領域です。少ないのは、その道が細いからではなく、まだ調べきれていないからです。</p>` : ''}
+      ${thin.length ? `<p class="panel-hint">${thin.map(item => escape(item.name)).join('・')}は掲載が少ない領域です。進路の選択肢が少ないという意味ではなく、まだ調べきれていないためです。</p>` : ''}
     </div>` : ''}
   </section>`;
 }
@@ -911,7 +911,7 @@ function findPage(verbId) {
   return `
     <section class="page-head">
       <h1>探す</h1>
-      <p class="lead">学問の名前からではなく、いまやっていることから。見つけたものは野原に置けます。</p>
+      <p class="lead">学問の名前からではなく、いまやっていることから探せます。見つけたものは進路マップに追加できます。</p>
     </section>
 
     <form class="search" data-search>
@@ -946,9 +946,9 @@ function findPage(verbId) {
 
 function routesPage(domainId) {
   return `<section class="page-head">
-      <a class="back" href="#now">← 野原に戻る</a>
+      <a class="back" href="#now">← 進路マップに戻る</a>
       <h1>${escape(domains[domainId].name)}への進み方</h1>
-      <p class="lead">同じ学問にたどり着く道は1本ではありません。高校の段階で決まることが、経路ごとに違います。</p>
+      <p class="lead">同じ学問へ進むルートは1つではありません。高校までに決める内容が、ルートごとに違います。</p>
     </section>
     <div class="routes-body">${renderRoutes({domainId, domain: domains[domainId], saved: new Set(state.heldRoutes), checkedOn: ROUTES_CHECKED_ON})}</div>`;
 }
@@ -957,7 +957,7 @@ function storageSection() {
   return `<section class="storage-section" aria-label="記録の保存">
     <h2>記録の保存</h2>
     <label class="storage-switch"><input type="checkbox" data-persist ${persist ? 'checked' : ''}> このブラウザに記録を残す</label>
-    <p>野原に置いたもの・いまの考え・やったこと・学年を、このブラウザだけに保存します。サーバーには送りません。同じブラウザを使う人が開ける場合があります。</p>
+    <p>進路マップに追加した項目・いまの考え・やったこと・学年を、このブラウザだけに保存します。サーバーには送りません。同じブラウザを使う人が開ける場合があります。</p>
     <p class="storage-state">${persist ? 'いまは保存しています。オフにすると、この端末の記録を消します。' : 'いまは保存していません。再読み込みすると消えます。'}</p>
     ${storageNote ? `<p class="storage-warning">${escape(storageNote)}</p>` : ''}
     ${ui.legacy ? '<p class="storage-warning">Build 18 までの形式の記録が、このブラウザに残っています。いまのアプリでは読めませんが、消してもいません。</p>' : ''}
@@ -1034,9 +1034,9 @@ function render() {
 /* ---------- 野原に置く ---------- */
 
 function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null, source = null, note = ''}) {
-  if (state.placements.length >= PLACEMENT_LIMIT) { notify(`野原に置けるのは${PLACEMENT_LIMIT}件までです。`); return false; }
-  if (ref && state.placements.some(placement => placement.ref === ref && placement.lane === lane)) { notify('同じ段に、もう置いてあります。'); return false; }
-  if (url && state.placements.some(placement => placement.url === url)) { notify('このページは、もう野原にあります。'); return false; }
+  if (state.placements.length >= PLACEMENT_LIMIT) { notify(`進路マップに追加できるのは${PLACEMENT_LIMIT}件までです。`); return false; }
+  if (ref && state.placements.some(placement => placement.ref === ref && placement.lane === lane)) { notify('同じ時期に追加済みです。'); return false; }
+  if (url && state.placements.some(placement => placement.url === url)) { notify('このページは追加済みです。'); return false; }
   const placement = {
     id: newPlacementId(), lane, x: freeX(state.placements, lane),
     label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note,
@@ -1052,9 +1052,9 @@ function place({kind, ref, label, verb = null, lane = 'now', topic = null, url =
   render();
   if (after.length > before) {
     const fresh = after[after.length - 1];
-    notify(`合流：${fresh.labels.join('と')} → ${fresh.name}`);
+    notify(`共通する学問：${fresh.labels.join('と')} → ${fresh.name}`);
   } else {
-    notify(`「${placement.label}」を置きました。${persist ? '' : ' 次回も残すなら、右上で保存をオンに。'}`);
+    notify(`「${placement.label}」を追加しました。${persist ? '' : ' 次回も残すなら、右上で保存をオンに。'}`);
   }
   return true;
 }
@@ -1167,7 +1167,7 @@ document.addEventListener('click', event => {
   if (target.dataset.draftTopic) {ui.draft = {...ui.draft, topic: ui.draft.topic === target.dataset.draftTopic ? null : target.dataset.draftTopic}; return render();}
   if (target.dataset.draftVerb) {ui.draft = {...ui.draft, verb: ui.draft.verb === target.dataset.draftVerb ? null : target.dataset.draftVerb}; return render();}
   if (target.dataset.draftLane) {ui.draft = {...ui.draft, lane: target.dataset.draftLane}; return render();}
-  if (target.hasAttribute('data-draft-cancel')) {ui.draft = null; notify('置くのをやめました。何も残していません。'); return render();}
+  if (target.hasAttribute('data-draft-cancel')) {ui.draft = null; notify('追加をやめました。何も残していません。'); return render();}
 
   if (target.dataset.setTopic) {
     state.placements = state.placements.map(placement =>
@@ -1193,7 +1193,7 @@ document.addEventListener('click', event => {
     state.log = state.log.map(entry => entry.placement === id ? {...entry, placement: null} : entry);
     ui.selected = null;
     save();
-    notify('野原から外しました。やったことの記録は残しています。');
+    notify('進路マップから削除しました。やったことの記録は残しています。');
     return render();
   }
   if (target.dataset.routeKind) {ui.routeKind = ui.routeKind === target.dataset.routeKind ? null : target.dataset.routeKind; return render();}
@@ -1258,7 +1258,7 @@ function nudge(placement, key, fine) {
   save();
   render();
   document.querySelector(`[data-node="${CSS.escape(placement.id)}"]`)?.focus();
-  if (moved.lane !== placement.lane) notify(`「${placement.label}」を${laneById(moved.lane).title}の段へ動かしました。`);
+  if (moved.lane !== placement.lane) notify(`「${placement.label}」を「${laneById(moved.lane).title}」の時期へ移動しました。`);
 }
 
 /** 段を広げる／まとめる。見え方だけを変えるので、保存はしない。 */
@@ -1316,7 +1316,7 @@ document.addEventListener('submit', event => {
     event.preventDefault();
     const draft = ui.draft;
     const title = form.elements.title.value.trim();
-    if (!title) return notify('野原に出す名前を書いてください。');
+    if (!title) return notify('進路マップに表示する名前を書いてください。');
     return place({
       kind: draft.kind, ref: null, label: title, verb: draft.verb, lane: draft.lane,
       topic: draft.topic, url: draft.url, title, photo: draft.photo
@@ -1325,7 +1325,7 @@ document.addEventListener('submit', event => {
   if (form.hasAttribute('data-pick-write')) {
     event.preventDefault();
     const label = form.elements.label.value.trim();
-    if (!label) return notify('置くものを書いてください。');
+    if (!label) return notify('追加する内容を書いてください。');
     return place({kind: 'custom', ref: null, label, verb: form.elements.verb.value || null, lane: ui.picker.lane});
   }
   if (form.dataset.logForm) {

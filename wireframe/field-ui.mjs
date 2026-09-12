@@ -39,7 +39,7 @@ function laneToggleMarkup(lane, width) {
   const bodyY = lane.top + 4;
   const hitY = bodyY - (hitH - bodyH) / 2;
   const x = width - 14 - w;
-  return `<g class="lane-toggle" data-expand-lane="${escape(lane.id)}" role="button" tabindex="0" aria-label="${escape(lane.title)}の段を${label}">
+  return `<g class="lane-toggle" data-expand-lane="${escape(lane.id)}" role="button" tabindex="0" aria-label="${escape(lane.title)}の時期を${label}">
     <rect x="${x.toFixed(1)}" y="${hitY.toFixed(1)}" width="${w}" height="${hitH}" class="lane-toggle-hit"></rect>
     <rect x="${x.toFixed(1)}" y="${bodyY.toFixed(1)}" width="${w}" height="${bodyH}" rx="${(bodyH / 2).toFixed(1)}" class="lane-toggle-body"></rect>
     <text x="${(x + w / 2).toFixed(1)}" y="${(bodyY + bodyH / 2 + 4).toFixed(1)}" text-anchor="middle" class="lane-toggle-label">${escape(label)}</text>
@@ -49,7 +49,7 @@ function laneToggleMarkup(lane, width) {
 // まとめノード。破線＋「ほか◯件」の文言で、置きものにも学問にも見えないようにする（色だけに意味を載せない）。
 function clusterMarkup(node, {dimmed, laneTitle}) {
   const n = node.members.length;
-  return `<g class="node node-cluster${dimmed ? ' is-dim' : ''}" data-node="${escape(node.id)}" data-expand-lane="${escape(node.lane)}" role="button" tabindex="0" aria-label="「${escape(laneTitle)}」の段に、まとめてある${n}件を広げる" transform="translate(${node.left.toFixed(1)} ${node.y.toFixed(1)})">
+  return `<g class="node node-cluster${dimmed ? ' is-dim' : ''}" data-node="${escape(node.id)}" data-expand-lane="${escape(node.lane)}" role="button" tabindex="0" aria-label="「${escape(laneTitle)}」の時期にまとめてある${n}件を広げる" transform="translate(${node.left.toFixed(1)} ${node.y.toFixed(1)})">
     <rect width="${node.w.toFixed(1)}" height="${node.h}" rx="${(node.h / 2).toFixed(1)}" class="node-body"></rect>
     <text x="${(node.w / 2).toFixed(1)}" y="${node.h / 2 + 5}" text-anchor="middle" class="node-label">${escape(node.label)}</text>
   </g>`;
@@ -120,7 +120,7 @@ export function renderField(view, {selected = null, dragging = null, highlight =
     .sort((a, b) => a.tier - b.tier);
 
   return `<svg class="field" viewBox="0 0 ${view.width} ${view.height}" preserveAspectRatio="xMidYMin meet"
-      role="group" aria-label="時間の野原。縦は今から7年先まで、置いたものから線が伸びます。">
+      role="group" aria-label="7年進路マップ。縦は現在から7年先まで、追加した項目と関連する学問を線で示します。">
     <g class="lanes">${view.lanes.map(lane => laneMarkup(lane, view.width, next)).join('')}</g>
     <g class="links" aria-hidden="true">${linkOrder.map(({link, from, to, lit}) =>
       `<path d="${curve(from, to)}" data-from="${escape(link.from)}" data-to="${escape(link.to)}" class="link link-${link.kind}${lit ? ' is-lit' : dim ? ' is-dim' : ''}"></path>`
@@ -153,11 +153,11 @@ export function renderFieldList(groups, convergenceList) {
   const sections = groups.map(group => `<section class="field-list-lane">
       <h4>${escape(group.title)}<span>${escape(group.note ?? '')}</span></h4>
       ${group.items.length
-        ? `<ul>${group.items.map(item => `<li><button data-node-open="${escape(item.id)}">${escape(item.label)}</button>${item.sub ? `<span class="field-list-sub">${escape(item.sub)}</span>` : ''}${item.caution ? `<span class="field-list-caution">${escape(item.caution)}</span>` : ''}${item.converged ? '<em>合流</em>' : ''}</li>`).join('')}</ul>`
-        : '<p class="field-list-empty">まだ何も置いていません。</p>'}
+        ? `<ul>${group.items.map(item => `<li><button data-node-open="${escape(item.id)}">${escape(item.label)}</button>${item.sub ? `<span class="field-list-sub">${escape(item.sub)}</span>` : ''}${item.caution ? `<span class="field-list-caution">${escape(item.caution)}</span>` : ''}${item.converged ? '<em>複数の項目に共通</em>' : ''}</li>`).join('')}</ul>`
+        : '<p class="field-list-empty">まだ項目がありません。</p>'}
     </section>`).join('');
   return `<div class="field-list">
-    ${convergenceList.length ? `<p class="field-list-lead">${convergenceList.slice(0, LEAD_LIMIT).map(convergenceLine).join('')}${convergenceList.length > LEAD_LIMIT ? `<span class="field-list-more">合流はほかに${convergenceList.length - LEAD_LIMIT}か所あります。並べ方を「つながる学問」にすると全部読めます。</span>` : ''}</p>` : ''}
+    ${convergenceList.length ? `<p class="field-list-lead">${convergenceList.slice(0, LEAD_LIMIT).map(convergenceLine).join('')}${convergenceList.length > LEAD_LIMIT ? `<span class="field-list-more">共通する学問はほかに${convergenceList.length - LEAD_LIMIT}件あります。並べ方を「つながる学問」にすると全部読めます。</span>` : ''}</p>` : ''}
     ${sections}
   </div>`;
 }
