@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {layout, listGroups, convergences} from './field.mjs';
 import {renderField, renderFieldList} from './field-ui.mjs';
+import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
+import {domains} from './verbs.mjs';
 
 const put = (id, ref, x, lane = 'now', kind = 'topic') => ({id, lane, x, label: id, kind, ref, verb: null, note: ''});
 
@@ -106,4 +108,28 @@ test('every name drawn in the field also reads in the list, including names a cl
     assert.ok(!fieldHtml.includes(placement.label), `${placement.id} was expected to be folded away from the picture by this arrangement`);
     assert.ok(listHtml.includes(placement.label), `${placement.id} disappeared from the field but must still be readable in the list`);
   }
+});
+
+test('the field exposes its complete vertical timeline to the page', () => {
+  const html = renderField(layout({placements: [put('a', 'games', 0.5)], width: 360}));
+  assert.match(html, /preserveAspectRatio="xMidYMin meet"/);
+  assert.doesNotMatch(html, /<svg[^>]+\sheight="\d+"/, 'a fixed SVG height would restore the nested vertical viewport');
+});
+
+test('route comparison shows each route feature and a direct official detail link', () => {
+  const html = renderRoutes({domainId: 'media', domain: domains.media, saved: new Set(), checkedOn: '2026-09-12'});
+  assert.equal((html.match(/class="route-card"/g) ?? []).length, 4);
+  assert.equal((html.match(/class="route-detail"/g) ?? []).length, 4);
+  assert.match(html, /この経路の大学・学部を公式ページで見る/);
+});
+
+test('university candidates show four together and put later candidates behind an expandable control', () => {
+  const routes = Array.from({length: 6}, (_, index) => ({
+    kindName: `Route ${index + 1}`,
+    steps: [{stage: 'university', title: `University ${index + 1}`, link: {url: `https://example.edu/${index + 1}`}}]
+  }));
+  const html = renderUniversityCandidates(routes);
+  assert.equal((html.match(/class="candidate-primary"/g) ?? []).length, 4);
+  assert.equal((html.match(/class="candidate-more"/g) ?? []).length, 2);
+  assert.match(html, /<details><summary>ほか2件を広げる<\/summary>/);
 });

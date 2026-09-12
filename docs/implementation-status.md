@@ -2,11 +2,13 @@
 
 ## Build 26 — サービス基盤（2026-09-12）
 
+- 時間の野原を内部スクロールではなくページ全体の高さで表示し、上端の研究室から下端の「いま」まで同じスクロールで見渡せるようにした。
+- 学問を選んだ直後は4経路を時間軸上へ同時に展開し、特徴・必要な数学・大学例を比較してから1経路へ絞れるようにした。大学・学部候補は経路をまたいだグループで4件まで同時表示し、それ以降は「広げる」に収めた。各候補と経路詳細には公式ページへの直接リンクを付けた。
 - `service/` にCloudflare WorkersのWeb/APIを追加。ゲスト開始・メールリンクによるSupabase Authログイン・`/api/v1/health`・`/api/v1/me` を用意した。service role keyはクライアント、Worker設定、リポジトリのいずれにも置かない。
 - `supabase/migrations/20260912000100_build26_foundation.sql` にプロフィール、本人専用workspace、公開カタログと根拠のテーブル、Auth作成トリガー、RLSを追加。本人が他人のプロフィール・workspaceを読めず、編集者だけがカタログを書けるRLSテストを置いた。
 - 既存の公開済み42件を `supabase/seed.sql` へ生成する経路を追加。seedは同じ安定IDの既存行や公開版を上書きしない。
 - Cloudflare用設定、環境変数の雛形、CIを追加。現行プロトタイプはサービス内の `/prototype/` として同梱し、Build 27の段階移行までそのまま使える。
-- 検証: seed生成（42件）、JavaScript構文検査、既存プロトタイプの90テスト、サービスの型検査・4テスト、Assets bindingを含むWorkers dry-runビルド、依存監査（脆弱性0件）、差分の空白検査を通過。公開カタログは現在選択中の公開版だけ読めるRLSへ修正した。ローカルSupabaseのmigration/RLS実行は、この端末にDockerとSupabase CLIがないため未実行。
+- 検証: seed生成（42件）、JavaScript構文検査、プロトタイプの94テスト、サービスの型検査・4テスト、Assets bindingを含むWorkers dry-runビルド、依存監査（脆弱性0件）、差分の空白検査を通過。公開カタログは現在選択中の公開版だけ読めるRLSへ修正した。本番Supabaseへmigrationとseedを適用し、再dry-runで差分なし、database lintでエラーなしを確認した。
 
 ## Build 25 — 家族のおすすめ受信箱とサービス化設計（2026-09-12）
 

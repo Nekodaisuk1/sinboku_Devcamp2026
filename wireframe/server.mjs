@@ -43,5 +43,5 @@ const server = createServer(async (request, response) => {
 // 既に別のプロセスが 4317 を使っているときのために、PORT で変えられるようにする。
 const port = Number(process.env.PORT ?? 4317);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`Invalid PORT: ${process.env.PORT}`);
-server.listen(port, '127.0.0.1', () => console.log(`シンボク Build 25: http://127.0.0.1:${port}`));
+server.listen(port, '127.0.0.1', () => console.log(`シンボク Build 26: http://127.0.0.1:${port}`));
 server.on('error', error => {console.error(error); process.exitCode = 1;});

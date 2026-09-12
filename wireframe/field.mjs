@@ -202,14 +202,7 @@ export function visibleFor(placements, {view = 'all', selected = null} = {}) {
   return {placements, hidden: 0, note: null};
 }
 
-/**
- * 学問を選んだときだけ、そこへの経路が中間の段に現れる。
- * 4本ぶんを一度に出すと読めないので、選んだ1本だけを通す。
- */
-export function routePath(domainId, kindId, anchorX) {
-  if (!hasRoutes(domainId)) return {nodes: [], links: []};
-  const route = routesForDomain(domainId, knowledge.domains[domainId]).find(item => item.kind === kindId);
-  if (!route) return {nodes: [], links: []};
+function pathForRoute(route, domainId, x) {
   const stages = {university: 'faculty', course: 'course', highschool: 'highschool'};
   const nodes = [];
   let previous = `domain-${domainId}`;
@@ -218,11 +211,36 @@ export function routePath(domainId, kindId, anchorX) {
     const lane = stages[step.stage];
     if (!lane) continue;
     const id = `route-${route.id}-${step.stage}`;
-    nodes.push({id, lane, label: step.title, kind: 'route', detail: step.detail, link: step.link ?? null, x: anchorX});
+    nodes.push({id, lane, label: step.title, kind: 'route', route: route.kind, detail: step.detail, link: step.link ?? null, x});
     links.push({from: id, to: previous, kind: 'route'});
     previous = id;
   }
-  return {nodes, links, route};
+  return {nodes, links};
+}
+
+/**
+ * 学問を選んだとき、そこへ至る経路を中間の段に出す。
+ * kindId がない間は決める前の比較として全経路を横に並べ、選ばれたら1本に絞る。
+ */
+export function routePath(domainId, kindId, anchorX) {
+  if (!hasRoutes(domainId)) return {nodes: [], links: [], routes: []};
+  const routes = routesForDomain(domainId, knowledge.domains[domainId]);
+  const chosen = kindId ? routes.find(item => item.kind === kindId) : null;
+  if (kindId && !chosen) return {nodes: [], links: [], routes: []};
+  const visible = chosen ? [chosen] : routes;
+  const paths = visible.map((route, index) => {
+    // 比較中は同じ段の4項目を横へ散らし、選択後は学問の真下へ1本通す。
+    const x = chosen || visible.length === 1
+      ? anchorX
+      : 0.12 + index * (0.76 / (visible.length - 1));
+    return pathForRoute(route, domainId, x);
+  });
+  return {
+    nodes: paths.flatMap(path => path.nodes),
+    links: paths.flatMap(path => path.links),
+    routes: visible,
+    route: chosen ?? null
+  };
 }
 
 /* ---------- 並べ方：縦は時間、横は置いた場所。重なる分だけ段が厚くなる ---------- */

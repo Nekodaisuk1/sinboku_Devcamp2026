@@ -17,6 +17,16 @@
 .route-table thead a{text-decoration:none;border-bottom:1px solid var(--line)}
 .route-table tbody th{width:150px;color:var(--muted);font-weight:600;background:#fafbf8}
 
+#routes-page .route-university-group{padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+#routes-page .route-university-group h3{font-size:15px;margin:0}
+#routes-page .route-university-group h3 span{font-size:11px;color:var(--muted);font-weight:400}
+#routes-page .route-university-group>p{font-size:11px;color:var(--muted);margin:4px 0 10px}
+#routes-page .route-university-group ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+#routes-page .route-university-group li{display:grid;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper);font-size:12px}
+#routes-page .route-university-group li>span{font-size:10px;color:var(--muted)}
+#routes-page .route-university-group details{margin-top:10px}
+#routes-page .route-university-group summary{min-height:36px;display:flex;align-items:center;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer}
+
 .route-list{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 .route-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;scroll-margin-top:20px}
 .route-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:4px}
@@ -28,6 +38,7 @@
 .route-math span{font-size:10px;letter-spacing:.12em;color:var(--muted)}
 .route-math strong{font-size:13px}
 .route-math small{font-size:11px;color:var(--muted);line-height:1.7}
+.route-detail{display:block;margin:10px 0 2px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--soft);font-size:12px;line-height:1.6}
 
 .route-steps{list-style:none;margin:0;padding:0;position:relative}
 .route-steps::before{content:"";position:absolute;left:5px;top:26px;bottom:26px;width:1px;background:var(--line)}

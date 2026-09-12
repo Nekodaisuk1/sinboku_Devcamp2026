@@ -403,6 +403,19 @@ test('a route is drawn one at a time, through the middle lanes, down from its fi
   assert.deepEqual(routePath('nosuchdomain', 'kosen', 0.5).nodes, []);
 });
 
+test('all routes can be compared on the field before one is chosen', () => {
+  const routes = routesForDomain('media', domains.media);
+  const comparison = routePath('media', null, 0.5);
+  assert.equal(comparison.routes.length, routes.length);
+  assert.equal(comparison.nodes.length, routes.length * 3, 'each route crosses the university, course and high-school lanes');
+  assert.equal(new Set(comparison.nodes.map(node => node.route)).size, routes.length);
+  assert.ok(new Set(comparison.nodes.map(node => node.x)).size > 1, 'the routes spread sideways so their features stay readable');
+  for (const route of routes) {
+    const university = comparison.nodes.find(node => node.route === route.kind && node.lane === 'faculty');
+    assert.ok(university?.link?.url, `${route.id} keeps its official university page on the field`);
+  }
+});
+
 test('dropping a node reads its lane from the vertical position, and never leaves the field', () => {
   const view = layout({placements: [put('a', 'games', 0.5)], width: 360});
   assert.equal(laneAt(view.lanes[0].top + 1, view.lanes), 'lab');
