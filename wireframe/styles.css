@@ -495,6 +495,12 @@ input,select,textarea{color:var(--forest)}
 .share-result h2{font-size:17px;margin-bottom:8px}
 .share-result button{margin-top:8px}
 .share-result p{font-size:12px;color:var(--muted);margin-top:8px}
+.map-share-result,.shared-map-notice{margin:12px 0;padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--mint)}
+.map-share-result h2{font-size:17px;margin-bottom:8px}
+.map-share-result textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--ground);font:inherit;resize:vertical}
+.map-share-result button{margin-top:8px}
+.map-share-result p,.shared-map-notice span{display:block;font-size:12px;color:var(--muted);margin-top:7px}
+.shared-map-notice .text-button{margin-top:6px}
 .recommend-boundary{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:12px}
 .recommend-boundary span{color:var(--muted)}
 

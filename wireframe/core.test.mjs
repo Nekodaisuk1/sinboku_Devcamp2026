@@ -1,3 +1,4 @@
+import {encodeMapShare, decodeMapShare} from './map-share.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -18,6 +19,29 @@ import * as fieldModule from './field.mjs';
 import {universityCandidates, universityCandidatesForDomain, EDUCATION_CHECKED_ON} from './education.mjs';
 
 const catalog = {...catalogIds(), routes: new Set(routeDomains().flatMap(id => routesForDomain(id, {name: id}).map(route => route.id)))};
+
+test('a shared map round-trips graph nodes without private records or photo data', () => {
+  const placements = [
+    {id: 'topic-1', lane: 'now', x: 0.2, label: topics.games.label, kind: 'topic', ref: 'games', verb: null, note: '', topic: null, url: null, title: null, photo: null, domains: null, source: 'catalog'},
+    {id: 'outside-1', lane: 'faculty', x: 0.7, label: 'ゲーム制作イベント', kind: 'link', ref: null, verb: null, note: 'private memo', topic: null, url: 'https://example.org/event', title: 'ゲーム制作イベント', photo: null, domains: ['media', 'information'], source: 'self'},
+    {id: 'photo-1', lane: 'now', x: 0.5, label: '作った模型', kind: 'photo', ref: null, verb: null, note: '', topic: null, url: null, title: '作った模型', photo: 'data:image/jpeg;base64,YQ==', domains: ['design'], source: 'self'}
+  ];
+  const encoded = encodeMapShare(placements, catalog);
+  assert.ok(encoded.length <= 6000);
+  assert.ok(!encoded.includes('private memo'));
+  const decoded = decodeMapShare(encoded, catalog);
+  assert.deepEqual(decoded.map(item => [item.id, item.kind, item.label, item.lane, item.domains]), [
+    ['topic-1', 'topic', topics.games.label, 'now', null],
+    ['outside-1', 'link', 'ゲーム制作イベント', 'faculty', ['media', 'information']],
+    ['photo-1', 'custom', '作った模型', 'now', ['design']]
+  ]);
+  assert.ok(decoded.every(item => item.note === '' && item.photo === null));
+});
+
+test('a shared map rejects malformed and oversized payloads instead of partially loading them', () => {
+  assert.throws(() => decodeMapShare('not-a-map', catalog), /共有リンク/);
+  assert.throws(() => decodeMapShare('a'.repeat(6001), catalog), /長すぎ/);
+});
 
 test('an interest plan contains only the interests the user explicitly chose', () => {
   assert.equal(typeof fieldModule.buildInterestPlan, 'function');
