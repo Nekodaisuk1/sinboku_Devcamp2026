@@ -1,5 +1,23 @@
 # Implementation status
 
+## Build 26 — サービス基盤（2026-09-12）
+
+- `service/` にCloudflare WorkersのWeb/APIを追加。ゲスト開始・メールリンクによるSupabase Authログイン・`/api/v1/health`・`/api/v1/me` を用意した。service role keyはクライアント、Worker設定、リポジトリのいずれにも置かない。
+- `supabase/migrations/20260912000100_build26_foundation.sql` にプロフィール、本人専用workspace、公開カタログと根拠のテーブル、Auth作成トリガー、RLSを追加。本人が他人のプロフィール・workspaceを読めず、編集者だけがカタログを書けるRLSテストを置いた。
+- 既存の公開済み42件を `supabase/seed.sql` へ生成する経路を追加。seedは同じ安定IDの既存行や公開版を上書きしない。
+- Cloudflare用設定、環境変数の雛形、CIを追加。現行プロトタイプはサービス内の `/prototype/` として同梱し、Build 27の段階移行までそのまま使える。
+- 検証: seed生成（42件）、JavaScript構文検査、既存プロトタイプの90テスト、サービスの型検査・4テスト、Assets bindingを含むWorkers dry-runビルド、依存監査（脆弱性0件）、差分の空白検査を通過。公開カタログは現在選択中の公開版だけ読めるRLSへ修正した。ローカルSupabaseのmigration/RLS実行は、この端末にDockerとSupabase CLIがないため未実行。
+
+## Build 25 — 家族のおすすめ受信箱とサービス化設計（2026-09-12）
+
+- Build 24の42掲載情報に不足していた種類・都道府県・対象学年・費用・申込期限を補完し、絞り込みと掲載範囲集計を実データで成立させた。
+- 家族がURL・名前・一言・任意タグを1件のリンクにし、本人が受信箱で「野原に置く／あとで見る／消す」を選べるようにした。家族側へ本人の野原・学年・記録を返さない。
+- 野原へ置いたおすすめは出どころを「家族から」とし、内容未確認の注意、一言、タグを保持する。
+- 実データをdraft限定で検証・投入する `resources:import` を追加。既存IDの上書きと公開状態での一括投入を拒否する。
+- 静的サイトを体験検証用と位置づけ直し、Cloudflare Workers上のTypeScriptモジュラーモノリスとSupabase PostgreSQL/Auth/Storageによるサービス構成、権限、データモデル、API、Build 26〜30の移行順を `docs/service-architecture.md` に定義した。
+- 公式リンク42件を実通信で確認し、恒久リダイレクト2件を正規URLへ更新した。最終結果は問題0件。
+- 検証: データ検証・構文検査・90テスト・公開ビルド通過。ブラウザで家族用フォーム→共有リンク→本人受信箱→野原へ置く動線と、家族由来表示を確認した。
+
 ## 完了した機能
 
 - 入力不要の入口、興味の例から地図、前回の続きから再開。

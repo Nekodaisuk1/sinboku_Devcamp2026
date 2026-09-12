@@ -1,0 +1,11 @@
+:root { color-scheme: light; font-family: ui-rounded, "Hiragino Maru Gothic ProN", system-ui, sans-serif; background: #f8f4e8; color: #203026; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100svh; background: radial-gradient(circle at 78% 18%, #ffca6a 0 7%, transparent 7.2%), radial-gradient(circle at 18% 77%, #9fd9bd 0 12%, transparent 12.2%), #f8f4e8; }
+.shell { width: min(640px, calc(100% - 32px)); margin: 0 auto; padding: 12vh 0 64px; }
+.eyebrow, .pill { color: #376c50; font-weight: 800; letter-spacing: .1em; font-size: .78rem; }
+h1 { font-size: clamp(2.3rem, 9vw, 4.8rem); line-height: 1.12; letter-spacing: -.06em; margin: .35rem 0 1rem; }
+.status { font-weight: 700; margin-bottom: 2rem; }
+.card { background: #fffdf7; border: 2px solid #203026; border-radius: 28px; padding: clamp(24px, 6vw, 40px); box-shadow: 8px 9px 0 #203026; }
+h2 { margin-top: 0; } label { display: grid; gap: .5rem; font-weight: 700; } input { border: 2px solid #203026; border-radius: 12px; padding: .8rem; font: inherit; } form { display: grid; gap: 1rem; }
+.button { border: 2px solid #203026; border-radius: 999px; padding: .8rem 1.1rem; background: #85d5a7; color: #173122; font: inherit; font-weight: 800; cursor: pointer; text-align: center; text-decoration: none; } .secondary { display: inline-block; background: #ffcf74; }
+hr { border: 0; border-top: 2px dashed #b7b3a5; margin: 2rem 0; }.note { min-height: 1.5em; color: #376c50; font-weight: 700; }.text-button { border: 0; background: none; text-decoration: underline; font: inherit; cursor: pointer; padding: 0; }

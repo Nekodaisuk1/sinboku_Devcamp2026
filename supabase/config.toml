@@ -1,0 +1,8 @@
+project_id = "tqbinlyvchwdsdjzjrmy"
+
+[api]
+schemas = ["public"]
+
+[auth]
+site_url = "http://localhost:8787"
+additional_redirect_urls = ["http://127.0.0.1:8787", "http://localhost:8787"]
