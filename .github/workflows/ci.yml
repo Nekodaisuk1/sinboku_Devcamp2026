@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20}
+      - run: npm --prefix wireframe run check
+      - run: npm --prefix wireframe test
+      - run: npm --prefix wireframe run build
+  service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm, cache-dependency-path: service/package-lock.json}
+      - run: npm --prefix service ci
+      - run: npm --prefix service run catalog:seed
+      - run: npm --prefix service run check
+      - run: npm --prefix service run build
