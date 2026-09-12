@@ -82,6 +82,28 @@ export const TITLE_LIMIT = 80;
 export const PHOTO_LIMIT = 12; // 端末保存に収めるための上限（枚数）
 export const PHOTO_BYTES = 160 * 1024; // 1枚あたりの上限。dataURL の文字数で判定する
 
+/** 外部で見つけた情報を、本人が選んだジャンルと一緒に確認用の下書きへそろえる。 */
+export function buildExternalInformationDraft({url, title = '', domainIds = [], lane = 'now'} = {}) {
+  let parsed;
+  try {
+    parsed = new URL(String(url ?? ''));
+  } catch {
+    throw new Error('これはページのアドレスとして読み取れませんでした。');
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('置けるのは http と https のページだけです。');
+  if (String(url).length > URL_LIMIT) throw new Error(`アドレスが長すぎます（${URL_LIMIT}文字まで）。`);
+  if (!LANE_IDS.includes(lane)) throw new Error('Unknown lane');
+  if (!Array.isArray(domainIds)) throw new Error('Domains must be a list');
+  const uniqueDomainIds = [...new Set(domainIds.map(id => String(id)))];
+  for (const id of uniqueDomainIds) {
+    if (!knowledge.domains[id]) throw new Error(`Unknown domain: ${id}`);
+  }
+  return {
+    kind: 'link', url: String(url), title: (String(title).trim() || parsed.hostname).slice(0, LABEL_LIMIT),
+    photo: null, topic: null, verb: null, domains: uniqueDomainIds, lane
+  };
+}
+
 // 20件も置くと野原が読めなくなるので、表示側の絞り込みと並べ替えの選択肢をここで定義する。
 // 保存データには一切影響しない「見せ方」だけの語彙。
 export const FIELD_VIEWS = [

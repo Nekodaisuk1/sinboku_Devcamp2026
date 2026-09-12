@@ -8,7 +8,7 @@ import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {STORAGE_KEY, emptyState, encodeState, decodeState, hasLegacyRecord} from './store.mjs';
 import {LANES, LANE_IDS, laneById, layout, laneAt, revealWorld, convergences, reachOf, routePath, newPlacementId, freeX, previewBox, visibleFor, linkedSet, listGroups, convergenceSentence, FIELD_VIEWS, LIST_SORTS,
         sourceOf, contentOf, describeSource, URL_LIMIT, PHOTO_LIMIT, PHOTO_BYTES,
-        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, placementForResource, setDomainConnection, resetDomainConnections} from './field.mjs';
+        PLACEMENT_LIMIT, LABEL_LIMIT, buildInterestPlan, buildExternalInformationDraft, placementForResource, setDomainConnection, resetDomainConnections} from './field.mjs';
 import {renderField, renderFieldList, renderInterestBuilder, renderConnectionEditor, curve} from './field-ui.mjs';
 import {encodeRecommendation, decodeRecommendation, receiveRecommendation, newRecommendationId,
         RECOMMENDATION_TITLE_LIMIT, RECOMMENDATION_NOTE_LIMIT, RECOMMENDATION_URL_LIMIT} from './recommendations.mjs';
@@ -108,16 +108,7 @@ function route() {
  * 何についての話かも推測しない。開くかどうかも、タグを付けるかも、本人が決める。
  */
 function startLinkDraft(url, title = '') {
-  let parsed;
-  try {
-    parsed = new URL(url);
-  } catch {
-    throw new Error('これはページのアドレスとして読み取れませんでした。');
-  }
-  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('置けるのは http と https のページだけです。');
-  if (url.length > URL_LIMIT) throw new Error(`アドレスが長すぎます（${URL_LIMIT}文字まで）。`);
-  ui.draft = {kind: 'link', url, title: (title || parsed.hostname).slice(0, LABEL_LIMIT),
-              photo: null, topic: null, verb: null, lane: ui.picker?.lane ?? 'now'};
+  ui.draft = buildExternalInformationDraft({url, title, lane: ui.picker?.lane ?? 'now'});
   ui.picker = null;
 }
 
@@ -491,7 +482,7 @@ async function shrinkPhoto(file) {
 
 /** いまの選び方だと、どこへ線が伸びるのかを先に言う。置いてから驚かせない。 */
 function draftReachNote(draft) {
-  const reach = reachOf({kind: draft.kind, ref: null, topic: draft.topic, verb: draft.verb})
+  const reach = reachOf({kind: draft.kind, ref: null, topic: draft.topic, verb: draft.verb, domains: draft.domains})
     .map(id => domains[id]?.name).filter(Boolean);
   if (!reach.length) return 'いまのままだと、関連する学問はありません。タグはあとから選ぶこともできます。';
   return `関連する学問：${reach.join('・')}`;
@@ -518,6 +509,12 @@ function draftMarkup() {
 
       <p class="panel-label">どんなふうに関わる？</p>
       <div class="verb-row">${verbs.map(verb => `<button type="button" class="verb-chip small${draft.verb === verb.id ? ' on' : ''}" data-draft-verb="${escape(verb.id)}" aria-pressed="${draft.verb === verb.id}">${escape(verb.icon)} ${escape(verb.label)}</button>`).join('')}</div>
+
+      ${draft.kind === 'link' ? `<fieldset class="external-genres">
+        <legend>つなぐジャンル（1つ以上）</legend>
+        <p class="panel-hint">この情報と関係があると思うジャンルを選んでください。複数選べます。</p>
+        <div class="lane-row">${Object.entries(domains).map(([id, domain]) => `<button type="button" class="lane-chip${draft.domains.includes(id) ? ' on' : ''}" data-draft-domain="${escape(id)}" aria-pressed="${draft.domains.includes(id)}">${escape(domain.name)}</button>`).join('')}</div>
+      </fieldset>` : ''}
 
       <p class="panel-label">いつやりたい？</p>
       <div class="lane-row">${LANES.map(item => `<button type="button" class="lane-chip${draft.lane === item.id ? ' on' : ''}" data-draft-lane="${escape(item.id)}" aria-pressed="${draft.lane === item.id}">${escape(item.id === 'now' ? 'いま' : item.horizon)}</button>`).join('')}</div>
@@ -561,10 +558,10 @@ function pickerMarkup() {
             </form>
 
             <form class="pick-link" data-pick-link>
-              <label for="pick-url">見つけたページを追加</label>
+              <label for="pick-url">外部情報をジャンルにつなぐ</label>
               <input id="pick-url" name="url" type="url" inputmode="url" maxlength="${URL_LIMIT}" placeholder="https://" autocomplete="off" required>
               <button class="secondary" type="submit">確認する</button>
-              <p class="panel-hint">貼り付けても、すぐには追加しません。先に確認画面が出ます。リンク先の中身は確認しません。</p>
+              <p class="panel-hint">記事、イベント、学校などのURLを入れ、次の画面で関係するジャンルを選びます。リンク先の中身はこのアプリでは確認しません。</p>
             </form>
 
             <div class="pick-photo">
@@ -1035,18 +1032,19 @@ function render() {
 
 /* ---------- 野原に置く ---------- */
 
-function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null, source = null, note = ''}) {
+function place({kind, ref, label, verb = null, lane = 'now', topic = null, url = null, title = null, photo = null, domains: customDomains = null, source = null, note = ''}) {
   if (state.placements.length >= PLACEMENT_LIMIT) { notify(`進路マップに追加できるのは${PLACEMENT_LIMIT}件までです。`); return false; }
   if (ref && state.placements.some(placement => placement.ref === ref && placement.lane === lane)) { notify('同じ時期に追加済みです。'); return false; }
   if (url && state.placements.some(placement => placement.url === url)) { notify('このページは追加済みです。'); return false; }
   const placement = {
     id: newPlacementId(), lane, x: freeX(state.placements, lane),
     label: String(label).slice(0, LABEL_LIMIT), kind, ref: ref ?? null, verb, note,
-    topic, url, title, photo, domains: null, source: source ?? (['custom', 'link', 'photo'].includes(kind) ? 'self' : 'catalog')
+    topic, url, title, photo, domains: customDomains, source: source ?? (['custom', 'link', 'photo'].includes(kind) ? 'self' : 'catalog')
   };
   const before = convergences(state.placements).length;
   state.placements = [...state.placements, placement];
   ui.selected = placement.id;
+  ui.routeDomain = null;
   ui.picker = null;
   ui.draft = null;
   save();
@@ -1209,6 +1207,12 @@ document.addEventListener('click', event => {
 
   if (target.dataset.draftTopic) {ui.draft = {...ui.draft, topic: ui.draft.topic === target.dataset.draftTopic ? null : target.dataset.draftTopic}; return render();}
   if (target.dataset.draftVerb) {ui.draft = {...ui.draft, verb: ui.draft.verb === target.dataset.draftVerb ? null : target.dataset.draftVerb}; return render();}
+  if (target.dataset.draftDomain) {
+    const domainId = target.dataset.draftDomain;
+    const connected = ui.draft.domains.includes(domainId);
+    ui.draft = {...ui.draft, domains: connected ? ui.draft.domains.filter(id => id !== domainId) : [...ui.draft.domains, domainId]};
+    return render();
+  }
   if (target.dataset.draftLane) {ui.draft = {...ui.draft, lane: target.dataset.draftLane}; return render();}
   if (target.hasAttribute('data-draft-cancel')) {ui.draft = null; notify('追加をやめました。何も残していません。'); return render();}
 
@@ -1394,9 +1398,10 @@ document.addEventListener('submit', event => {
     const draft = ui.draft;
     const title = form.elements.title.value.trim();
     if (!title) return notify('進路マップに表示する名前を書いてください。');
+    if (draft.kind === 'link' && !draft.domains.length) return notify('外部情報とつなぐジャンルを1つ以上選んでください。');
     return place({
       kind: draft.kind, ref: null, label: title, verb: draft.verb, lane: draft.lane,
-      topic: draft.topic, url: draft.url, title, photo: draft.photo
+      topic: draft.topic, url: draft.url, title, photo: draft.photo, domains: draft.domains
     });
   }
   if (form.hasAttribute('data-pick-write')) {

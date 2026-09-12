@@ -53,6 +53,20 @@ test('a custom interest stores its explicitly selected science genres separately
   );
 });
 
+test('external information keeps the genres chosen by the student', () => {
+  const draft = fieldModule.buildExternalInformationDraft({
+    url: 'https://example.org/game-design',
+    title: 'ゲームデザインの記事',
+    domainIds: ['media', 'information', 'media'],
+    lane: 'now'
+  });
+  assert.equal(draft.kind, 'link');
+  assert.deepEqual(draft.domains, ['media', 'information']);
+  assert.deepEqual(fieldModule.reachOf({...draft, id: 'outside', x: 0.5, label: draft.title}), ['media', 'information']);
+  assert.throws(() => fieldModule.buildExternalInformationDraft({url: 'javascript:alert(1)'}), /http/);
+  assert.throws(() => fieldModule.buildExternalInformationDraft({url: 'https://example.org', domainIds: ['not-a-domain']}), /Unknown domain/);
+});
+
 test('school search results land on the matching education stage', () => {
   assert.equal(typeof fieldModule.laneForResource, 'function');
   assert.equal(fieldModule.laneForResource({category: 'school'}), 'highschool');
