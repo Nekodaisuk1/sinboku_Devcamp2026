@@ -1,12 +1,49 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 
 import {layout, listGroups, convergences} from './field.mjs';
 import {renderField, renderFieldList} from './field-ui.mjs';
+import * as fieldUiModule from './field-ui.mjs';
 import {renderRoutes, renderUniversityCandidates} from './routes-ui.mjs';
 import {domains} from './verbs.mjs';
 
 const put = (id, ref, x, lane = 'now', kind = 'topic') => ({id, lane, x, label: id, kind, ref, verb: null, note: ''});
+
+test('the map offers an explicit multi-interest creation form', () => {
+  assert.equal(typeof fieldUiModule.renderInterestBuilder, 'function');
+  const html = fieldUiModule.renderInterestBuilder({
+    topics: {games: {label: 'ゲーム'}, music: {label: 'ギター・音楽'}},
+    verbs: [{id: 'make', label: 'つくる'}],
+    placedRefs: new Set(['games']),
+    open: true
+  });
+  assert.match(html, /自分の興味からマップを作る/);
+  assert.match(html, /type="checkbox"[^>]+name="topics"/);
+  assert.match(html, /name="customLabel"/);
+  assert.match(html, /name="verbId"/);
+  assert.match(html, /この内容でマップを作る/);
+  assert.match(html, /value="games"[^>]+disabled/);
+});
+
+test('app chrome matches the Shimboku visual identity', async () => {
+  const [html, css, build, server] = await Promise.all([
+    readFile(new URL('./index.html', import.meta.url), 'utf8'),
+    readFile(new URL('./styles.css', import.meta.url), 'utf8'),
+    readFile(new URL('./scripts/build.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('./server.mjs', import.meta.url), 'utf8')
+  ]);
+
+  assert.match(html, /<img[^>]+src="assets\/shinboku-logo\.png"[^>]+alt=""/);
+  assert.match(html, /class="brand-copy"/);
+  assert.match(html, /class="tab-icon"/);
+  assert.match(css, /--forest:\s*#203026/i);
+  assert.match(css, /--cream:\s*#f8f4e8/i);
+  assert.match(css, /--mint:\s*#85d5a7/i);
+  assert.match(css, /--sun:\s*#ffcf74/i);
+  assert.match(build, /png/, 'the public build must include the logo image referenced by index.html');
+  assert.match(server, /assets\/shinboku-logo\.png/, 'the local preview server must serve the logo');
+});
 
 /* --- Build 22: axe が動かない環境の代わりに、描画結果の文字列で退行を止める ---
  * この環境は Node.js と ChromeDriver のバージョンが合わず axe 監査が動かない。

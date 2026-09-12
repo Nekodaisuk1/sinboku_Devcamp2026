@@ -20,7 +20,8 @@ const files = new Map([
   ['/catalog.mjs', ['catalog.mjs', 'text/javascript; charset=utf-8']],
   ['/routes.mjs', ['routes.mjs', 'text/javascript; charset=utf-8']],
   ['/routes-ui.mjs', ['routes-ui.mjs', 'text/javascript; charset=utf-8']],
-  ['/knowledge-data.mjs', ['knowledge-data.mjs', 'text/javascript; charset=utf-8']]
+  ['/knowledge-data.mjs', ['knowledge-data.mjs', 'text/javascript; charset=utf-8']],
+  ['/assets/shinboku-logo.png', ['assets/shinboku-logo.png', 'image/png']]
 ]);
 
 const server = createServer(async (request, response) => {

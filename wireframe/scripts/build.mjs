@@ -10,12 +10,16 @@ async function include(name) {
   const source=resolve(root,name);
   if(!source.startsWith(root) || /(^|\/)(\.data|scripts|data)(\/|$)|\.test\.|server\.mjs|family-api/.test(name)) throw new Error(`Blocked build input: ${name}`);
   if(copied.has(name)) return;copied.add(name);
-  const body=await readFile(source,'utf8');await mkdir(dirname(resolve(out,name)),{recursive:true});await copyFile(source,resolve(out,name));
-  if(['.js','.mjs'].includes(extname(name))) for(const match of body.matchAll(/(?:import|export)\s+(?:[^;]*?\s+from\s+)?['"](\.\.?\/[^'"]+)['"]/g)) await include(relative(root,resolve(dirname(source),match[1])));
+  const extension=extname(name);
+  await mkdir(dirname(resolve(out,name)),{recursive:true});await copyFile(source,resolve(out,name));
+  if(['.js','.mjs'].includes(extension)) {
+    const body=await readFile(source,'utf8');
+    for(const match of body.matchAll(/(?:import|export)\s+(?:[^;]*?\s+from\s+)?['"](\.\.?\/[^'"]+)['"]/g)) await include(relative(root,resolve(dirname(source),match[1])));
+  }
 }
 const html=await readFile(resolve(root,'index.html'),'utf8');
 await include('index.html');
-for(const match of html.matchAll(/(?:href|src)="([^"#]+\.(?:css|js|mjs))"/g)) await include(match[1]);
+for(const match of html.matchAll(/(?:href|src)="([^"#]+\.(?:css|js|mjs|png|jpe?g|webp|svg))"/g)) await include(match[1]);
 await writeFile(resolve(out,'404.html'),'<!doctype html><html lang="ja"><meta charset="utf-8"><title>ページが見つかりません</title><p>ページが見つかりません。</p><a href="/#now">地図へ戻る</a></html>');
 await writeFile(resolve(out,'_headers'),`/*
   X-Content-Type-Options: nosniff
